@@ -23,5 +23,8 @@
     <ClInclude Include="vdfs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="space.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
