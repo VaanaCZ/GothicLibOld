@@ -101,7 +101,7 @@ bool ZEN::FileStream::Open(std::wstring filename, char openMode)
 //         responsibility of managing the specified 
 //         buffer over its lifespan.
 //
-bool ZEN::FileStream::Open(char* buffer, uint64_t size, char openMode, bool realloc)
+bool ZEN::FileStream::Open(char* buffer, size_t size, char openMode, bool realloc)
 {
 	if (openMode == 'r')
 	{
@@ -208,12 +208,11 @@ bool ZEN::FileStream::Read(void* readBuffer, uint64_t readSize)
 		}
 
 		// If we start reading from a pre-existing
-		// stream on a different thread, we most
+		// stream on a different thread, we must
 		// fork it and create a new handle to prevent
 		// a race condition.
 		if (iSource == STREAM_SOURCE_SUBSTREAM &&
-		//	std::this_thread::get_id() != iSubThreadId)
-			std::this_thread::get_id() == iSubThreadId)
+			std::this_thread::get_id() != iSubThreadId)
 		{
 			ForkSubStream(iSubStream, iSubOffset);
 		}
@@ -341,11 +340,24 @@ uint64_t ZEN::FileStream::TotalSize()
 	}
 }
 
-void ZEN::FileStream::ForkSubStream(FileStream* sourceStream, uint64_t offset)
+//
+// void ForkSubStream(FileStream* sourceStream, uint64_t sourceOffset)
+//
+// Reinitializes the current stream based on
+// the data in the data source stream.
+// 
+//   - sourceStream
+//         Stream which serves as a source
+//         to this stream.
+// 
+//   - offset
+//         offset in the source stream.
+//
+void ZEN::FileStream::ForkSubStream(FileStream* sourceStream, uint64_t sourceOffset)
 {
 	if (sourceStream->iSource == STREAM_SOURCE_SUBSTREAM)
 	{
-		ForkSubStream(sourceStream->iSubStream, sourceStream->iSubOffset + offset);
+		ForkSubStream(sourceStream->iSubStream, sourceStream->iSubOffset + sourceOffset);
 	}
 	else
 	{
@@ -360,11 +372,11 @@ void ZEN::FileStream::ForkSubStream(FileStream* sourceStream, uint64_t offset)
 		{
 			iSource = STREAM_SOURCE_BUFFER;
 
-			iBuffer = &sourceStream->iBuffer[offset];
+			iBuffer = &sourceStream->iBuffer[sourceOffset];
 			iDisposeBuffer = false;
 		}
 
-		iSubOffset = offset;
+		iSubOffset = sourceOffset;
 	}
 }
 

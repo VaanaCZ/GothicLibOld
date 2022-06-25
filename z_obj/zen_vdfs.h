@@ -35,10 +35,10 @@ namespace ZEN
 			Stream creation / destruction
 		*/
 
-		bool		Open(std::string, char);					// File
-		bool		Open(std::wstring, char);					// File
-		bool		Open(char*, uint64_t, char, bool = true);	// buffer
-		bool		Open(FileStream*, uint64_t, uint64_t);		// Substream
+		bool		Open(std::string, char);				// File
+		bool		Open(std::wstring, char);				// File
+		bool		Open(char*, size_t, char, bool = true);	// Buffer
+		bool		Open(FileStream*, uint64_t, uint64_t);	// Substream
 
 		void		Close();
 
