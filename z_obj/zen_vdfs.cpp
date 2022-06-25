@@ -125,6 +125,38 @@ bool ZEN::FileStream::Open(char* buffer, uint64_t size, char openMode, bool real
 }
 
 //
+// Open(FileStream* stream, uint64_t offset, uint64_t size)
+//
+// Opens a new file stream with from a prexisting
+// file stream.
+// 
+//   - stream
+//         The stream which will serve as a data
+//         source for this stream.
+// 
+//   - offset
+//         Offset in the specified stream at which
+//         this stream should start.
+// 
+//   - size
+//         Size of this stream.
+//
+bool ZEN::FileStream::Open(FileStream* stream, uint64_t offset, uint64_t size)
+{
+	if (offset + size > stream->iTotalSize)
+		return false;
+
+	mode = stream->mode;
+	iSource = STREAM_SOURCE_SUBSTREAM;
+
+	iSubStream = stream;
+	iSubOffset = offset;
+	iTotalSize = size;
+
+	return true;
+}
+
+//
 // void Close()
 // 
 // Closes the file stream and disposes of
@@ -175,15 +207,27 @@ bool ZEN::FileStream::Read(void* readBuffer, uint64_t readSize)
 
 		if (iSource == STREAM_SOURCE_RAWFILE)
 		{
+			if (iFile.tellg() != iSubOffset + iPosition)
+				iFile.seekg(iSubOffset + iPosition);
+
 			iFile.read((char*)readBuffer, readSize);
 		}
 		else if (iSource == STREAM_SOURCE_BUFFER)
 		{
 			memcpy(readBuffer, &iBuffer[iPosition], readSize);
 		}
+		else if (iSource == STREAM_SOURCE_SUBSTREAM)
+		{
+			iSubStream->Seek(iSubOffset + iPosition);
+
+			if (!iSubStream->Read(readBuffer, readSize))
+				return false;
+		}
 
 		iPosition += readSize;
 	}
+	
+	return true;
 }
 
 //
@@ -253,7 +297,7 @@ void ZEN::FileStream::Seek(uint64_t pos)
 		iPosition = pos;
 
 		if (iSource == STREAM_SOURCE_RAWFILE)
-			iFile.seekg(iPosition);
+			iFile.seekg(iSubOffset + iPosition);
 	}
 }
 
@@ -315,12 +359,10 @@ bool ZEN::FileSystem::InitializeDirectory(std::wstring _rootPath)
 	for (size_t i = 0; i < volumes.size(); i++)
 	{
 		volumes[i].stream->Seek(volumes[i].rootOffset);
+
 		size_t entryCount = volumes[i].entryCount;
 
-		TraverseVolume(i, 0, false, volumes[i].rootOffset, "", entryCount);
-
-
-		continue;
+		TraverseVolume(i, 0, false, "", entryCount);
 	}
 
 	return true;
@@ -334,6 +376,90 @@ bool ZEN::FileSystem::Mount(std::string path)
 bool ZEN::FileSystem::Mount(std::wstring path)
 {
 	return true;
+}
+
+//
+// FileStream* OpenFile(std::string path, bool globalSearch)
+//
+// Looks up a file using the specified path and
+// creates a filestream if the file exists.
+// 
+//   - path
+//         The path of the file to search for
+//         e.g. _Work/Data/Worlds/World.zen
+//         Note: The path is automatically canonized.
+// 
+//   - globalSearch
+//         Specifies whether the search should
+//         consider all directories. One may
+//         include only the filename without
+//         the path if this option is enabled
+//         (e.g. "SURFACE.3DS").
+//         Note: There is no speed penalty for
+//         enabling this option.
+// 
+// If the look-up fails a nullptr is returned.
+//
+ZEN::FileStream* ZEN::FileSystem::OpenFile(std::string path, bool globalSearch)
+{
+	CanonizePath(path);
+
+	if (globalSearch)
+	{
+		size_t s = path.rfind('/');
+		if (s != std::string::npos)
+			path = path.substr(s + 1);
+
+		if (fileNameCache.find(path) != fileNameCache.end())
+		{
+			return OpenFile(&files[fileNameCache[path]]);
+		}
+	}
+	else if (!globalSearch && filePathCache.find(path) != filePathCache.end())
+	{
+		return OpenFile(&files[filePathCache[path]]);
+	}
+
+	return nullptr;
+}
+
+//
+// FileStream* ZEN::FileSystem::OpenFile(File* file)
+//
+// Looks up a file given a valid File* struct
+// pointer.
+//
+ZEN::FileStream* ZEN::FileSystem::OpenFile(File* file)
+{
+	FileStream* stream = new FileStream();
+
+	if (file->type == FILE_TYPE_PHYSICAL &&
+		stream->Open(file->pPath, 'r'))
+	{
+		return stream;
+	}
+	else if (file->type == FILE_TYPE_VIRTUAL)
+	{
+		Volume& volume = volumes[file->vVolumeIndex];
+
+		if (stream->Open(volume.stream, file->vOffset, file->vSize))
+		{
+			return stream;
+		}
+	}
+
+	delete[] stream;
+	return nullptr;
+}
+
+bool ZEN::FileSystem::ListDirectory(std::string, File**, size_t*, Directory**, size_t*)
+{
+	return false;
+}
+
+bool ZEN::FileSystem::ListDirectory(File*, File**, size_t*, Directory**, size_t*)
+{
+	return false;
 }
 
 //
@@ -379,7 +505,7 @@ void ZEN::FileSystem::TraverseDirectory(std::filesystem::path path, std::string 
 			dir.pPath = entry.path().wstring();
 
 			// Add to cache
-			fileDirectoryCache[fsPath + dir.name + "/"] = dirIndex;
+			dirPathCache[fsPath + dir.name + "/"] = dirIndex;
 		}
 		else
 		{
@@ -463,7 +589,7 @@ void ZEN::FileSystem::TraverseDirectory(std::filesystem::path path, std::string 
 
 				// Add to cache
 				filePathCache[fsPath + file.name]		= fileIndex;
-				fileCache[file.name]					= fileIndex;
+				fileNameCache[file.name]					= fileIndex;
 			}
 		}
 	}
@@ -484,7 +610,7 @@ void ZEN::FileSystem::TraverseDirectory(std::filesystem::path path, std::string 
 }
 
 //
-// void TraverseVolume(size_t volumeIndex, size_t parentIndex, bool parentEmpty, uint64_t rootOffset, std::string fsPath, size_t& entryCount)
+// void TraverseVolume(size_t volumeIndex, size_t parentIndex, bool parentEmpty, std::string fsPath, size_t& entryCount)
 //
 // Recursively traverses the specified directory
 // searching for physical files and  volumes to mount.
@@ -499,10 +625,7 @@ void ZEN::FileSystem::TraverseDirectory(std::filesystem::path path, std::string 
 //         Specifies whether the parent directory
 //         is empty or not. If so, then there is
 //         no need to check for duplicity -> faster.
-// 
-//   - rootOffset
-//         Offset of the file table
-// 
+//
 //   - fsPath
 //         Current filesystem path (e.g. DATA/ANIMS/).
 // 
@@ -511,7 +634,7 @@ void ZEN::FileSystem::TraverseDirectory(std::filesystem::path path, std::string 
 //         Counts down by one everytime time an entry is
 //         read to prevent endless looping.
 //
-void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, bool parentEmpty, uint64_t rootOffset, std::string fsPath, size_t& entryCount)
+void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, bool parentEmpty, std::string fsPath, size_t& entryCount)
 {
 	Volume& volume = volumes[volumeIndex];
 
@@ -568,12 +691,12 @@ void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, boo
 
 			size_t dirIndex = 0;
 
-			exists = fileDirectoryCache.find(nextFsPath) != fileDirectoryCache.end();
+			exists = dirPathCache.find(nextFsPath) != dirPathCache.end();
 
 			// If it doesnt exist create it
 			if (exists)
 			{
-				dirIndex = fileDirectoryCache[nextFsPath];
+				dirIndex = dirPathCache[nextFsPath];
 			}
 			else
 			{
@@ -598,7 +721,7 @@ void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, boo
 						}
 					}
 
-					for (auto& it : fileDirectoryCache)
+					for (auto& it : dirPathCache)
 					{
 						if (it.second >= dirIndex)
 						{
@@ -612,17 +735,17 @@ void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, boo
 				directories[parentIndex].directoryCount++;
 
 				// Add to cache
-				fileDirectoryCache[nextFsPath] = dirIndex;
+				dirPathCache[nextFsPath] = dirIndex;
 			}
 
 			// Read subdirs
 			uint64_t currPos = volume.stream->Tell();
-			uint64_t nextPos = rootOffset + (entry.dataOffset * sizeof(VDF_Entry));
+			uint64_t nextPos = volume.rootOffset + (entry.dataOffset * sizeof(VDF_Entry));
 
 			volume.stream->Seek(nextPos);
 
 			bool isDirEmpty = directories[dirIndex].directoryCount == 0;
-			TraverseVolume(volumeIndex, dirIndex, isDirEmpty, rootOffset, nextFsPath, entryCount);
+			TraverseVolume(volumeIndex, dirIndex, isDirEmpty, nextFsPath, entryCount);
 
 			volume.stream->Seek(currPos);
 		}
@@ -689,6 +812,14 @@ void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, boo
 							it.second++;
 						}
 					}
+
+					for (auto& it : fileNameCache)
+					{
+						if (it.second >= fileIndex)
+						{
+							it.second++;
+						}
+					}
 				}
 
 				files.insert(files.begin() + fileIndex, insertFile);
@@ -697,7 +828,7 @@ void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, boo
 
 				// Add to cache
 				filePathCache[nextFsPath]	= fileIndex;
-				fileCache[insertFile.name]	= fileIndex;
+				fileNameCache[insertFile.name]	= fileIndex;
 			}
 		}
 
@@ -707,4 +838,16 @@ void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, boo
 			break;
 		}
 	}
+}
+
+void ZEN::FileSystem::CanonizePath(std::string& path)
+{
+	path = std::filesystem::path(path).lexically_normal().string();
+
+	for (size_t i = 0; i < path.size(); i++)
+		if (path[i] == '\\')
+			path[i] = '/';
+
+	for (size_t i = 0; i < path.size(); i++)
+		path[i] = toupper(path[i]);
 }

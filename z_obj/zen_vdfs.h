@@ -34,9 +34,10 @@ namespace ZEN
 			Stream creation / destruction
 		*/
 
-		bool		Open(std::string, char);
-		bool		Open(std::wstring, char);
-		bool		Open(char*, uint64_t, char, bool = true);
+		bool		Open(std::string, char);					// File
+		bool		Open(std::wstring, char);					// File
+		bool		Open(char*, uint64_t, char, bool = true);	// buffer
+		bool		Open(FileStream*, uint64_t, uint64_t);		// Substream
 
 		void		Close();
 
@@ -67,6 +68,7 @@ namespace ZEN
 		{
 			STREAM_SOURCE_RAWFILE,
 			STREAM_SOURCE_BUFFER,
+			STREAM_SOURCE_SUBSTREAM,
 
 			STREAM_SOURCE_NONE = -1
 		};
@@ -79,6 +81,9 @@ namespace ZEN
 
 		uint64_t		iTotalSize;
 		uint64_t		iPosition;
+
+		FileStream*		iSubStream;
+		uint64_t		iSubOffset = 0;
 
 		// Out
 		std::ofstream	oFile;
@@ -161,6 +166,12 @@ namespace ZEN
 		bool Mount(std::string);
 		bool Mount(std::wstring);
 
+		FileStream* OpenFile(std::string, bool = false);
+		FileStream* OpenFile(File*);
+
+		bool ListDirectory(std::string, File**, size_t*, Directory**, size_t*);
+		bool ListDirectory(File*, File**, size_t*, Directory**, size_t*);
+
 		void PrintDebug(Directory* root = nullptr, size_t tab = 0)
 		{
 			if (root == nullptr)
@@ -197,18 +208,21 @@ namespace ZEN
 	private:
 
 		void TraverseDirectory(std::filesystem::path, std::string, size_t);
-		void TraverseVolume(size_t, size_t, bool, uint64_t, std::string, size_t&);
+		void TraverseVolume(size_t, size_t, bool, std::string, size_t&);
+
+		void CanonizePath(std::string&);
 
 	public:
 
-		std::vector<Volume>		volumes;
+		std::vector<Volume>			volumes;
 
-		std::vector<File>		files;
-		std::vector<Directory>	directories;
+		std::vector<File>			files;
+		std::vector<Directory>		directories;
 
-		std::unordered_map<std::string, size_t>	filePathCache;
-		std::unordered_map<std::string, size_t>	fileDirectoryCache;		
-		std::unordered_map<std::string, size_t> fileCache;
+		// Caches for quick lookups
+		std::unordered_map<std::string, size_t>	fileNameCache; // e.g "MESH.3DS"
+		std::unordered_map<std::string, size_t>	filePathCache; // e.g "_WORK/DATA/MESHES/MESH.3ds"
+		std::unordered_map<std::string, size_t>	dirPathCache;  // e.g "_WORK/DATA/MESHES/"
 
 #pragma pack(push,1)
 		struct VDF_Header
