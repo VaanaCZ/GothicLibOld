@@ -10,6 +10,7 @@
 #include <string>
 #include <unordered_map>
 #include <fstream>
+#include <thread>
 
 #include <iostream>
 
@@ -24,7 +25,7 @@ namespace ZEN
 	{
 	public:
 
-		FileStream()	{}
+		FileStream()	{ iSubThreadId = std::this_thread::get_id(); }
 		~FileStream()	{ Close(); }
 
 		FileStream(const FileStream&) = delete;
@@ -50,8 +51,11 @@ namespace ZEN
 
 		void		Seek(uint64_t pos);
 		uint64_t	Tell();
+		uint64_t	TotalSize();
 
 	private:
+
+		void		ForkSubStream(FileStream*, uint64_t);
 
 		enum STREAM_MODE
 		{
@@ -76,6 +80,8 @@ namespace ZEN
 		STREAM_SOURCE	iSource = STREAM_SOURCE_NONE;
 
 		std::ifstream	iFile;
+		std::wstring	iPath;
+
 		char*			iBuffer;
 		bool			iDisposeBuffer;
 
@@ -84,6 +90,7 @@ namespace ZEN
 
 		FileStream*		iSubStream;
 		uint64_t		iSubOffset = 0;
+		std::thread::id	iSubThreadId;
 
 		// Out
 		std::ofstream	oFile;

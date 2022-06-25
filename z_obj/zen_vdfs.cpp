@@ -34,12 +34,14 @@ bool ZEN::FileStream::Open(std::string filename, char openMode)
 //
 bool ZEN::FileStream::Open(std::wstring filename, char openMode)
 {
+	iPath = filename;
+
 	if (openMode == 'r')
 	{
 		mode	= STREAM_MODE_READ;
 		iSource	= STREAM_SOURCE_RAWFILE;
 
-		iFile.open(filename, std::ios::binary);
+		iFile.open(iPath, std::ios::binary);
 
 		if (!iFile.is_open())
 			return false;
@@ -55,11 +57,11 @@ bool ZEN::FileStream::Open(std::wstring filename, char openMode)
 
 		if (openMode == 'a')
 		{
-			oFile.open(filename, std::ios::binary | std::ios::app);
+			oFile.open(iPath, std::ios::binary | std::ios::app);
 		}
 		else
 		{
-			oFile.open(filename, std::ios::binary);
+			oFile.open(iPath, std::ios::binary);
 		}
 
 		if (!oFile.is_open())
@@ -205,6 +207,18 @@ bool ZEN::FileStream::Read(void* readBuffer, uint64_t readSize)
 			return false;
 		}
 
+		// If we start reading from a pre-existing
+		// stream on a different thread, we most
+		// fork it and create a new handle to prevent
+		// a race condition.
+		if (iSource == STREAM_SOURCE_SUBSTREAM &&
+		//	std::this_thread::get_id() != iSubThreadId)
+			std::this_thread::get_id() == iSubThreadId)
+		{
+			ForkSubStream(iSubStream, iSubOffset);
+		}
+		
+		// Read data depending on the source
 		if (iSource == STREAM_SOURCE_RAWFILE)
 		{
 			if (iFile.tellg() != iSubOffset + iPosition)
@@ -214,7 +228,7 @@ bool ZEN::FileStream::Read(void* readBuffer, uint64_t readSize)
 		}
 		else if (iSource == STREAM_SOURCE_BUFFER)
 		{
-			memcpy(readBuffer, &iBuffer[iPosition], readSize);
+			memcpy(readBuffer, &iBuffer[iSubOffset + iPosition], readSize);
 		}
 		else if (iSource == STREAM_SOURCE_SUBSTREAM)
 		{
@@ -311,6 +325,46 @@ uint64_t ZEN::FileStream::Tell()
 	if (mode == STREAM_MODE_READ)
 	{
 		return iPosition;
+	}
+}
+
+//
+// uint64_t TotalSize()
+//
+// Returns the total size of the stream.
+//
+uint64_t ZEN::FileStream::TotalSize()
+{
+	if (mode == STREAM_MODE_READ)
+	{
+		return iTotalSize;
+	}
+}
+
+void ZEN::FileStream::ForkSubStream(FileStream* sourceStream, uint64_t offset)
+{
+	if (sourceStream->iSource == STREAM_SOURCE_SUBSTREAM)
+	{
+		ForkSubStream(sourceStream->iSubStream, sourceStream->iSubOffset + offset);
+	}
+	else
+	{
+		if (sourceStream->iSource == STREAM_SOURCE_RAWFILE)
+		{
+			iSource = STREAM_SOURCE_RAWFILE;
+
+			iFile.open(sourceStream->iPath, std::ios::binary);
+			iPath = sourceStream->iPath;
+		}
+		else if (sourceStream->iSource == STREAM_SOURCE_BUFFER)
+		{
+			iSource = STREAM_SOURCE_BUFFER;
+
+			iBuffer = &sourceStream->iBuffer[offset];
+			iDisposeBuffer = false;
+		}
+
+		iSubOffset = offset;
 	}
 }
 

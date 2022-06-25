@@ -122,15 +122,18 @@ int main(int argc, char* argv[])
 
 	ZEN::FileStream* f = fs.OpenFile("DATA\\anims//../tEXuReS\\..//WORLDS\\/WORLD/WORLD.zen", false);
 	//ZEN::FileStream* f = fs.OpenFile("errorlog.txt", true);
+
+	ZEN::FileStream* f2 = new ZEN::FileStream();
+	f2->Open(f, 0, f->TotalSize());
 	
-	if (!f)
+	if (!f2)
 	{
 		std::cout << "File fucked";
 	}
 	else
 	{
 		char a[101];
-		f->Read(&a, 100);
+		f2->Read(&a, 100);
 		a[100] = NULL;
 		std::cout << a;
 	}
