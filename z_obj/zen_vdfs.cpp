@@ -75,7 +75,7 @@ bool ZEN::FileStream::Open(std::wstring filename, char openMode)
 }
 
 //
-// bool Open(char* buffer, uint64_t size, char openMode, bool realloc = true)
+// bool Open(char* buffer, size_t size, char openMode, bool realloc = true)
 //
 // Opens a new file stream with the specified
 // buffer serving as the data source.
@@ -492,8 +492,7 @@ ZEN::FileStream* ZEN::FileSystem::OpenFile(std::string path, bool globalSearch)
 //
 // FileStream* ZEN::FileSystem::OpenFile(File* file)
 //
-// Looks up a file given a valid File* struct
-// pointer.
+// Looks up a file given a valid file handle.
 //
 ZEN::FileStream* ZEN::FileSystem::OpenFile(File* file)
 {
@@ -518,14 +517,125 @@ ZEN::FileStream* ZEN::FileSystem::OpenFile(File* file)
 	return nullptr;
 }
 
-bool ZEN::FileSystem::ListDirectory(std::string, File**, size_t*, Directory**, size_t*)
+//
+// FileStream* OpenFile(std::string path, bool globalSearch)
+//
+// Lists all files and directories in the specified directory.
+// 
+//   - path
+//         Path specifying the directory, which
+//         should be listed.
+// 
+//   - filesPtr
+//         Pointer to a pointer which will point
+//         to the files listed.
+//         If left null, no files will be listed.
+//         If no files are found, this will be set
+//         to nullptr.
+// 
+//   - fileCount
+//         Pointer to file counter.
+//         If left null, no files will be listed.
+//         If no files are found, this will be set
+//         to 0.
+// 
+//   - dirsPtr
+//         Pointer to a pointer which will point
+//         to the directories listed.
+//         If left null, no directories will be listed.
+//         If no directories are found, this will 
+//         be set to nullptr.
+// 
+//   - dirCount
+//         Pointer to directory counter.
+//         If left null, no directories will be listed.
+//         If no directories are found, this will be set
+//         to 0.
+// 
+// Returns false if the specified directory is not found.
+//
+bool ZEN::FileSystem::ListDirectory(std::string path, File** filesPtr, size_t* fileCount, Directory** dirsPtr, size_t* dirCount)
 {
+	CanonizePath(path);
+
+	if (path.back() != '/')
+		path += "/";
+
+	if (dirPathCache.find(path) != dirPathCache.end())
+	{
+		return ListDirectory(&directories[dirPathCache[path]], filesPtr, fileCount, dirsPtr, dirCount);
+	}
+
 	return false;
 }
 
-bool ZEN::FileSystem::ListDirectory(File*, File**, size_t*, Directory**, size_t*)
+//
+// FileStream* ListDirectory(Directory* directory, File** filesPtr, size_t* fileCount, Directory** dirsPtr, size_t* dirCount)
+//
+// Lists all files and directories in the specified directory.
+// 
+//   - directory
+//         A valid directory handle.
+// 
+//   - filesPtr
+//         Pointer to a pointer which will point
+//         to the files listed.
+//         If left null, no files will be listed.
+//         If no files are found, this will be set
+//         to nullptr.
+// 
+//   - fileCount
+//         Pointer to file counter.
+//         If left null, no files will be listed.
+//         If no files are found, this will be set
+//         to 0.
+// 
+//   - dirsPtr
+//         Pointer to a pointer which will point
+//         to the directories listed.
+//         If left null, no directories will be listed.
+//         If no directories are found, this will 
+//         be set to nullptr.
+// 
+//   - dirCount
+//         Pointer to directory counter.
+//         If left null, no directories will be listed.
+//         If no directories are found, this will be set
+//         to 0.
+// 
+// Returns false if the specified directory is not found.
+//
+bool ZEN::FileSystem::ListDirectory(Directory* directory, File** filesPtr, size_t* fileCount, Directory** dirsPtr, size_t* dirCount)
 {
-	return false;
+	if (filesPtr != nullptr && fileCount != nullptr)
+	{
+		if (directory->fileCount == 0)
+		{
+			*filesPtr = nullptr;
+			*fileCount = 0;
+		}
+		else
+		{
+			*filesPtr = &files[directory->fileOffset];
+			*fileCount = directory->fileCount;
+		}
+	}
+
+	if (dirsPtr != nullptr && dirCount != nullptr)
+	{
+		if (directory->directoryCount == 0)
+		{
+			*dirsPtr = nullptr;
+			*dirCount = 0;
+		}
+		else
+		{
+			*dirsPtr = &directories[directory->directoryOffset];
+			*dirCount = directory->directoryCount;
+		}
+	}
+
+	return true;
 }
 
 //
@@ -736,9 +846,7 @@ void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, boo
 		std::string name(entry.name, nameEnd);
 
 		for (size_t i = 0; i < name.size(); i++)
-		{
 			name[i] = toupper(name[i]);
-		}
 
 		// Directory
 		if (entry.type & 0x80000000)
@@ -810,7 +918,7 @@ void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, boo
 
 			volume.stream->Seek(nextPos);
 
-			bool isDirEmpty = directories[dirIndex].directoryCount == 0;
+			bool isDirEmpty = directories[dirIndex].fileCount == 0;
 			TraverseVolume(volumeIndex, dirIndex, isDirEmpty, nextFsPath, entryCount);
 
 			volume.stream->Seek(currPos);
@@ -906,6 +1014,17 @@ void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, boo
 	}
 }
 
+//
+// void CanonizePath(std::string& path)
+//
+// Canonizes a path so that it can be used
+// to search for files and directories.
+// 
+// for example:
+// "DATA\\anims//../tEXuReS\\..//WoRlDS"
+// becomes:
+// "DATA/WORLDS/"
+//
 void ZEN::FileSystem::CanonizePath(std::string& path)
 {
 	path = std::filesystem::path(path).lexically_normal().string();

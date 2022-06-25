@@ -177,7 +177,7 @@ namespace ZEN
 		FileStream* OpenFile(File*);
 
 		bool ListDirectory(std::string, File**, size_t*, Directory**, size_t*);
-		bool ListDirectory(File*, File**, size_t*, Directory**, size_t*);
+		bool ListDirectory(Directory*, File**, size_t*, Directory**, size_t*);
 
 		void PrintDebug(Directory* root = nullptr, size_t tab = 0)
 		{

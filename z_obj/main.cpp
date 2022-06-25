@@ -120,19 +120,37 @@ int main(int argc, char* argv[])
 	//
 	//}
 
-	ZEN::FileStream* f = fs.OpenFile("DATA\\anims//../tEXuReS\\..//WORLDS\\/WORLD/WORLD.zen", false);
+	/*ZEN::FileStream* f = fs.OpenFile("DATA\\anims//../tEXuReS\\..//WORLDS\\/WORLD/WORLD.zen", false);
 	//ZEN::FileStream* f = fs.OpenFile("errorlog.txt", true);
-			
-	if (!f)
+
+	std::string test;
+
+	while (f->ReadLine(test))
 	{
-		std::cout << "File fucked";
-	}
-	else
+		std::cout << test << std::endl;
+		break;
+	}*/
+
+
+	ZEN::FileSystem::Directory* directories;
+	size_t dirCount;
+
+
+	ZEN::FileSystem::File* files;
+	size_t fileCount;
+
+	fs.ListDirectory("DATA\\anims//../tEXuReS\\..//WORLDS", &files, &fileCount, &directories, &dirCount);
+
+	fs.ListDirectory(&directories[0], &files, &fileCount, &directories, &dirCount);
+
+	ZEN::FileStream* f = fs.OpenFile(&files[0]);
+
+	std::string test;
+
+	while (f->ReadLine(test))
 	{
-		char a[11];
-		f->Read(&a, 10);
-		a[10] = NULL;
-		std::cout << a;
+		std::cout << test << std::endl;
+		break;
 	}
 
 	//fs.PrintDebug();
