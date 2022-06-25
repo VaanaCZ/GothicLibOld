@@ -103,9 +103,9 @@ int main(int argc, char* argv[])
 {
 	ZEN::FileSystem fs;
 	
-	fs.InitializeDirectory(L"D:\\Gothic\\Gothic_demo5");
+	//fs.InitializeDirectory(L"D:\\Gothic\\Gothic_demo5");
 	//fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic Sequel");
-	//fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic");
+	fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic");
 
 	//VDFS::FileStream file;
 	//
@@ -131,6 +131,9 @@ int main(int argc, char* argv[])
 		break;
 	}*/
 
+	fs.Mount("C:\\Program Files (x86)\\Steam\\steamapps\\common\\TheChroniclesOfMyrtana\\Data\\KM_Worlds.mod");
+
+	fs.PrintDebug();
 
 	ZEN::FileSystem::Directory* directories;
 	size_t dirCount;

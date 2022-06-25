@@ -381,7 +381,7 @@ void ZEN::FileStream::ForkSubStream(FileStream* sourceStream, uint64_t sourceOff
 }
 
 //
-// bool FileSystem::InitializeDirectory(std::string _rootPath)
+// bool InitializeDirectory(std::string _rootPath)
 //
 // Initializes the virtual filesystem in the 
 // specified directory. The specified directory
@@ -396,7 +396,7 @@ bool ZEN::FileSystem::InitializeDirectory(std::string _rootPath)
 }
 
 //
-// bool FileSystem::InitializeDirectory(std::wstring _rootPath)
+// bool InitializeDirectory(std::wstring _rootPath)
 //
 // Initializes the virtual filesystem in the 
 // specified directory. The specified directory
@@ -427,20 +427,86 @@ bool ZEN::FileSystem::InitializeDirectory(std::wstring _rootPath)
 		volumes[i].stream->Seek(volumes[i].rootOffset);
 
 		size_t entryCount = volumes[i].entryCount;
-
 		TraverseVolume(i, 0, false, "", entryCount);
 	}
 
 	return true;
 }
 
+//
+// bool Mount(std::string path)
+//
+// Mounts a volume given a valid path. The
+// specified volume will always be given
+// highest priority and thus overwrite any
+// previously mounted volumes.
+// Useful for mounting .mod files.
+// 
+// Returns false if the volume doesnt exist
+// or is invalid.
+//
 bool ZEN::FileSystem::Mount(std::string path)
 {
 	return Mount(std::wstring(path.begin(), path.end()));
 }
 
+//
+// bool Mount(std::wstring path)
+//
+// Mounts a volume given a valid path. The
+// specified volume will always be given
+// highest priority and thus overwrite any
+// previously mounted volumes.
+// Useful for mounting .mod files.
+// 
+// Returns false if the volume doesnt exist
+// or is invalid.
+//
 bool ZEN::FileSystem::Mount(std::wstring path)
 {
+	// If it is, mount it.
+	Volume volume;
+	volume.path	= path;
+
+	volume.stream = new FileStream();
+
+	//
+	// Get timestamp of archive
+	//
+	if (!volume.stream->Open(volume.path, 'r'))
+	{
+		// Could not be opened, ignore
+		delete volume.stream;
+		return false;
+	}
+	
+	VDF_Header header;
+
+	if (!volume.stream->Read(&header, sizeof(header)) ||
+		*(uint64_t*)&header.signature != 0x565F435344565350 ||
+		header.version != 0x00000050)
+	{
+		// Invalid archive, ignore
+		volume.stream->Close();
+		delete volume.stream;
+		return false;
+	}
+
+	volume.stream->Seek(0);
+
+	volume.timestamp	= 0xffffffff;
+	volume.entryCount	= header.entryCount;
+	volume.rootOffset	= header.rootOffset;
+
+	// Add to modules and read
+	size_t volumeIndex = volumes.size();
+	volumes.push_back(volume);
+
+	volumes[volumeIndex].stream->Seek(volumes[volumeIndex].rootOffset);
+
+	size_t entryCount = volumes[volumeIndex].entryCount;
+	TraverseVolume(volumeIndex, 0, false, "", entryCount);
+
 	return true;
 }
 
@@ -490,9 +556,11 @@ ZEN::FileStream* ZEN::FileSystem::OpenFile(std::string path, bool globalSearch)
 }
 
 //
-// FileStream* ZEN::FileSystem::OpenFile(File* file)
+// FileStream* OpenFile(File* file)
 //
 // Looks up a file given a valid file handle.
+// 
+// If the look-up fails a nullptr is returned.
 //
 ZEN::FileStream* ZEN::FileSystem::OpenFile(File* file)
 {
@@ -518,7 +586,7 @@ ZEN::FileStream* ZEN::FileSystem::OpenFile(File* file)
 }
 
 //
-// FileStream* OpenFile(std::string path, bool globalSearch)
+// bool ListDirectory(std::string path, File** filesPtr, size_t* fileCount, Directory** dirsPtr, size_t* dirCount)
 //
 // Lists all files and directories in the specified directory.
 // 
@@ -570,7 +638,7 @@ bool ZEN::FileSystem::ListDirectory(std::string path, File** filesPtr, size_t* f
 }
 
 //
-// FileStream* ListDirectory(Directory* directory, File** filesPtr, size_t* fileCount, Directory** dirsPtr, size_t* dirCount)
+// bool ListDirectory(Directory* directory, File** filesPtr, size_t* fileCount, Directory** dirsPtr, size_t* dirCount)
 //
 // Lists all files and directories in the specified directory.
 // 
@@ -970,6 +1038,9 @@ void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, boo
 
 				if (fileIndex != files.size())
 				{
+					// This could be sped up if we batch insertions
+					// and increment all the offsets at once.
+
 					for (size_t i = 0; i < directories.size(); i++)
 					{
 						if (i != parentIndex &&
