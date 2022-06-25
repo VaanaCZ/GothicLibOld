@@ -1,4 +1,4 @@
-
+/*
 #include "stdio.h"
 #include "windows.h"
 
@@ -55,12 +55,12 @@ void BufferToTGA(unsigned char* buffer, unsigned int width, unsigned int height,
 	fclose(fp);
 }
 
+*/
 
 
 
-
-#include "vdfs.hpp"
-#include "space.hpp"
+#include "zen_vdfs.h"
+/*#include "space.hpp"
 
 
 void SaveOBJ(const wchar_t* filename,
@@ -97,14 +97,15 @@ void SaveOBJ(const wchar_t* filename,
 	}
 }
 
-
+*/
 
 int main(int argc, char* argv[])
 {
-	/*VDFS::FileSystem fs;
+	ZEN::FileSystem fs;
 	
 	fs.InitializeDirectory(L"D:\\Gothic\\Gothic_demo5");
 	//fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic Sequel");
+	//fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic");
 
 	//VDFS::FileStream file;
 	//
@@ -121,7 +122,7 @@ int main(int argc, char* argv[])
 
 	fs.PrintDebug();
 
-	*/
+	/*
 
 	char* palette;
 	ReadPAL(L"D:\\DOS\\GAMES\\FINSTER\\DATA\\GAME.PAL", &palette);
@@ -549,6 +550,6 @@ int main(int argc, char* argv[])
 	POOL("_HOLZ_G2.TEX");
 	POOL("_HOLZ_G3.TEX");
 	POOL("_HOLZ_G4.TEX");
-	
+	*/
 	return 0;
 }

@@ -144,10 +144,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="zen_vdfs.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="space.hpp" />
-    <ClInclude Include="vdfs.hpp" />
+    <ClInclude Include="space.h" />
+    <ClInclude Include="zen_vdfs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
