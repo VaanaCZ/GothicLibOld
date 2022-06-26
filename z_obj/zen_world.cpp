@@ -1,5 +1,9 @@
 #include "zen_world.h"
 
+/*
+	World classes
+*/
+
 bool ZEN::zCWorld::Archive(zCArchiver* archiver)
 {
 	return false;
@@ -80,6 +84,10 @@ bool ZEN::oCWorld::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
+/*
+	Vob classes
+*/
+
 bool ZEN::zCVob::Archive(zCArchiver* archiver)
 {
 	return false;
@@ -158,13 +166,137 @@ bool ZEN::zCVob::Unarchive(zCArchiver* archiver)
 
 bool ZEN::zCVobLevelCompo::Archive(zCArchiver* archiver)
 {
-	return false;
+	return zCVob::Archive(archiver);
 }
 
 bool ZEN::zCVobLevelCompo::Unarchive(zCArchiver* archiver)
 {
 	return zCVob::Unarchive(archiver);
 }
+
+bool ZEN::zCVobSpot::Archive(zCArchiver* archiver)
+{
+	return zCVob::Archive(archiver);
+}
+
+bool ZEN::zCVobSpot::Unarchive(zCArchiver* archiver)
+{
+	return zCVob::Unarchive(archiver);
+}
+
+bool ZEN::zCVobSound::Archive(zCArchiver* archiver)
+{
+	if (!zCVob::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZEN::zCVobSound::Unarchive(zCArchiver* archiver)
+{
+	if (!zCVob::Unarchive(archiver))
+		return false;
+
+	if (!archiver->ReadFloat("sndVolume", sndVolume))
+		return false;
+
+	if (!archiver->ReadEnum("sndMode", *(int*)&sndMode))
+		return false;
+
+	if (!archiver->ReadFloat("sndRandDelay", sndRandDelay))
+		return false;
+
+	if (!archiver->ReadFloat("sndRandDelayVar", sndRandDelayVar))
+		return false;
+
+	if (!archiver->ReadBool("sndStartOn", sndStartOn))
+		return false;
+
+	if (!archiver->ReadBool("sndAmbient3D", sndAmbient3D))
+		return false;
+
+	if (!archiver->ReadBool("sndObstruction", sndObstruction))
+		return false;
+
+	if (!archiver->ReadFloat("sndConeAngle", sndConeAngle))
+		return false;
+
+	if (!archiver->ReadEnum("sndVolType", *(int*)&sndVolType))
+		return false;
+
+	if (!archiver->ReadFloat("sndRadius", sndRadius))
+		return false;
+
+	if (!archiver->ReadString("sndName", sndName))
+		return false;
+
+	return true;
+}
+
+bool ZEN::zCVobLight::Archive(zCArchiver* archiver)
+{
+	if (!zCVob::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZEN::zCVobLight::Unarchive(zCArchiver* archiver)
+{
+	if (!zCVob::Unarchive(archiver))
+		return false;
+
+	if (!archiver->ReadString("lightPresetInUse", lightPresetInUse))
+		return false;
+
+	if (!archiver->ReadEnum("lightType", *(int*)&lightType))
+		return false;
+
+	if (!archiver->ReadFloat("range", range))
+		return false;
+
+	if (!archiver->ReadColor("color", color))
+		return false;
+
+	if (!archiver->ReadFloat("spotConeAngle", spotConeAngle))
+		return false;
+
+	if (!archiver->ReadBool("lightStatic", lightStatic))
+		return false;
+
+	if (!archiver->ReadEnum("lightQuality", *(int*)&lightQuality))
+		return false;
+
+	if (!archiver->ReadString("lensflareFX", lensflareFX))
+		return false;
+
+	if (!archiver->ReadBool("turnedOn", turnedOn))
+		return false;
+
+	if (!archiver->ReadString("rangeAniScale", rangeAniScale))
+		return false;
+
+	if (!archiver->ReadFloat("rangeAniFPS", rangeAniFPS))
+		return false;
+
+	if (!archiver->ReadBool("rangeAniSmooth", rangeAniSmooth))
+		return false;
+
+	if (!archiver->ReadString("colorAniList", colorAniList))
+		return false;
+
+	if (!archiver->ReadFloat("colorAniFPS", colorAniFPS))
+		return false;
+
+	if (!archiver->ReadBool("colorAniSmooth", colorAniSmooth))
+		return false;
+
+	return true;
+}
+
+/*
+	Visual classes
+*/
 
 bool ZEN::zCVisual::Archive(zCArchiver* archiver)
 {
@@ -185,6 +317,20 @@ bool ZEN::zCMesh::Unarchive(zCArchiver* archiver)
 {
 	return true;
 }
+
+bool ZEN::zCParticleFX::Archive(zCArchiver* archiver)
+{
+	return true;
+}
+
+bool ZEN::zCParticleFX::Unarchive(zCArchiver* archiver)
+{
+	return true;
+}
+
+/*
+	AI classes
+*/
 
 bool ZEN::zCAIBase::Archive(zCArchiver* archiver)
 {

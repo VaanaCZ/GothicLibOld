@@ -128,7 +128,117 @@ namespace ZEN
 		virtual bool Archive(zCArchiver*);
 		virtual bool Unarchive(zCArchiver*);
 
-		std::vector<zCVob*> children;
+	private:
+
+	};
+
+	class zCVobSpot : public zCVob
+	{
+		DEFINE_CLASS_EXTENDS(zCVobSpot, zCVob);
+
+	public:
+		
+		zCVobSpot()				{ }
+		virtual ~zCVobSpot()	{ }
+
+		virtual bool Archive(zCArchiver*);
+		virtual bool Unarchive(zCArchiver*);
+
+	private:
+
+	};
+
+	enum zTSoundMode
+	{
+		SM_LOOPING,
+		SM_ONCE,
+		SM_RANDOM
+	};
+
+	enum zTSoundVolType
+	{
+		SV_SPHERE,
+		SV_ELLIPSOID
+	};
+
+	class zCVobSound : public zCVob
+	{
+		DEFINE_CLASS_EXTENDS(zCVobSound, zCVob);
+
+	public:
+		
+		zCVobSound()			{ }
+		virtual ~zCVobSound()	{ }
+
+		virtual bool Archive(zCArchiver*);
+		virtual bool Unarchive(zCArchiver*);
+
+		/*
+			Properties
+		*/
+
+		float			sndVolume		= 100;
+		zTSoundMode		sndMode			= SM_LOOPING;
+		float			sndRandDelay	= 5;
+		float			sndRandDelayVar	= 2;
+		bool			sndStartOn		= 1;
+		bool			sndAmbient3D	= 0;
+		bool			sndObstruction	= 0;
+		float			sndConeAngle	= 0;
+		zTSoundVolType	sndVolType		= SV_SPHERE;
+		float			sndRadius		= 1500;
+		std::string		sndName;
+
+	private:
+
+	};
+
+	enum zTVobLightType
+	{
+		zVOBLIGHT_TYPE_POINT,
+		zVOBLIGHT_TYPE_SPOT,
+		zVOBLIGHT_TYPE_DIR,
+		zVOBLIGHT_TYPE_AMBIENT
+	};
+
+	enum zTVobLightQuality
+	{
+		zVOBLIGHT_QUAL_HI,
+		zVOBLIGHT_QUAL_MID,
+		zVOBLIGHT_QUAL_FASTEST
+	};
+
+	class zCVobLight : public zCVob
+	{
+		DEFINE_CLASS_EXTENDS(zCVobLight, zCVob);
+
+	public:
+		
+		zCVobLight()			{ }
+		virtual ~zCVobLight()	{ }
+
+		virtual bool Archive(zCArchiver*);
+		virtual bool Unarchive(zCArchiver*);
+
+		/*
+			Properties
+		*/
+
+		std::string			lightPresetInUse;
+		zTVobLightType		lightType			= zVOBLIGHT_TYPE_POINT;
+		float				range				= 2000;
+		zCOLOR				color				= { };
+		float				spotConeAngle		= 0;
+		bool				lightStatic			= 0;
+		zTVobLightQuality	lightQuality		= zVOBLIGHT_QUAL_FASTEST;
+		std::string			lensflareFX;
+		bool				turnedOn			= true;
+		std::string			rangeAniScale;
+		float				rangeAniFPS			= 0;
+		bool				rangeAniSmooth		= 0;
+		std::string			colorAniList;
+		float				colorAniFPS			= 0;
+		bool				colorAniSmooth		= 0;
 
 	private:
 
@@ -162,6 +272,22 @@ namespace ZEN
 		
 		zCMesh()			{ }
 		virtual ~zCMesh()	{ }
+
+		virtual bool Archive(zCArchiver*);
+		virtual bool Unarchive(zCArchiver*);
+
+	private:
+
+	};
+
+	class zCParticleFX : public zCVisual
+	{
+		DEFINE_CLASS(zCParticleFX);
+
+	public:
+
+		zCParticleFX()			{ }
+		virtual ~zCParticleFX()	{ }
 
 		virtual bool Archive(zCArchiver*);
 		virtual bool Unarchive(zCArchiver*);

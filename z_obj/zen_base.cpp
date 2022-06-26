@@ -19,9 +19,13 @@ ZEN::zCObject* ZEN::zCObject::CreateObject(std::string className)
 
 	CLASS_CREATE_ATTEMPT(zCAIBase)
 	CLASS_CREATE_ATTEMPT(zCMesh)
+	CLASS_CREATE_ATTEMPT(zCParticleFX)
 	CLASS_CREATE_ATTEMPT(zCVisual)
 	CLASS_CREATE_ATTEMPT(zCVob)
 	CLASS_CREATE_ATTEMPT(zCVobLevelCompo)
+	CLASS_CREATE_ATTEMPT(zCVobLight)
+	CLASS_CREATE_ATTEMPT(zCVobSound)
+	CLASS_CREATE_ATTEMPT(zCVobSpot)
 	CLASS_CREATE_ATTEMPT(zCWorld)
 	CLASS_CREATE_ATTEMPT(oCWorld)
 	
@@ -261,9 +265,9 @@ bool ZEN::zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
 			&vals[0], &vals[1], &vals[2], &vals[3]) != 4)
 			return false;
 
-		colorVal.r = vals[0];
+		colorVal.b = vals[0];
 		colorVal.g = vals[1];
-		colorVal.b = vals[2];
+		colorVal.r = vals[2];
 		colorVal.a = vals[3];
 	}
 
