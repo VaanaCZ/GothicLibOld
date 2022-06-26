@@ -17,14 +17,21 @@ ZEN::zCObject* ZEN::zCObject::CreateObject(std::string className)
 		return nullptr;
 	}
 
+	CLASS_CREATE_ATTEMPT(zCAIBase)
+	CLASS_CREATE_ATTEMPT(zCMesh)
+	CLASS_CREATE_ATTEMPT(zCVisual)
+	CLASS_CREATE_ATTEMPT(zCVob)
+	CLASS_CREATE_ATTEMPT(zCVobLevelCompo)
 	CLASS_CREATE_ATTEMPT(zCWorld)
 	CLASS_CREATE_ATTEMPT(oCWorld)
 	
 	return nullptr;
 }
 
-bool ZEN::zCArchiver::Read(FileStream* file)
+bool ZEN::zCArchiver::Read(FileStream* _file)
 {
+	file = _file;
+
 	// Read header
 	std::string line;
 
@@ -167,10 +174,177 @@ bool ZEN::zCArchiver::Read(FileStream* file)
 	}
 	
 	// Read objects
-	containedObject = ReadObject(file);
-
-	if (containedObject == nullptr)
+	if (!ReadObject(containedObject))
 		return false;
+
+	return true;
+}
+
+bool ZEN::zCArchiver::ReadInt(std::string name, int& intVal)
+{
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		std::string value;
+		if (!ReadPropertyASCII(name, "int", value))
+			return false;
+		intVal = std::stoi(value);
+	}
+
+	return true;
+}
+
+bool ZEN::zCArchiver::ReadFloat(std::string name, float& floatVal)
+{
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		std::string value;
+		if (!ReadPropertyASCII(name, "float", value))
+			return false;
+		floatVal = std::stof(value);
+	}
+
+	return true;
+}
+
+bool ZEN::zCArchiver::ReadBool(std::string name, bool& boolVal)
+{
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		std::string value;
+		if (!ReadPropertyASCII(name, "bool", value))
+			return false;
+		boolVal = std::stoi(value);
+	}
+
+	return true;
+}
+
+bool ZEN::zCArchiver::ReadString(std::string name, std::string& strVal)
+{
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		std::string value;
+		if (!ReadPropertyASCII(name, "string", value))
+			return false;
+		strVal = value;
+	}
+
+	return true;
+}
+
+bool ZEN::zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
+{
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		std::string value;
+		if (!ReadPropertyASCII(name, "vec3", value))
+			return false;
+
+		if (sscanf_s(value.c_str(), "%f %f %f",
+			&vecVal.x, &vecVal.y, &vecVal.z) != 3)
+			return false;
+	}
+
+	return true;
+}
+
+bool ZEN::zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
+{
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		std::string value;
+		if (!ReadPropertyASCII(name, "color", value))
+			return false;
+
+		int vals[4];
+		if (sscanf_s(value.c_str(), "%d %d %d %d", 
+			&vals[0], &vals[1], &vals[2], &vals[3]) != 4)
+			return false;
+
+		colorVal.r = vals[0];
+		colorVal.g = vals[1];
+		colorVal.b = vals[2];
+		colorVal.a = vals[3];
+	}
+
+	return true;
+}
+
+bool ZEN::zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSize)
+{
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		std::string value;
+		if (!ReadPropertyASCII(name, "raw", value))
+			return false;
+
+		if (value.size() / 2 != bufferSize)
+			return false;
+
+		// Read the data
+		int	byteValue = 0;
+		int byteCount = 0;
+		for (int i = 0; i < value.length(); i += 2)
+		{
+			if (sscanf_s(&value[i], "%2x", &byteValue) != 1)
+				return false;
+
+			buffer[byteCount] = (unsigned char)byteValue;
+			byteCount++;
+		}
+	}
+
+	return true;
+}
+
+bool ZEN::zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t floatCount)
+{
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		std::string value;
+		if (!ReadPropertyASCII(name, "rawFloat", value))
+			return false;
+
+		// Count floats
+		size_t archivedFoatCount = 0;
+
+		size_t p = 0;
+		while (true)
+		{
+			p = value.find(" ", p + 1);
+			if (p != std::string::npos)
+				archivedFoatCount++;
+			else
+				break;
+		}
+
+		if (floatCount != archivedFoatCount)
+		{
+			return false;
+		}
+
+		// Read the data
+		std::string strFloats = value;
+
+		for (size_t i = 0; i < floatCount; i++)
+		{
+			floatVals[i] = std::stof(strFloats);
+			strFloats = strFloats.substr(strFloats.find(" ") + 1);
+		}
+	}
+
+	return true;
+}
+
+bool ZEN::zCArchiver::ReadEnum(std::string name, int& enumVal)
+{
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		std::string value;
+		if (!ReadPropertyASCII(name, "enum", value))
+			return false;
+		enumVal = std::stoi(value);
+	}
 
 	return true;
 }
@@ -185,11 +359,23 @@ ZEN::zCObject* ZEN::zCArchiver::GetContainedObject()
 	return nullptr;
 }
 
-ZEN::zCObject* ZEN::zCArchiver::ReadObject(FileStream* file)
+bool ZEN::zCArchiver::ReadPropertyASCII(std::string name, std::string type, std::string& value)
 {
-	std::string	objectName, className;
-	int classVersion, objectIndex;
+	std::string line;
+	file->ReadLine(line);
 
+	std::string s = name + "=" + type + ":";
+	size_t sp = line.find(s);
+
+	if (sp == std::string::npos)
+		return false;
+
+	value = line.substr(sp + s.size());
+	return true;
+}
+
+bool ZEN::zCArchiver::ReadChunkStart(std::string* objectName, std::string* className, int* classVersion, int* objectIndex)
+{
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
 		std::string header;
@@ -200,30 +386,83 @@ ZEN::zCObject* ZEN::zCArchiver::ReadObject(FileStream* file)
 		size_t p3 = header.find(" ", p2 + 1);
 		size_t p4 = header.find(" ", p3 + 1);
 
-		objectName		= header.substr(p1 + 1, p2 - p1 - 1);
-		className		= header.substr(p2 + 1, p3 - p2 - 1);
-		classVersion	= std::stoi(header.substr(p3));
-		objectIndex		= std::stoi(header.substr(p4));
+		if (objectName != nullptr)
+			*objectName		= header.substr(p1 + 1, p2 - p1 - 1);
 
-		if (objectIndex >= objectList.size())
+		if (className != nullptr)
+			*className		= header.substr(p2 + 1, p3 - p2 - 1);
+
+		if (classVersion != nullptr)
+			*classVersion	= std::stoi(header.substr(p3));
+
+		if (objectIndex != nullptr)
 		{
-			return nullptr;
+			*objectIndex = std::stoi(header.substr(p4));
+
+			if (*objectIndex >= objectList.size())
+			{
+				return false;
+			}
 		}
 	}
 
-	// Create object based on read type
-	zCObject* object = zCObject::CreateObject(className);
+	return true;
+}
 
-	if (object == nullptr)
-		return nullptr;
+bool ZEN::zCArchiver::ReadChunkEnd()
+{
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		std::string end;
+		file->ReadLine(end);
 
-	object->version = classVersion;
+		if (end[end.size() - 2] != '[' ||
+			end[end.size() - 1] != ']')
+			return false;
+	}
 
-	if (!object->Unarchive(this))
-		return nullptr;
+	return true;
+}
 
-	// Save pointer
-	objectList[objectIndex] = object;
+bool ZEN::zCArchiver::ReadObject(zCObject*& object)
+{
+	object = nullptr;
 
-	return nullptr;
+	// Read object header
+	std::string objectName, className;
+	int classVersion, objectIndex;
+
+	if (!ReadChunkStart(&objectName, &className, &classVersion, &objectIndex))
+		return false;
+
+	if (className == "%")
+	{
+		// % = nullptr
+		object = nullptr;
+	}
+	else if (className == "§")
+	{
+		// § = existing object in list
+		return false;
+	}
+	else
+	{
+		// Create object based on read type
+		object = zCObject::CreateObject(className);
+
+		if (object == nullptr)
+			return false;
+
+		object->version = classVersion;
+
+		objectList[objectIndex] = object;
+
+		if (!object->Unarchive(this))
+			return false;
+	}
+
+	if (!ReadChunkEnd())
+		return false;
+
+	return true;
 }

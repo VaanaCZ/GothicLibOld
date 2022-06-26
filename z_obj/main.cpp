@@ -12,7 +12,9 @@ int main(int argc, char* argv[])
 
 	//ZEN::FileStream* f = fs.OpenFile("WORLD.zen", true);
 	ZEN::FileStream* f = new ZEN::FileStream();
+	//f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\TESTLEVEL_UNCOMPILED_0.64b.ZEN", 'r');
 	f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\SURFACE_UNCOMPILED.ZEN", 'r');
+	//f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\NEWWORLD_PART_CITY_01_UNCOMPILED.ZEN", 'r');
 
 	ZEN::zCArchiver archiver;
 
