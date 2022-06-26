@@ -1,17 +1,24 @@
 #include "zen_world.h"
 
-void ZEN::zCWorld::Archive(zCArchiver& archiver)
+bool ZEN::zCWorld::Archive(zCArchiver* archiver)
 {
+	return false;
 }
 
-void ZEN::zCWorld::Unarchive(zCArchiver& archiver)
+bool ZEN::zCWorld::Unarchive(zCArchiver* archiver)
 {
+	return true;
 }
 
-void ZEN::oCWorld::Archive(zCArchiver& archiver)
+bool ZEN::oCWorld::Archive(zCArchiver* archiver)
 {
+	return false;
 }
 
-void ZEN::oCWorld::Unarchive(zCArchiver& archiver)
+bool ZEN::oCWorld::Unarchive(zCArchiver* archiver)
 {
+	if (!zCWorld::Unarchive(archiver))
+		return false;
+
+	return true;
 }

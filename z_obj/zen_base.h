@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #define DEFINE_CLASS(c, b)														\
@@ -23,7 +24,12 @@ namespace ZEN
 
 		bool Read(FileStream*);
 
+		zCObject* GetContainedObject();
+
 	private:
+
+		//bool ReadBool(FileStream*);
+		zCObject*	ReadObject(FileStream*);
 
 		enum ARCHIVER_TYPE
 		{
@@ -38,7 +44,9 @@ namespace ZEN
 		ARCHIVER_TYPE	type		= ARCHIVER_TYPE_NONE;
 		bool			savegame	= false;
 
-		std::vector<zCObject*> objectList;
+		zCObject*				containedObject;
+
+		std::vector<zCObject*>	objectList;
 
 	};
 
@@ -49,12 +57,14 @@ namespace ZEN
 		zCObject()			{ }
 		virtual ~zCObject()	{ }
 
-		virtual void Archive(zCArchiver&) = 0;
-		virtual void Unarchive(zCArchiver&) = 0;
+		virtual bool Archive(zCArchiver*) = 0;
+		virtual bool Unarchive(zCArchiver*) = 0;
 
 		virtual const char* GetClassName() = 0;
 
-		static zCObject* CreateObject(const char*);
+		static zCObject* CreateObject(std::string);
+
+		int version = -1;
 
 	private:
 

@@ -13,8 +13,8 @@ namespace ZEN
 		zCWorld()			{ }
 		virtual ~zCWorld()	{ }
 
-		virtual void Archive(zCArchiver&);
-		virtual void Unarchive(zCArchiver&);
+		virtual bool Archive(zCArchiver*);
+		virtual bool Unarchive(zCArchiver*);
 
 	private:
 
@@ -29,8 +29,8 @@ namespace ZEN
 		oCWorld() { }
 		virtual ~oCWorld() { }
 
-		virtual void Archive(zCArchiver&);
-		virtual void Unarchive(zCArchiver&);
+		virtual bool Archive(zCArchiver*);
+		virtual bool Unarchive(zCArchiver*);
 
 	private:
 

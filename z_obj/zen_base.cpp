@@ -6,13 +6,13 @@
 #include "zen_world.h"
 
 
-ZEN::zCObject* ZEN::zCObject::CreateObject(const char* className)
+ZEN::zCObject* ZEN::zCObject::CreateObject(std::string className)
 {
 #define CLASS_CREATE_ATTEMPT(c)									\
-	else if (strcmp(c::GetStaticClassname(), className))	\
+	else if (className == c::GetStaticClassname())	\
 		return new c();
 
-	if (strcmp(className, "zCObject") == 0)
+	if (className == "zCObject")
 	{
 		return nullptr;
 	}
@@ -167,6 +167,63 @@ bool ZEN::zCArchiver::Read(FileStream* file)
 	}
 	
 	// Read objects
+	containedObject = ReadObject(file);
+
+	if (containedObject == nullptr)
+		return false;
 
 	return true;
+}
+
+ZEN::zCObject* ZEN::zCArchiver::GetContainedObject()
+{
+	if (objectList.size() != 0)
+	{
+		return objectList[0];
+	}
+
+	return nullptr;
+}
+
+ZEN::zCObject* ZEN::zCArchiver::ReadObject(FileStream* file)
+{
+	std::string	objectName, className;
+	int classVersion, objectIndex;
+
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		std::string header;
+		file->ReadLine(header);
+
+		size_t p1 = header.find("[");
+		size_t p2 = header.find(" ", p1 + 1);
+		size_t p3 = header.find(" ", p2 + 1);
+		size_t p4 = header.find(" ", p3 + 1);
+
+		objectName		= header.substr(p1 + 1, p2 - p1 - 1);
+		className		= header.substr(p2 + 1, p3 - p2 - 1);
+		classVersion	= std::stoi(header.substr(p3));
+		objectIndex		= std::stoi(header.substr(p4));
+
+		if (objectIndex >= objectList.size())
+		{
+			return nullptr;
+		}
+	}
+
+	// Create object based on read type
+	zCObject* object = zCObject::CreateObject(className);
+
+	if (object == nullptr)
+		return nullptr;
+
+	object->version = classVersion;
+
+	if (!object->Unarchive(this))
+		return nullptr;
+
+	// Save pointer
+	objectList[objectIndex] = object;
+
+	return nullptr;
 }
