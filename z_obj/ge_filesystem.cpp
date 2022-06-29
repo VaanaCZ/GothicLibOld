@@ -1,5 +1,5 @@
 ﻿
-#include "zen_vdfs.h"
+#include "ge_filesystem.h"
 
 //
 // bool Open(std::string filename, char openMode)
@@ -14,7 +14,7 @@
 //         Mode with which to open file. Accepted
 //         values are 'r', 'w' and 'a'
 //
-bool ZEN::FileStream::Open(std::string filename, char openMode)
+bool GE::FileStream::Open(std::string filename, char openMode)
 {
 	return Open(std::wstring(filename.begin(), filename.end()), openMode);
 }
@@ -32,7 +32,7 @@ bool ZEN::FileStream::Open(std::string filename, char openMode)
 //         Mode with which to open file. Accepted
 //         values are: 'r', 'w' and 'a'
 //
-bool ZEN::FileStream::Open(std::wstring filename, char openMode)
+bool GE::FileStream::Open(std::wstring filename, char openMode)
 {
 	iPath = filename;
 
@@ -101,7 +101,7 @@ bool ZEN::FileStream::Open(std::wstring filename, char openMode)
 //         responsibility of managing the specified 
 //         buffer over its lifespan.
 //
-bool ZEN::FileStream::Open(char* buffer, size_t size, char openMode, bool realloc)
+bool GE::FileStream::Open(char* buffer, size_t size, char openMode, bool realloc)
 {
 	if (openMode == 'r')
 	{
@@ -143,7 +143,7 @@ bool ZEN::FileStream::Open(char* buffer, size_t size, char openMode, bool reallo
 //   - size
 //         Size of this stream.
 //
-bool ZEN::FileStream::Open(FileStream* stream, uint64_t offset, uint64_t size)
+bool GE::FileStream::Open(FileStream* stream, uint64_t offset, uint64_t size)
 {
 	if (offset + size > stream->iTotalSize)
 		return false;
@@ -164,7 +164,7 @@ bool ZEN::FileStream::Open(FileStream* stream, uint64_t offset, uint64_t size)
 // Closes the file stream and disposes of
 // all used resources.
 //
-void ZEN::FileStream::Close()
+void GE::FileStream::Close()
 {
 	if (mode == STREAM_MODE_READ)
 	{
@@ -198,7 +198,7 @@ void ZEN::FileStream::Close()
 //   - readSize
 //         Size of aforementioned buffer.
 //
-bool ZEN::FileStream::Read(void* readBuffer, uint64_t readSize)
+bool GE::FileStream::Read(void* readBuffer, uint64_t readSize)
 {
 	if (mode == STREAM_MODE_READ)
 	{
@@ -243,27 +243,9 @@ bool ZEN::FileStream::Read(void* readBuffer, uint64_t readSize)
 	return true;
 }
 
-bool ZEN::FileStream::ReadNullString(std::string& str)
+bool GE::FileStream::ReadString(std::string& stringVal)
 {
-	// Slow, but good enough.
-	char c;
-	bool result = false;
-
-	str = "";
-
-	while (Read(&c, sizeof(c)))
-	{
-		result = true;
-
-		if (c == NULL)
-		{
-			break;
-		}
-
-		str += c;
-	}
-
-	return result;
+	return false;
 }
 
 //
@@ -278,7 +260,7 @@ bool ZEN::FileStream::ReadNullString(std::string& str)
 //         String to which the read data 
 //         shall be copied.
 //
-bool ZEN::FileStream::ReadLine(std::string& line)
+bool GE::FileStream::ReadLine(std::string& line)
 {
 	// Slow, but good enough.
 	// Doesn't read the last line if it's empty
@@ -326,7 +308,7 @@ bool ZEN::FileStream::ReadLine(std::string& line)
 //   - pos
 //         Position in the stream
 //
-void ZEN::FileStream::Seek(uint64_t pos)
+void GE::FileStream::Seek(uint64_t pos)
 {
 	if (mode == STREAM_MODE_READ)
 	{
@@ -342,7 +324,7 @@ void ZEN::FileStream::Seek(uint64_t pos)
 //
 // Tells the current position in the stream.
 //
-uint64_t ZEN::FileStream::Tell()
+uint64_t GE::FileStream::Tell()
 {
 	if (mode == STREAM_MODE_READ)
 	{
@@ -355,7 +337,7 @@ uint64_t ZEN::FileStream::Tell()
 //
 // Returns the total size of the stream.
 //
-uint64_t ZEN::FileStream::TotalSize()
+uint64_t GE::FileStream::TotalSize()
 {
 	if (mode == STREAM_MODE_READ)
 	{
@@ -376,7 +358,7 @@ uint64_t ZEN::FileStream::TotalSize()
 //   - offset
 //         offset in the source stream.
 //
-void ZEN::FileStream::ForkSubStream(FileStream* sourceStream, uint64_t sourceOffset)
+void GE::FileStream::ForkSubStream(FileStream* sourceStream, uint64_t sourceOffset)
 {
 	if (sourceStream->iSource == STREAM_SOURCE_SUBSTREAM)
 	{
@@ -403,6 +385,10 @@ void ZEN::FileStream::ForkSubStream(FileStream* sourceStream, uint64_t sourceOff
 	}
 }
 
+void GE::FileStream::OpenGenomeFile()
+{
+}
+
 //
 // bool InitializeDirectory(std::string _rootPath)
 //
@@ -413,7 +399,7 @@ void ZEN::FileStream::ForkSubStream(FileStream* sourceStream, uint64_t sourceOff
 // 
 // Returns false if the directory doesnt exist.
 //
-bool ZEN::FileSystem::InitializeDirectory(std::string _rootPath)
+bool GE::FileSystem::InitializeDirectory(std::string _rootPath)
 {
 	return InitializeDirectory(std::wstring(_rootPath.begin(), _rootPath.end()));
 }
@@ -428,7 +414,7 @@ bool ZEN::FileSystem::InitializeDirectory(std::string _rootPath)
 // 
 // Returns false if the directory doesnt exist.
 //
-bool ZEN::FileSystem::InitializeDirectory(std::wstring _rootPath)
+bool GE::FileSystem::InitializeDirectory(std::wstring _rootPath)
 {
 	volumes.clear();
 	files.clear();
@@ -468,7 +454,7 @@ bool ZEN::FileSystem::InitializeDirectory(std::wstring _rootPath)
 // Returns false if the volume doesnt exist
 // or is invalid.
 //
-bool ZEN::FileSystem::Mount(std::string path)
+bool GE::FileSystem::Mount(std::string path)
 {
 	return Mount(std::wstring(path.begin(), path.end()));
 }
@@ -485,7 +471,7 @@ bool ZEN::FileSystem::Mount(std::string path)
 // Returns false if the volume doesnt exist
 // or is invalid.
 //
-bool ZEN::FileSystem::Mount(std::wstring path)
+bool GE::FileSystem::Mount(std::wstring path)
 {
 	// If it is, mount it.
 	Volume volume;
@@ -555,7 +541,7 @@ bool ZEN::FileSystem::Mount(std::wstring path)
 // 
 // If the look-up fails a nullptr is returned.
 //
-ZEN::FileStream* ZEN::FileSystem::OpenFile(std::string path, bool globalSearch)
+GE::FileStream* GE::FileSystem::OpenFile(std::string path, bool globalSearch)
 {
 	CanonizePath(path);
 
@@ -585,7 +571,7 @@ ZEN::FileStream* ZEN::FileSystem::OpenFile(std::string path, bool globalSearch)
 // 
 // If the look-up fails a nullptr is returned.
 //
-ZEN::FileStream* ZEN::FileSystem::OpenFile(File* file)
+GE::FileStream* GE::FileSystem::OpenFile(File* file)
 {
 	FileStream* stream = new FileStream();
 
@@ -645,7 +631,7 @@ ZEN::FileStream* ZEN::FileSystem::OpenFile(File* file)
 // 
 // Returns false if the specified directory is not found.
 //
-bool ZEN::FileSystem::ListDirectory(std::string path, File** filesPtr, size_t* fileCount, Directory** dirsPtr, size_t* dirCount)
+bool GE::FileSystem::ListDirectory(std::string path, File** filesPtr, size_t* fileCount, Directory** dirsPtr, size_t* dirCount)
 {
 	CanonizePath(path);
 
@@ -696,7 +682,7 @@ bool ZEN::FileSystem::ListDirectory(std::string path, File** filesPtr, size_t* f
 // 
 // Returns false if the specified directory is not found.
 //
-bool ZEN::FileSystem::ListDirectory(Directory* directory, File** filesPtr, size_t* fileCount, Directory** dirsPtr, size_t* dirCount)
+bool GE::FileSystem::ListDirectory(Directory* directory, File** filesPtr, size_t* fileCount, Directory** dirsPtr, size_t* dirCount)
 {
 	if (filesPtr != nullptr && fileCount != nullptr)
 	{
@@ -744,7 +730,7 @@ bool ZEN::FileSystem::ListDirectory(Directory* directory, File** filesPtr, size_
 //   - parentIndex
 //         Index of parent folder.
 //
-void ZEN::FileSystem::TraverseDirectory(std::filesystem::path path, std::string fsPath, size_t parentIndex)
+void GE::FileSystem::TraverseDirectory(std::filesystem::path path, std::string fsPath, size_t parentIndex)
 {
 	size_t fileOffset	= files.size();
 	size_t dirOffset	= directories.size();
@@ -901,7 +887,7 @@ void ZEN::FileSystem::TraverseDirectory(std::filesystem::path path, std::string 
 //         Counts down by one everytime time an entry is
 //         read to prevent endless looping.
 //
-void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, bool parentEmpty, std::string fsPath, size_t& entryCount)
+void GE::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, bool parentEmpty, std::string fsPath, size_t& entryCount)
 {
 	Volume& volume = volumes[volumeIndex];
 
@@ -1119,7 +1105,7 @@ void ZEN::FileSystem::TraverseVolume(size_t volumeIndex, size_t parentIndex, boo
 // becomes:
 // "DATA/WORLDS/"
 //
-void ZEN::FileSystem::CanonizePath(std::string& path)
+void GE::FileSystem::CanonizePath(std::string& path)
 {
 	path = std::filesystem::path(path).lexically_normal().string();
 

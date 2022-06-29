@@ -81,7 +81,7 @@ namespace ZEN
 		bool ReadRawFloat	(std::string, float*, size_t);
 		bool ReadEnum		(std::string, int&);
 
-		bool ReadChunkStart(std::string*, std::string*, int*, int*);
+		bool ReadChunkStart(std::string*, std::string*, uint16_t*, uint32_t*);
 		bool ReadChunkEnd();
 		
 		bool ReadObject(zCObject*&);
@@ -121,13 +121,22 @@ namespace ZEN
 
 		FileStream*		file;
 
-		int				version		= -1;
+		unsigned short	version		= -1;
 		ARCHIVER_TYPE	type		= ARCHIVER_TYPE_NONE;
 		bool			savegame	= false;
 
 		zCObject*				containedObject;
 
 		std::vector<zCObject*>	objectList;
+
+#pragma pack(push,1)
+		struct BinaryObjectHeader
+		{
+			uint32_t objectSize;
+			uint16_t classVersion;
+			uint32_t objectIndex;
+		};
+#pragma pack(pop)
 
 	};
 

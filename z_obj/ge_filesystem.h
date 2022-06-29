@@ -1,5 +1,5 @@
 ﻿//
-// zen_vdfs.hpp
+// ge_filesystem.h
 //
 // Copyright (c) 2021-2022 Václav Maroušek
 //
@@ -14,7 +14,7 @@
 
 #include <iostream>
 
-namespace ZEN
+namespace GE
 {
 	//
 	// File stream abstraction which allows reading
@@ -47,16 +47,17 @@ namespace ZEN
 		*/
 
 		bool		Read(void*, uint64_t);
-		bool		ReadNullString(std::string&);
+		bool		ReadString(std::string&);
 		bool		ReadLine(std::string&);
 
-		void		Seek(uint64_t pos);
+		void		Seek(uint64_t);
 		uint64_t	Tell();
 		uint64_t	TotalSize();
 
 	private:
 
 		void		ForkSubStream(FileStream*, uint64_t);
+		void		OpenGenomeFile();
 
 		enum STREAM_MODE
 		{

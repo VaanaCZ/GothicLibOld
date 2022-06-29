@@ -192,6 +192,12 @@ bool ZEN::zCArchiver::ReadInt(std::string name, int& intVal)
 		if (!ReadPropertyASCII(name, "int", value))
 			return false;
 		intVal = std::stoi(value);
+
+		return true;
+	}
+	else if (type == ARCHIVER_TYPE_BINARY)
+	{
+		return file->Read(&intVal, sizeof(intVal));
 	}
 
 	return true;
@@ -205,6 +211,12 @@ bool ZEN::zCArchiver::ReadFloat(std::string name, float& floatVal)
 		if (!ReadPropertyASCII(name, "float", value))
 			return false;
 		floatVal = std::stof(value);
+
+		return true;
+	}
+	else if (type == ARCHIVER_TYPE_BINARY)
+	{
+		return file->Read(&floatVal, sizeof(floatVal));
 	}
 
 	return true;
@@ -218,6 +230,12 @@ bool ZEN::zCArchiver::ReadBool(std::string name, bool& boolVal)
 		if (!ReadPropertyASCII(name, "bool", value))
 			return false;
 		boolVal = std::stoi(value);
+
+		return true;
+	}
+	else if (type == ARCHIVER_TYPE_BINARY)
+	{
+		return file->Read(&boolVal, sizeof(boolVal));
 	}
 
 	return true;
@@ -231,9 +249,15 @@ bool ZEN::zCArchiver::ReadString(std::string name, std::string& strVal)
 		if (!ReadPropertyASCII(name, "string", value))
 			return false;
 		strVal = value;
+
+		return true;
+	}
+	else if (type == ARCHIVER_TYPE_BINARY)
+	{
+		return file->ReadNullString(strVal);
 	}
 
-	return true;
+	return false;
 }
 
 bool ZEN::zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
@@ -247,9 +271,15 @@ bool ZEN::zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
 		if (sscanf_s(value.c_str(), "%f %f %f",
 			&vecVal.x, &vecVal.y, &vecVal.z) != 3)
 			return false;
+
+		return true;
+	}
+	else if (type == ARCHIVER_TYPE_BINARY)
+	{
+		return file->Read(&vecVal, sizeof(vecVal));
 	}
 
-	return true;
+	return false;
 }
 
 bool ZEN::zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
@@ -269,9 +299,15 @@ bool ZEN::zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
 		colorVal.g = vals[1];
 		colorVal.r = vals[2];
 		colorVal.a = vals[3];
+
+		return true;
+	}
+	else if (type == ARCHIVER_TYPE_BINARY)
+	{
+		return file->Read(&colorVal, sizeof(colorVal));
 	}
 
-	return true;
+	return false;
 }
 
 bool ZEN::zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSize)
@@ -296,9 +332,15 @@ bool ZEN::zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSize)
 			buffer[byteCount] = (unsigned char)byteValue;
 			byteCount++;
 		}
+
+		return true;
+	}
+	else if (type == ARCHIVER_TYPE_BINARY)
+	{
+		return file->Read(buffer, bufferSize);
 	}
 
-	return true;
+	return false;
 }
 
 bool ZEN::zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t floatCount)
@@ -335,9 +377,15 @@ bool ZEN::zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t fl
 			floatVals[i] = std::stof(strFloats);
 			strFloats = strFloats.substr(strFloats.find(" ") + 1);
 		}
+
+		return true;
+	}
+	else if (type == ARCHIVER_TYPE_BINARY)
+	{
+		return file->Read(floatVals, floatCount * sizeof(float));
 	}
 
-	return true;
+	return false;
 }
 
 bool ZEN::zCArchiver::ReadEnum(std::string name, int& enumVal)
@@ -348,9 +396,15 @@ bool ZEN::zCArchiver::ReadEnum(std::string name, int& enumVal)
 		if (!ReadPropertyASCII(name, "enum", value))
 			return false;
 		enumVal = std::stoi(value);
+
+		return true;
+	}
+	else if (type == ARCHIVER_TYPE_BINARY)
+	{
+		return file->Read(&enumVal, sizeof(enumVal));
 	}
 
-	return true;
+	return false;
 }
 
 ZEN::zCObject* ZEN::zCArchiver::GetContainedObject()
@@ -378,7 +432,7 @@ bool ZEN::zCArchiver::ReadPropertyASCII(std::string name, std::string type, std:
 	return true;
 }
 
-bool ZEN::zCArchiver::ReadChunkStart(std::string* objectName, std::string* className, int* classVersion, int* objectIndex)
+bool ZEN::zCArchiver::ReadChunkStart(std::string* objectName, std::string* className, uint16_t* classVersion, uint32_t* objectIndex)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -391,23 +445,48 @@ bool ZEN::zCArchiver::ReadChunkStart(std::string* objectName, std::string* class
 		size_t p4 = header.find(" ", p3 + 1);
 
 		if (objectName != nullptr)
-			*objectName		= header.substr(p1 + 1, p2 - p1 - 1);
+			*objectName	= header.substr(p1 + 1, p2 - p1 - 1);
 
 		if (className != nullptr)
-			*className		= header.substr(p2 + 1, p3 - p2 - 1);
+			*className	= header.substr(p2 + 1, p3 - p2 - 1);
 
 		if (classVersion != nullptr)
-			*classVersion	= std::stoi(header.substr(p3));
+			*classVersion = std::stoi(header.substr(p3));
 
 		if (objectIndex != nullptr)
-		{
 			*objectIndex = std::stoi(header.substr(p4));
+	}
+	else if (type == ARCHIVER_TYPE_BINARY)
+	{
+		BinaryObjectHeader header;
+		if (!file->Read(&header, sizeof(header)))
+			return false;
 
-			if (*objectIndex >= objectList.size())
-			{
-				return false;
-			}
-		}
+		std::string readObjectName;
+		if (!file->ReadNullString(readObjectName))
+			return false;
+
+		std::string readClassName;
+		if (!file->ReadNullString(readClassName))
+			return false;
+
+		if (objectName != nullptr)
+			*objectName = readObjectName;
+
+		if (className != nullptr)
+			*className = readClassName;
+
+		if (classVersion != nullptr)
+			*classVersion = header.classVersion;
+
+		if (objectIndex != nullptr)
+			*objectIndex = header.objectIndex;
+	}
+
+	if (objectIndex != nullptr &&
+		*objectIndex >= objectList.size())
+	{
+		return false;
 	}
 
 	return true;
@@ -434,7 +513,8 @@ bool ZEN::zCArchiver::ReadObject(zCObject*& object)
 
 	// Read object header
 	std::string objectName, className;
-	int classVersion, objectIndex;
+	uint16_t classVersion;
+	uint32_t objectIndex;
 
 	if (!ReadChunkStart(&objectName, &className, &classVersion, &objectIndex))
 		return false;
