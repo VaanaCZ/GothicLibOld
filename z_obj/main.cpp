@@ -9,14 +9,14 @@ int main(int argc, char* argv[])
 	
 	//fs.InitializeDirectory(L"D:\\Gothic\\Gothic_demo5");
 	//fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic Sequel");
-	//fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic Original");
+	fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic Original");
 
-	//ZEN::FileStream* f = fs.OpenFile("WORLD.zen", true);
-	ZEN::FileStream* f = new ZEN::FileStream();
+	ZEN::FileStream* f = fs.OpenFile("WORLD.zen", true);
+	//ZEN::FileStream* f = new ZEN::FileStream();
 	//f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\TESTLEVEL_UNCOMPILED_0.64b.ZEN", 'r');
 	//f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\SURFACE_UNCOMPILED.ZEN", 'r');
 	//f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\NEWWORLD_PART_CITY_01_UNCOMPILED.ZEN", 'r');
-	f->Open("D:\\SteamLibrary\\steamapps\\common\\Gothic Original\\saves\\current\\WORLD.SAV", 'r');
+	//f->Open("D:\\SteamLibrary\\steamapps\\common\\Gothic Original\\saves\\current\\WORLD.SAV", 'r');
 
 	ZEN::zCArchiver archiver;
 

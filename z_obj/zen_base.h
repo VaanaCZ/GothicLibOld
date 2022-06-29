@@ -108,7 +108,21 @@ namespace ZEN
 
 	private:
 
+		enum BINSAFE_TYPE
+		{
+			BINSAFE_TYPE_STRING = 0x1,
+			BINSAFE_TYPE_INT = 0x2,
+			BINSAFE_TYPE_FLOAT = 0x3,
+			BINSAFE_TYPE_BOOL = 0x6,
+			BINSAFE_TYPE_VEC3 = 0x7,
+			BINSAFE_TYPE_COLOR = 0x8,
+			BINSAFE_TYPE_RAW = 0x9,
+			BINSAFE_TYPE_RAWFLOAT = 0x10,
+			BINSAFE_TYPE_ENUM = 0x11
+		};
+
 		bool ReadPropertyASCII(std::string, std::string, std::string&);
+		bool ReadPropertyBinSafe(BINSAFE_TYPE, char*&, size_t&);
 
 		enum ARCHIVER_TYPE
 		{
@@ -135,6 +149,20 @@ namespace ZEN
 			uint32_t objectSize;
 			uint16_t classVersion;
 			uint32_t objectIndex;
+		};
+
+		struct BinSafeArchiveHeader
+		{
+			uint32_t version;
+			uint32_t objectCount;
+			uint32_t chunkPos;
+		};
+
+		struct BinSafeHashTable
+		{
+			uint16_t stringLength;
+			uint16_t linearValue;
+			uint32_t hashValue;
 		};
 #pragma pack(pop)
 

@@ -176,6 +176,48 @@ bool ZEN::zCArchiver::Read(FileStream* _file)
 		if (!line.empty())
 			return false;
 	}
+	else if (type == ARCHIVER_TYPE_BIN_SAFE)
+	{
+		BinSafeArchiveHeader header;
+		if (!file->Read(&header, sizeof(header)))
+			return false;
+
+		if (header.version != 2)
+		{
+			return false;
+		}
+
+		objectList.resize(header.objectCount);
+
+		uint64_t startPos = file->Tell();
+
+		// Read chunk list
+		file->Seek(header.chunkPos);
+
+		uint32_t chunkCount;
+		if (!file->Read(&chunkCount, sizeof(chunkCount)))
+			return false;
+
+		BinSafeHashTable hash;
+		char text[8192];
+
+		for (size_t i = 0; i < chunkCount; i++)
+		{
+			if (!file->Read(&hash, sizeof(hash)))
+				return false;
+
+			uint32_t textLength = hash.stringLength;
+			if (textLength > 8192)
+				textLength = 8192;
+
+			if (!file->Read(&text, textLength))
+				return false;
+
+			// Todo: save values
+		}
+
+		file->Seek(startPos);
+	}
 	
 	// Read objects
 	if (!ReadObject(containedObject))
@@ -432,12 +474,86 @@ bool ZEN::zCArchiver::ReadPropertyASCII(std::string name, std::string type, std:
 	return true;
 }
 
+bool ZEN::zCArchiver::ReadPropertyBinSafe(BINSAFE_TYPE type, char*& data, size_t& size)
+{
+	// First read the type
+	char readType;
+	if (!file->Read(&readType, sizeof(readType)))
+		return false;
+
+	if (readType != type)
+		return false;
+
+	// Proceed based on type
+	switch (readType)
+	{
+	case BINSAFE_TYPE_STRING:
+		
+		uint16_t length;
+		if (!file->Read(&length, sizeof(length)))
+			return false;
+
+		data = new char[length];
+		if (!file->Read(data, length))
+			return false;
+
+		size = length;
+
+		break;
+
+	case BINSAFE_TYPE_INT:
+		break;
+
+	case BINSAFE_TYPE_FLOAT:
+		break;
+
+	case BINSAFE_TYPE_BOOL:
+		break;
+
+	case BINSAFE_TYPE_VEC3:
+		break;
+
+	case BINSAFE_TYPE_COLOR:
+		break;
+
+	case BINSAFE_TYPE_RAW:
+		break;
+
+	case BINSAFE_TYPE_RAWFLOAT:
+		break;
+
+	case BINSAFE_TYPE_ENUM:
+		break;
+
+	default:
+		break;
+	}
+
+	return true;
+}
+
 bool ZEN::zCArchiver::ReadChunkStart(std::string* objectName, std::string* className, uint16_t* classVersion, uint32_t* objectIndex)
 {
-	if (type == ARCHIVER_TYPE_ASCII)
+	if (type == ARCHIVER_TYPE_ASCII ||
+		type == ARCHIVER_TYPE_BIN_SAFE)
 	{
 		std::string header;
-		file->ReadLine(header);
+
+		if (type == ARCHIVER_TYPE_BIN_SAFE)
+		{
+			char* str;
+			size_t length;
+			if (!ReadPropertyBinSafe(BINSAFE_TYPE_STRING, str, length))
+				return false;
+
+			header = std::string(str, length);
+
+			delete[] str;
+		}
+		else
+		{
+			file->ReadLine(header);
+		}
 
 		size_t p1 = header.find("[");
 		size_t p2 = header.find(" ", p1 + 1);
