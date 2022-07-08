@@ -49,12 +49,12 @@ namespace GE
 
 	};
 
-//	template <class C, typename T> class bTPropertyTypeBase : public bCPropertyTypeBase
+//	template <class C, typename T> class bTPropertyType : public bCPropertyTypeBase
 //	{
 //
 //	};
 
-	template <typename T> class bTPropertyTypeBase : public bCPropertyTypeBase
+	template <typename T> class bTPropertyType: public bCPropertyTypeBase
 	{
 
 	};

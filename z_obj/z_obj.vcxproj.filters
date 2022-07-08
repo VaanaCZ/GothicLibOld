@@ -33,7 +33,7 @@
     <ClCompile Include="ge_base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gothiclib.cpp">
+    <ClCompile Include="gothiclib_base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -54,6 +54,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ge_base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gothiclib_base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gothiclib.h">

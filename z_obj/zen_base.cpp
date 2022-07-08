@@ -1,4 +1,4 @@
-#include "gothiclib.h"
+#include "gothiclib_base.h"
 #include "zen_base.h"
 
 #include "zen_vdfs.h"
@@ -6,29 +6,44 @@
 
 using namespace GothicLib;
 
-ZenGin::zCObject* ZenGin::zCObject::CreateObject(std::string className)
-{
-#define CLASS_CREATE_ATTEMPT(c)									\
-	else if (className == c::GetStaticClassname())	\
-		return new c();
+ClassManager* ZenGin::classManager = nullptr;
 
-	if (className == "zCObject")
+ZenGin::zCObject* ZenGin::zCObject::CreateObject(std::string _className)
+{
+//#define CLASS_CREATE_ATTEMPT(c)									\
+//	else if (className == c::GetStaticClassname())	\
+//		return new c();
+//
+//	if (className == "zCObject")
+//	{
+//		return nullptr;
+//	}
+//
+//	//CLASS_CREATE_ATTEMPT(zCAIBase)
+//	//CLASS_CREATE_ATTEMPT(zCMesh)
+//	//CLASS_CREATE_ATTEMPT(zCParticleFX)
+//	//CLASS_CREATE_ATTEMPT(zCVisual)
+//	//CLASS_CREATE_ATTEMPT(zCVob)
+//	//CLASS_CREATE_ATTEMPT(zCVobLevelCompo)
+//	//CLASS_CREATE_ATTEMPT(zCVobLight)
+//	//CLASS_CREATE_ATTEMPT(zCVobSound)
+//	//CLASS_CREATE_ATTEMPT(zCVobSpot)
+//	//CLASS_CREATE_ATTEMPT(zCWorld)
+//	//CLASS_CREATE_ATTEMPT(oCWorld)
+//	
+
+	std::string className = _className;
+
+	if (className.rfind(":") != std::string::npos)
+		className = className.substr(className.rfind(":") + 1);
+
+	if (classManager)
 	{
-		return nullptr;
+		ClassDefinition* classDef = classManager->GetClassDef(className);
+
+		return ((zCObject* (*)())classDef->createFunc)();
 	}
 
-	CLASS_CREATE_ATTEMPT(zCAIBase)
-	CLASS_CREATE_ATTEMPT(zCMesh)
-	CLASS_CREATE_ATTEMPT(zCParticleFX)
-	CLASS_CREATE_ATTEMPT(zCVisual)
-	CLASS_CREATE_ATTEMPT(zCVob)
-	CLASS_CREATE_ATTEMPT(zCVobLevelCompo)
-	CLASS_CREATE_ATTEMPT(zCVobLight)
-	CLASS_CREATE_ATTEMPT(zCVobSound)
-	CLASS_CREATE_ATTEMPT(zCVobSpot)
-	CLASS_CREATE_ATTEMPT(zCWorld)
-	CLASS_CREATE_ATTEMPT(oCWorld)
-	
 	return nullptr;
 }
 

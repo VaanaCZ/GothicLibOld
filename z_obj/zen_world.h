@@ -13,11 +13,11 @@ namespace GothicLib
 		/*
 			World classes
 		*/
-
+		
 		class zCWorld : public zCObject
 		{
-			DEFINE_CLASS(zCWorld);
-
+			DEFINE_CLASS(zCWorld, zCObject);
+			
 		public:
 		
 			zCWorld()			{ }
@@ -36,7 +36,7 @@ namespace GothicLib
 
 		class oCWorld : public zCWorld
 		{
-			DEFINE_CLASS_EXTENDS(oCWorld, zCWorld);
+			DEFINE_CLASS(oCWorld, zCWorld);
 
 		public:
 
@@ -76,7 +76,7 @@ namespace GothicLib
 
 		class zCVob : public zCObject
 		{
-			DEFINE_CLASS(zCVob);
+			DEFINE_CLASS(zCVob, zCObject);
 
 		public:
 		
@@ -120,7 +120,7 @@ namespace GothicLib
 
 		class zCVobLevelCompo : public zCVob
 		{
-			DEFINE_CLASS_EXTENDS(zCVobLevelCompo, zCVob);
+			DEFINE_CLASS(zCVobLevelCompo, zCVob);
 
 		public:
 		
@@ -136,7 +136,7 @@ namespace GothicLib
 
 		class zCVobSpot : public zCVob
 		{
-			DEFINE_CLASS_EXTENDS(zCVobSpot, zCVob);
+			DEFINE_CLASS(zCVobSpot, zCVob);
 
 		public:
 		
@@ -165,7 +165,7 @@ namespace GothicLib
 
 		class zCVobSound : public zCVob
 		{
-			DEFINE_CLASS_EXTENDS(zCVobSound, zCVob);
+			DEFINE_CLASS(zCVobSound, zCVob);
 
 		public:
 		
@@ -212,7 +212,7 @@ namespace GothicLib
 
 		class zCVobLight : public zCVob
 		{
-			DEFINE_CLASS_EXTENDS(zCVobLight, zCVob);
+			DEFINE_CLASS(zCVobLight, zCVob);
 
 		public:
 		
@@ -252,7 +252,7 @@ namespace GothicLib
 
 		class zCVisual : public zCObject
 		{
-			DEFINE_CLASS(zCVisual);
+			DEFINE_CLASS(zCVisual, zCObject);
 
 		public:
 		
@@ -268,7 +268,7 @@ namespace GothicLib
 
 		class zCMesh : public zCVisual
 		{
-			DEFINE_CLASS(zCMesh);
+			DEFINE_CLASS(zCMesh, zCVisual);
 
 		public:
 		
@@ -284,7 +284,7 @@ namespace GothicLib
 
 		class zCParticleFX : public zCVisual
 		{
-			DEFINE_CLASS(zCParticleFX);
+			DEFINE_CLASS(zCParticleFX, zCVisual);
 
 		public:
 
@@ -304,7 +304,7 @@ namespace GothicLib
 
 		class zCAIBase : public zCObject
 		{
-			DEFINE_CLASS(zCAIBase);
+			DEFINE_CLASS(zCAIBase, zCObject);
 
 		public:
 		

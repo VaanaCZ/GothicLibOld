@@ -1,14 +1,29 @@
-﻿#include "gothiclib.h"
+﻿#include "gothiclib_base.h"
 
-void GothicLib::Log::SetCallback(LogFunc _callback)
+using namespace GothicLib;
+
+void Log::SetCallback(LogFunc _callback)
 {
 	callback = _callback;
 }
 
-void GothicLib::Log::Message(MESSAGE_LEVEL level, std::string message)
+void Log::Message(MESSAGE_LEVEL level, std::string message)
 {
 	if (callback)
 		callback(level, message);
+}
+
+void GothicLib::ClassManager::AddClassDef(ClassDefinition* definition)
+{
+	classes[definition->name] = definition;
+}
+
+ClassDefinition* ClassManager::GetClassDef(std::string name)
+{
+	if (classes.find(name) != classes.end())
+		return classes[name];
+
+	return nullptr;
 }
 
 //
@@ -24,7 +39,7 @@ void GothicLib::Log::Message(MESSAGE_LEVEL level, std::string message)
 //         Mode with which to open file. Accepted
 //         values are 'r', 'w' and 'a'
 //
-bool GothicLib::FileStream::Open(std::string filename, char openMode)
+bool FileStream::Open(std::string filename, char openMode)
 {
 	return Open(std::wstring(filename.begin(), filename.end()), openMode);
 }
@@ -42,7 +57,7 @@ bool GothicLib::FileStream::Open(std::string filename, char openMode)
 //         Mode with which to open file. Accepted
 //         values are: 'r', 'w' and 'a'
 //
-bool GothicLib::FileStream::Open(std::wstring filename, char openMode)
+bool FileStream::Open(std::wstring filename, char openMode)
 {
 	iPath = filename;
 
@@ -111,7 +126,7 @@ bool GothicLib::FileStream::Open(std::wstring filename, char openMode)
 //         responsibility of managing the specified 
 //         buffer over its lifespan.
 //
-bool GothicLib::FileStream::Open(char* buffer, size_t size, char openMode, bool realloc)
+bool FileStream::Open(char* buffer, size_t size, char openMode, bool realloc)
 {
 	if (openMode == 'r')
 	{
@@ -153,7 +168,7 @@ bool GothicLib::FileStream::Open(char* buffer, size_t size, char openMode, bool 
 //   - size
 //         Size of this stream.
 //
-bool GothicLib::FileStream::Open(FileStream* stream, uint64_t offset, uint64_t size)
+bool FileStream::Open(FileStream* stream, uint64_t offset, uint64_t size)
 {
 	if (offset + size > stream->iTotalSize)
 		return false;
@@ -174,7 +189,7 @@ bool GothicLib::FileStream::Open(FileStream* stream, uint64_t offset, uint64_t s
 // Closes the file stream and disposes of
 // all used resources.
 //
-void GothicLib::FileStream::Close()
+void FileStream::Close()
 {
 	if (mode == STREAM_MODE_READ)
 	{
@@ -208,7 +223,7 @@ void GothicLib::FileStream::Close()
 //   - readSize
 //         Size of aforementioned buffer.
 //
-bool GothicLib::FileStream::Read(void* readBuffer, uint64_t readSize)
+bool FileStream::Read(void* readBuffer, uint64_t readSize)
 {
 	if (mode == STREAM_MODE_READ)
 	{
@@ -253,7 +268,7 @@ bool GothicLib::FileStream::Read(void* readBuffer, uint64_t readSize)
 	return true;
 }
 
-bool GothicLib::FileStream::ReadNullString(std::string& str)
+bool FileStream::ReadNullString(std::string& str)
 {
 	// Slow, but good enough.
 	char c;
@@ -288,7 +303,7 @@ bool GothicLib::FileStream::ReadNullString(std::string& str)
 //         String to which the read data 
 //         shall be copied.
 //
-bool GothicLib::FileStream::ReadLine(std::string& line)
+bool FileStream::ReadLine(std::string& line)
 {
 	// Slow, but good enough.
 	// Doesn't read the last line if it's empty
@@ -336,7 +351,7 @@ bool GothicLib::FileStream::ReadLine(std::string& line)
 //   - pos
 //         Position in the stream
 //
-void GothicLib::FileStream::Seek(uint64_t pos)
+void FileStream::Seek(uint64_t pos)
 {
 	if (mode == STREAM_MODE_READ)
 	{
@@ -352,7 +367,7 @@ void GothicLib::FileStream::Seek(uint64_t pos)
 //
 // Tells the current position in the stream.
 //
-uint64_t GothicLib::FileStream::Tell()
+uint64_t FileStream::Tell()
 {
 	if (mode == STREAM_MODE_READ)
 	{
@@ -365,7 +380,7 @@ uint64_t GothicLib::FileStream::Tell()
 //
 // Returns the total size of the stream.
 //
-uint64_t GothicLib::FileStream::TotalSize()
+uint64_t FileStream::TotalSize()
 {
 	if (mode == STREAM_MODE_READ)
 	{
@@ -386,7 +401,7 @@ uint64_t GothicLib::FileStream::TotalSize()
 //   - offset
 //         offset in the source stream.
 //
-void GothicLib::FileStream::ForkSubStream(FileStream* sourceStream, uint64_t sourceOffset)
+void FileStream::ForkSubStream(FileStream* sourceStream, uint64_t sourceOffset)
 {
 	if (sourceStream->iSource == STREAM_SOURCE_SUBSTREAM)
 	{

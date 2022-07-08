@@ -145,7 +145,7 @@
   <ItemGroup>
     <ClCompile Include="ge_base.cpp" />
     <ClCompile Include="ge_filesystem.cpp" />
-    <ClCompile Include="gothiclib.cpp" />
+    <ClCompile Include="gothiclib_base.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="zen_base.cpp" />
     <ClCompile Include="zen_vdfs.cpp" />
@@ -155,6 +155,7 @@
     <ClInclude Include="ge_base.h" />
     <ClInclude Include="ge_filesystem.h" />
     <ClInclude Include="gothiclib.h" />
+    <ClInclude Include="gothiclib_base.h" />
     <ClInclude Include="space.h" />
     <ClInclude Include="zen_base.h" />
     <ClInclude Include="zen_vdfs.h" />

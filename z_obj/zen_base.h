@@ -2,22 +2,23 @@
 
 #include <string>
 #include <vector>
+#include "gothiclib_base.h"
 
 #define GET_MACRO(_1,_2,_3,NAME,...) NAME
 
-#define DEFINE_CLASS(c)															\
-public:																			\
-	static inline const char*	GetStaticClassname()	{ return className; }	\
-	virtual const char*			GetClassName()			{ return className; }	\
-private:																		\
-	static inline const char* className = #c
-
-#define DEFINE_CLASS_EXTENDS(c, b)												\
-public:																			\
-	static inline const char*	GetStaticClassname()	{ return className; }	\
-	virtual const char*			GetClassName()			{ return className; }	\
-private:																		\
-	static inline const char* className = #c ":" #b
+//#define DEFINE_CLASS(c)															\
+//public:																			\
+//	static inline const char*	GetStaticClassname()	{ return className; }	\
+//	virtual const char*			GetClassName()			{ return className; }	\
+//private:																		\
+//	static inline const char* className = #c
+//
+//#define DEFINE_CLASS_EXTENDS(c, b)												\
+//public:																			\
+//	static inline const char*	GetStaticClassname()	{ return className; }	\
+//	virtual const char*			GetClassName()			{ return className; }	\
+//private:																		\
+//	static inline const char* className = #c ":" #b
 
 namespace GothicLib
 {
@@ -25,6 +26,8 @@ namespace GothicLib
 
 	namespace ZenGin
 	{
+		extern ClassManager* classManager;
+
 		class zCObject;
 
 		/*
@@ -179,13 +182,16 @@ namespace GothicLib
 		{
 		public:
 
+			static inline ClassDefinition* classDef = nullptr;
+
 			zCObject()			{ }
 			virtual ~zCObject()	{ }
 
 			virtual bool Archive(zCArchiver*) = 0;
 			virtual bool Unarchive(zCArchiver*) = 0;
 
-			virtual const char* GetClassName() = 0;
+
+			//virtual const char* GetClassName() = 0;
 
 			static zCObject* CreateObject(std::string);
 
