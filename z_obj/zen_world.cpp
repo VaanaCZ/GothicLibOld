@@ -31,8 +31,10 @@ bool ZenGin::zCWorld::Unarchive(zCArchiver* archiver)
 			}
 
 		}
-
-		break;
+		else if (objectName == "EndMarker")
+		{
+			break;
+		}
 	}
 
 	return true;

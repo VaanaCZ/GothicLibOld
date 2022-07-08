@@ -16,10 +16,10 @@ namespace GothicLib
 		
 		class zCWorld : public zCObject
 		{
-			DEFINE_CLASS(zCWorld, zCObject);
-			
 		public:
-		
+
+			DEFINE_CLASS(zCWorld, zCObject);
+
 			zCWorld()			{ }
 			virtual ~zCWorld()	{ }
 
@@ -36,9 +36,9 @@ namespace GothicLib
 
 		class oCWorld : public zCWorld
 		{
-			DEFINE_CLASS(oCWorld, zCWorld);
-
 		public:
+
+			DEFINE_CLASS(oCWorld, zCWorld);
 
 			oCWorld() { }
 			virtual ~oCWorld() { }
@@ -76,10 +76,10 @@ namespace GothicLib
 
 		class zCVob : public zCObject
 		{
+		public:
+
 			DEFINE_CLASS(zCVob, zCObject);
 
-		public:
-		
 			zCVob()				{ }
 			virtual ~zCVob()	{ }
 
@@ -120,10 +120,10 @@ namespace GothicLib
 
 		class zCVobLevelCompo : public zCVob
 		{
+		public:
+
 			DEFINE_CLASS(zCVobLevelCompo, zCVob);
 
-		public:
-		
 			zCVobLevelCompo()			{ }
 			virtual ~zCVobLevelCompo()	{ }
 
@@ -136,10 +136,10 @@ namespace GothicLib
 
 		class zCVobSpot : public zCVob
 		{
+		public:
+
 			DEFINE_CLASS(zCVobSpot, zCVob);
 
-		public:
-		
 			zCVobSpot()				{ }
 			virtual ~zCVobSpot()	{ }
 
@@ -165,9 +165,9 @@ namespace GothicLib
 
 		class zCVobSound : public zCVob
 		{
-			DEFINE_CLASS(zCVobSound, zCVob);
-
 		public:
+
+			DEFINE_CLASS(zCVobSound, zCVob);
 		
 			zCVobSound()			{ }
 			virtual ~zCVobSound()	{ }
@@ -212,10 +212,10 @@ namespace GothicLib
 
 		class zCVobLight : public zCVob
 		{
+		public:
+
 			DEFINE_CLASS(zCVobLight, zCVob);
 
-		public:
-		
 			zCVobLight()			{ }
 			virtual ~zCVobLight()	{ }
 
@@ -252,9 +252,9 @@ namespace GothicLib
 
 		class zCVisual : public zCObject
 		{
-			DEFINE_CLASS(zCVisual, zCObject);
-
 		public:
+
+			static inline ClassDefinition* classDef = nullptr;
 		
 			zCVisual()			{ }
 			virtual ~zCVisual()	{ }
@@ -268,9 +268,9 @@ namespace GothicLib
 
 		class zCMesh : public zCVisual
 		{
-			DEFINE_CLASS(zCMesh, zCVisual);
-
 		public:
+
+			DEFINE_CLASS(zCMesh, zCVisual);
 		
 			zCMesh()			{ }
 			virtual ~zCMesh()	{ }
@@ -284,9 +284,9 @@ namespace GothicLib
 
 		class zCParticleFX : public zCVisual
 		{
-			DEFINE_CLASS(zCParticleFX, zCVisual);
-
 		public:
+
+			DEFINE_CLASS(zCParticleFX, zCVisual);
 
 			zCParticleFX()			{ }
 			virtual ~zCParticleFX()	{ }
@@ -304,10 +304,10 @@ namespace GothicLib
 
 		class zCAIBase : public zCObject
 		{
-			DEFINE_CLASS(zCAIBase, zCObject);
-
 		public:
-		
+
+			static inline ClassDefinition* classDef = nullptr;
+
 			zCAIBase()			{ }
 			virtual ~zCAIBase()	{ }
 

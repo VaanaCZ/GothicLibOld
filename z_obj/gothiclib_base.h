@@ -84,14 +84,12 @@ namespace GothicLib
 	*/
 
 #define DEFINE_CLASS(C, B)													\
-public:																		\
 	static C* CreateInstance() { return new C(); }							\
 	inline static ClassDefinition* classDef =								\
 		new ClassDefinition(classManager, #C, #B, &C::CreateInstance);
 
 
 #define DEFINE_PROPERTY(T, N)												\
-public:																		\
 	T N;																	\
 	inline static PropertyDefinition* classDef ##N = 						\
 		new PropertyDefinition(classDef, #N, #T, ((T*)nullptr)->N &C::CreateInstance);

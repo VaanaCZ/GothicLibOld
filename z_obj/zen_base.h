@@ -144,6 +144,7 @@ namespace GothicLib
 			unsigned short	version		= -1;
 			ARCHIVER_TYPE	type		= ARCHIVER_TYPE_NONE;
 			bool			savegame	= false;
+			uint32_t		objectCount = -1;
 
 			zCObject*				containedObject;
 

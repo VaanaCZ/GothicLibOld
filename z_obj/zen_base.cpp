@@ -10,28 +10,6 @@ ClassManager* ZenGin::classManager = nullptr;
 
 ZenGin::zCObject* ZenGin::zCObject::CreateObject(std::string _className)
 {
-//#define CLASS_CREATE_ATTEMPT(c)									\
-//	else if (className == c::GetStaticClassname())	\
-//		return new c();
-//
-//	if (className == "zCObject")
-//	{
-//		return nullptr;
-//	}
-//
-//	//CLASS_CREATE_ATTEMPT(zCAIBase)
-//	//CLASS_CREATE_ATTEMPT(zCMesh)
-//	//CLASS_CREATE_ATTEMPT(zCParticleFX)
-//	//CLASS_CREATE_ATTEMPT(zCVisual)
-//	//CLASS_CREATE_ATTEMPT(zCVob)
-//	//CLASS_CREATE_ATTEMPT(zCVobLevelCompo)
-//	//CLASS_CREATE_ATTEMPT(zCVobLight)
-//	//CLASS_CREATE_ATTEMPT(zCVobSound)
-//	//CLASS_CREATE_ATTEMPT(zCVobSpot)
-//	//CLASS_CREATE_ATTEMPT(zCWorld)
-//	//CLASS_CREATE_ATTEMPT(oCWorld)
-//	
-
 	std::string className = _className;
 
 	if (className.rfind(":") != std::string::npos)
@@ -59,150 +37,106 @@ bool ZenGin::zCArchiver::Read(FileStream* _file)
 	*/
 	file->ReadLine(line);
 
-	if (line != "ZenGin Archive") 
+	if (line != "ZenGin Archive")
+	{
+		LOG_ERROR("The specified stream is not a valid ZenGin archive!");
 		return false;
-
-	/*
-		ver 0 / ver 1
-	*/
-	file->ReadLine(line);
-
-	if (line == "ver 0")			version = 0;
-	else if (line == "ver 1")		version = 1;
-	else							return false;
-
-	/*
-		zCArchiverGeneric / zCArchiverBinSafe
-	*/
-	if (version == 1)
-	{
-		file->ReadLine(line);
 	}
 
-	/*
-		ASCII / BINARY / BIN_SAFE
-	*/
+	// Read lines
+	bool first = true;
 
-	file->ReadLine(line);
-
-	if (line == "ASCII")			type = ARCHIVER_TYPE_ASCII;
-	else if (line == "BINARY")		type = ARCHIVER_TYPE_BINARY;
-	else if (line == "BIN_SAFE")	type = ARCHIVER_TYPE_BIN_SAFE;
-	else							return false;
-
-	/*
-		saveGame 0 / saveGame 1
-	*/
-
-	file->ReadLine(line);
-
-	bool noSavegame = false;
-
-	if (line == "saveGame 0")		savegame = false;
-	else if (line == "saveGame 1")	savegame = true;
-	else
+	while (true)
 	{
-		savegame = false;
-		noSavegame = true;
-	}
-
-	/*
-		date DD.MM.YYYY HH:MM:SS
-	*/
-
-	if (!noSavegame)
-	{
-		file->ReadLine(line);
-	}
-
-	if (version == 0)
-	{
-		/*
-			objects n
-		*/
-
-		file->ReadLine(line);
-
-		uint32_t objectCount = std::stoul(line.substr(8));
-
-		if (objectCount == 0)
-			return false;
-
-		objectList.resize(objectCount);
-
-		/*
-			csum 00000000
-		*/
-
-		if (noSavegame)
+		if (!file->ReadLine(line))
 		{
-			file->ReadLine(line);
+			LOG_ERROR("Unexpected end of file while reading a ZenGin archive!");
+			return false;
 		}
-	}
-	else if (version == 1)
-	{
+
 		/*
-			user x
+			ver 0 / ver 1
 		*/
+		if (line == "ver 0")			version = 0;
+		else if (line == "ver 1")		version = 1;
 
-		file->ReadLine(line);
-	}
+		/*
+			ASCII / BINARY / BIN_SAFE
+		*/
+		if (line == "ASCII")			type = ARCHIVER_TYPE_ASCII;
+		else if (line == "BINARY")		type = ARCHIVER_TYPE_BINARY;
+		else if (line == "BIN_SAFE")	type = ARCHIVER_TYPE_BIN_SAFE;
 
-	/*
-		END
-	*/
+		/*
+			saveGame 0 / saveGame 1
+		*/
+		if (line == "saveGame 0")		savegame = false;
+		else if (line == "saveGame 1")	savegame = true;
 
-	file->ReadLine(line);
-
-	if (line != "END")
-		return false;
-
-	if (version == 1 &&
-		type != ARCHIVER_TYPE_BIN_SAFE)
-	{
 		/*
 			objects n
 		*/
+		if (line.substr(0, 8) == "objects ")
+		{
+			objectCount = std::stoul(line.substr(8));
 
-		file->ReadLine(line);
+			if (objectCount == 0)
+			{
+				LOG_WARN("The specified ZenGin Archive doesn't contain any objects.");
+				return true;
+			}
 
-		uint32_t objectCount = std::stoul(line.substr(8));
-
-		if (objectCount == 0)
-			return false;
-
-		objectList.resize(objectCount);
+			objectList.resize(objectCount);
+		}
 
 		/*
 			END
 		*/
+		if (line == "END")
+		{
+			if (first &&
+				type != ARCHIVER_TYPE_BIN_SAFE &&
+				objectCount == -1)
+			{
+				first = false;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
 
-		file->ReadLine(line);
-
-		if (line != "END")
-			return false;
-
-		/*
-			*empty line*
-		*/
-
+	/*
+		*empty line*
+	*/
+	if (type != ARCHIVER_TYPE_BIN_SAFE)
+	{
 		file->ReadLine(line);
 
 		if (!line.empty())
-			return false;
+		{
+			LOG_WARN("Expected an empy line after ZenGin archive header, got \"" + line + "\" instead.");
+		}
 	}
-	else if (type == ARCHIVER_TYPE_BIN_SAFE)
+	else
 	{
 		BinSafeArchiveHeader header;
 		if (!file->Read(&header, sizeof(header)))
-			return false;
-
-		if (header.version != 2)
 		{
+			LOG_ERROR("Unexpected end of file while reading a BinSafe header!");
 			return false;
 		}
 
-		objectList.resize(header.objectCount);
+		if (header.version != 2)
+		{
+			LOG_ERROR("Unknown BinSafe archive version, expected 2, got " + std::to_string(header.version));
+			return false;
+		}
+
+		objectCount = header.objectCount;
+
+		objectList.resize(objectCount);
 
 		uint64_t startPos = file->Tell();
 
@@ -211,7 +145,10 @@ bool ZenGin::zCArchiver::Read(FileStream* _file)
 
 		uint32_t chunkCount;
 		if (!file->Read(&chunkCount, sizeof(chunkCount)))
+		{
+			LOG_ERROR("Unexpected end of file while reading a BinSafe header!");
 			return false;
+		}
 
 		BinSafeHashTable hash;
 		char text[8192];
@@ -219,14 +156,20 @@ bool ZenGin::zCArchiver::Read(FileStream* _file)
 		for (size_t i = 0; i < chunkCount; i++)
 		{
 			if (!file->Read(&hash, sizeof(hash)))
+			{
+				LOG_ERROR("Unexpected end of file while reading a BinSafe hash table!");
 				return false;
+			}
 
 			uint32_t textLength = hash.stringLength;
 			if (textLength > 8192)
 				textLength = 8192;
 
 			if (!file->Read(&text, textLength))
+			{
+				LOG_ERROR("Unexpected end of file while reading a BinSafe hash table!");
 				return false;
+			}
 
 			// Todo: save values
 		}
