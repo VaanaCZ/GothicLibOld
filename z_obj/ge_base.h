@@ -5,7 +5,7 @@
 
 namespace GE
 {
-	// Reflections
+/*	// Reflections
 	class bCPropertyObjectsingleton
 	{
 		std::string base;
@@ -58,7 +58,7 @@ namespace GE
 	{
 
 	};
-
+	
 	// Base types
 
 	class bCObjectBase
@@ -86,5 +86,5 @@ namespace GE
 
 	private:
 
-	};
+	};*/
 };

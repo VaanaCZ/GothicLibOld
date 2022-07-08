@@ -1,12 +1,12 @@
-#pragma once
-
+#include "gothiclib.h"
 #include "zen_base.h"
 
 #include "zen_vdfs.h"
 #include "zen_world.h"
 
+using namespace GothicLib;
 
-ZEN::zCObject* ZEN::zCObject::CreateObject(std::string className)
+ZenGin::zCObject* ZenGin::zCObject::CreateObject(std::string className)
 {
 #define CLASS_CREATE_ATTEMPT(c)									\
 	else if (className == c::GetStaticClassname())	\
@@ -32,7 +32,7 @@ ZEN::zCObject* ZEN::zCObject::CreateObject(std::string className)
 	return nullptr;
 }
 
-bool ZEN::zCArchiver::Read(FileStream* _file)
+bool ZenGin::zCArchiver::Read(FileStream* _file)
 {
 	file = _file;
 
@@ -226,7 +226,7 @@ bool ZEN::zCArchiver::Read(FileStream* _file)
 	return true;
 }
 
-bool ZEN::zCArchiver::ReadInt(std::string name, int& intVal)
+bool ZenGin::zCArchiver::ReadInt(std::string name, int& intVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -245,7 +245,7 @@ bool ZEN::zCArchiver::ReadInt(std::string name, int& intVal)
 	return true;
 }
 
-bool ZEN::zCArchiver::ReadFloat(std::string name, float& floatVal)
+bool ZenGin::zCArchiver::ReadFloat(std::string name, float& floatVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -264,7 +264,7 @@ bool ZEN::zCArchiver::ReadFloat(std::string name, float& floatVal)
 	return true;
 }
 
-bool ZEN::zCArchiver::ReadBool(std::string name, bool& boolVal)
+bool ZenGin::zCArchiver::ReadBool(std::string name, bool& boolVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -283,7 +283,7 @@ bool ZEN::zCArchiver::ReadBool(std::string name, bool& boolVal)
 	return true;
 }
 
-bool ZEN::zCArchiver::ReadString(std::string name, std::string& strVal)
+bool ZenGin::zCArchiver::ReadString(std::string name, std::string& strVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -302,7 +302,7 @@ bool ZEN::zCArchiver::ReadString(std::string name, std::string& strVal)
 	return false;
 }
 
-bool ZEN::zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
+bool ZenGin::zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -324,7 +324,7 @@ bool ZEN::zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
 	return false;
 }
 
-bool ZEN::zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
+bool ZenGin::zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -352,7 +352,7 @@ bool ZEN::zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
 	return false;
 }
 
-bool ZEN::zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSize)
+bool ZenGin::zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSize)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -385,7 +385,7 @@ bool ZEN::zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSize)
 	return false;
 }
 
-bool ZEN::zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t floatCount)
+bool ZenGin::zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t floatCount)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -430,7 +430,7 @@ bool ZEN::zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t fl
 	return false;
 }
 
-bool ZEN::zCArchiver::ReadEnum(std::string name, int& enumVal)
+bool ZenGin::zCArchiver::ReadEnum(std::string name, int& enumVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -449,7 +449,7 @@ bool ZEN::zCArchiver::ReadEnum(std::string name, int& enumVal)
 	return false;
 }
 
-ZEN::zCObject* ZEN::zCArchiver::GetContainedObject()
+ZenGin::zCObject* ZenGin::zCArchiver::GetContainedObject()
 {
 	if (objectList.size() != 0)
 	{
@@ -459,7 +459,7 @@ ZEN::zCObject* ZEN::zCArchiver::GetContainedObject()
 	return nullptr;
 }
 
-bool ZEN::zCArchiver::ReadPropertyASCII(std::string name, std::string type, std::string& value)
+bool ZenGin::zCArchiver::ReadPropertyASCII(std::string name, std::string type, std::string& value)
 {
 	std::string line;
 	file->ReadLine(line);
@@ -474,7 +474,7 @@ bool ZEN::zCArchiver::ReadPropertyASCII(std::string name, std::string type, std:
 	return true;
 }
 
-bool ZEN::zCArchiver::ReadPropertyBinSafe(BINSAFE_TYPE type, char*& data, size_t& size)
+bool ZenGin::zCArchiver::ReadPropertyBinSafe(BINSAFE_TYPE type, char*& data, size_t& size)
 {
 	// First read the type
 	char readType;
@@ -532,7 +532,7 @@ bool ZEN::zCArchiver::ReadPropertyBinSafe(BINSAFE_TYPE type, char*& data, size_t
 	return true;
 }
 
-bool ZEN::zCArchiver::ReadChunkStart(std::string* objectName, std::string* className, uint16_t* classVersion, uint32_t* objectIndex)
+bool ZenGin::zCArchiver::ReadChunkStart(std::string* objectName, std::string* className, uint16_t* classVersion, uint32_t* objectIndex)
 {
 	if (type == ARCHIVER_TYPE_ASCII ||
 		type == ARCHIVER_TYPE_BIN_SAFE)
@@ -608,7 +608,7 @@ bool ZEN::zCArchiver::ReadChunkStart(std::string* objectName, std::string* class
 	return true;
 }
 
-bool ZEN::zCArchiver::ReadChunkEnd()
+bool ZenGin::zCArchiver::ReadChunkEnd()
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -623,7 +623,7 @@ bool ZEN::zCArchiver::ReadChunkEnd()
 	return true;
 }
 
-bool ZEN::zCArchiver::ReadObject(zCObject*& object)
+bool ZenGin::zCArchiver::ReadObject(zCObject*& object)
 {
 	object = nullptr;
 

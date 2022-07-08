@@ -4,6 +4,8 @@
 // Copyright (c) 2021-2022 Václav Maroušek
 //
 
+#if 0
+
 #pragma once
 
 #include <filesystem>
@@ -16,89 +18,6 @@
 
 namespace GE
 {
-	//
-	// File stream abstraction which allows reading
-	// both from a file and a memory buffer.
-	//
-
-	class FileStream
-	{
-	public:
-
-		FileStream()	{ iSubThreadId = std::this_thread::get_id(); }
-		~FileStream()	{ Close(); }
-
-		FileStream(const FileStream&) = delete;
-		FileStream& operator=(const FileStream&) = delete;
-
-		/*
-			Stream creation / destruction
-		*/
-
-		bool		Open(std::string, char);				// File
-		bool		Open(std::wstring, char);				// File
-		bool		Open(char*, size_t, char, bool = true);	// Buffer
-		bool		Open(FileStream*, uint64_t, uint64_t);	// Substream
-
-		void		Close();
-
-		/*
-			Basic stream operations	
-		*/
-
-		bool		Read(void*, uint64_t);
-		bool		ReadString(std::string&);
-		bool		ReadLine(std::string&);
-
-		void		Seek(uint64_t);
-		uint64_t	Tell();
-		uint64_t	TotalSize();
-
-	private:
-
-		void		ForkSubStream(FileStream*, uint64_t);
-		void		OpenGenomeFile();
-
-		enum STREAM_MODE
-		{
-			STREAM_MODE_READ,
-			STREAM_MODE_WRITE,
-
-			STREAM_MODE_NONE = -1
-		};
-
-		STREAM_MODE		mode = STREAM_MODE_NONE;
-
-		// In
-		enum STREAM_SOURCE
-		{
-			STREAM_SOURCE_RAWFILE,
-			STREAM_SOURCE_BUFFER,
-			STREAM_SOURCE_SUBSTREAM,
-
-			STREAM_SOURCE_NONE = -1
-		};
-
-		STREAM_SOURCE	iSource = STREAM_SOURCE_NONE;
-
-		std::ifstream	iFile;
-		std::wstring	iPath;
-
-		char*			iBuffer;
-		bool			iDisposeBuffer;
-
-		uint64_t		iTotalSize;
-		uint64_t		iPosition;
-
-		FileStream*		iSubStream;
-		uint64_t		iSubOffset = 0;
-		std::thread::id	iSubThreadId;
-
-		// Out
-		std::ofstream	oFile;
-
-	};
-
 	//
 	// Virtual file system implementation for VDFS
 	//
@@ -258,3 +177,6 @@ namespace GE
 
 	};
 };
+
+
+#endif // 

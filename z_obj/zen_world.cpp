@@ -1,15 +1,17 @@
 #include "zen_world.h"
 
+using namespace GothicLib;
+
 /*
 	World classes
 */
 
-bool ZEN::zCWorld::Archive(zCArchiver* archiver)
+bool ZenGin::zCWorld::Archive(zCArchiver* archiver)
 {
 	return false;
 }
 
-bool ZEN::zCWorld::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCWorld::Unarchive(zCArchiver* archiver)
 {
 	// Loop through chunks until the end
 	std::string objectName;
@@ -36,7 +38,7 @@ bool ZEN::zCWorld::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZEN::zCWorld::UnarcVobTree(zCVob* vob, zCArchiver* archiver, size_t& vobCount)
+bool ZenGin::zCWorld::UnarcVobTree(zCVob* vob, zCArchiver* archiver, size_t& vobCount)
 {
 	// Read vob
 	zCVob* nextVob;
@@ -69,12 +71,12 @@ bool ZEN::zCWorld::UnarcVobTree(zCVob* vob, zCArchiver* archiver, size_t& vobCou
 	return true;
 }
 
-bool ZEN::oCWorld::Archive(zCArchiver* archiver)
+bool ZenGin::oCWorld::Archive(zCArchiver* archiver)
 {
 	return false;
 }
 
-bool ZEN::oCWorld::Unarchive(zCArchiver* archiver)
+bool ZenGin::oCWorld::Unarchive(zCArchiver* archiver)
 {
 	if (!zCWorld::Unarchive(archiver))
 		return false;
@@ -88,12 +90,12 @@ bool ZEN::oCWorld::Unarchive(zCArchiver* archiver)
 	Vob classes
 */
 
-bool ZEN::zCVob::Archive(zCArchiver* archiver)
+bool ZenGin::zCVob::Archive(zCArchiver* archiver)
 {
 	return false;
 }
 
-bool ZEN::zCVob::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCVob::Unarchive(zCArchiver* archiver)
 {
 	if (!archiver->ReadInt("pack", pack))
 		return false;
@@ -164,27 +166,27 @@ bool ZEN::zCVob::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZEN::zCVobLevelCompo::Archive(zCArchiver* archiver)
+bool ZenGin::zCVobLevelCompo::Archive(zCArchiver* archiver)
 {
 	return zCVob::Archive(archiver);
 }
 
-bool ZEN::zCVobLevelCompo::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCVobLevelCompo::Unarchive(zCArchiver* archiver)
 {
 	return zCVob::Unarchive(archiver);
 }
 
-bool ZEN::zCVobSpot::Archive(zCArchiver* archiver)
+bool ZenGin::zCVobSpot::Archive(zCArchiver* archiver)
 {
 	return zCVob::Archive(archiver);
 }
 
-bool ZEN::zCVobSpot::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCVobSpot::Unarchive(zCArchiver* archiver)
 {
 	return zCVob::Unarchive(archiver);
 }
 
-bool ZEN::zCVobSound::Archive(zCArchiver* archiver)
+bool ZenGin::zCVobSound::Archive(zCArchiver* archiver)
 {
 	if (!zCVob::Archive(archiver))
 		return false;
@@ -192,7 +194,7 @@ bool ZEN::zCVobSound::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZEN::zCVobSound::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCVobSound::Unarchive(zCArchiver* archiver)
 {
 	if (!zCVob::Unarchive(archiver))
 		return false;
@@ -233,7 +235,7 @@ bool ZEN::zCVobSound::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZEN::zCVobLight::Archive(zCArchiver* archiver)
+bool ZenGin::zCVobLight::Archive(zCArchiver* archiver)
 {
 	if (!zCVob::Archive(archiver))
 		return false;
@@ -241,7 +243,7 @@ bool ZEN::zCVobLight::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZEN::zCVobLight::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCVobLight::Unarchive(zCArchiver* archiver)
 {
 	if (!zCVob::Unarchive(archiver))
 		return false;
@@ -298,32 +300,32 @@ bool ZEN::zCVobLight::Unarchive(zCArchiver* archiver)
 	Visual classes
 */
 
-bool ZEN::zCVisual::Archive(zCArchiver* archiver)
+bool ZenGin::zCVisual::Archive(zCArchiver* archiver)
 {
 	return true;
 }
 
-bool ZEN::zCVisual::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCVisual::Unarchive(zCArchiver* archiver)
 {
 	return true;
 }
 
-bool ZEN::zCMesh::Archive(zCArchiver* archiver)
+bool ZenGin::zCMesh::Archive(zCArchiver* archiver)
 {
 	return true;
 }
 
-bool ZEN::zCMesh::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCMesh::Unarchive(zCArchiver* archiver)
 {
 	return true;
 }
 
-bool ZEN::zCParticleFX::Archive(zCArchiver* archiver)
+bool ZenGin::zCParticleFX::Archive(zCArchiver* archiver)
 {
 	return true;
 }
 
-bool ZEN::zCParticleFX::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCParticleFX::Unarchive(zCArchiver* archiver)
 {
 	return true;
 }
@@ -332,12 +334,12 @@ bool ZEN::zCParticleFX::Unarchive(zCArchiver* archiver)
 	AI classes
 */
 
-bool ZEN::zCAIBase::Archive(zCArchiver* archiver)
+bool ZenGin::zCAIBase::Archive(zCArchiver* archiver)
 {
 	return true;
 }
 
-bool ZEN::zCAIBase::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCAIBase::Unarchive(zCArchiver* archiver)
 {
 	return true;
 }
