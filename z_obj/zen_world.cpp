@@ -159,10 +159,10 @@ bool ZenGin::zCVob::Unarchive(zCArchiver* archiver)
 			return false;
 	}
 
-	if (!archiver->ReadObject<zCVisual*>(visualPtr))
+	if (!archiver->ReadObject<zCVisual*>("visual", visualPtr))
 		return false;
 
-	if (!archiver->ReadObject<zCAIBase*>(aiPtr))
+	if (!archiver->ReadObject<zCAIBase*>("ai", aiPtr))
 		return false;
 
 	return true;

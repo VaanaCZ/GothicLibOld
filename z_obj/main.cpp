@@ -28,13 +28,13 @@ int main(int argc, char* argv[])
 	
 	//fs.InitializeDirectory(L"D:\\Gothic\\Gothic_demo5");
 	//fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic Sequel");
-	if (!fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic Original"))
-		return 1;
+	//if (!fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic Original"))
+	//	return 1;
 
-	FileStream* f = fs.OpenFile("WORLD.zen", true);
-	//FileStream* f = new FileStream();
+	//FileStream* f = fs.OpenFile("WORLD.zen", true);
+	FileStream* f = new FileStream();
 	//f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\TESTLEVEL_UNCOMPILED_0.64b.ZEN", 'r');
-	//f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\SURFACE_UNCOMPILED.ZEN", 'r');
+	f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\SURFACE_UNCOMPILED.ZEN", 'r');
 	//f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\NEWWORLD_PART_CITY_01_UNCOMPILED.ZEN", 'r');
 	//f->Open("D:\\SteamLibrary\\steamapps\\common\\Gothic Original\\saves\\current\\WORLD.SAV", 'r');
 

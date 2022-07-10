@@ -12,14 +12,15 @@ ZenGin::zCObject* ZenGin::zCObject::CreateObject(std::string _className)
 {
 	std::string className = _className;
 
-	if (className.rfind(":") != std::string::npos)
-		className = className.substr(className.rfind(":") + 1);
+	if (className.find(":") != std::string::npos)
+		className = className.substr(0, className.find(":"));
 
 	if (classManager)
 	{
 		ClassDefinition* classDef = classManager->GetClassDef(className);
 
-		return ((zCObject* (*)())classDef->createFunc)();
+		if (classDef)
+			return ((zCObject* (*)())classDef->createFunc)();
 	}
 
 	return nullptr;
@@ -118,6 +119,11 @@ bool ZenGin::zCArchiver::Read(FileStream* _file)
 		{
 			LOG_WARN("Expected an empy line after ZenGin archive header, got \"" + line + "\" instead.");
 		}
+
+		if (type == ARCHIVER_TYPE_ASCII)
+		{
+			asciiChunksPositions.push_back(file->Tell());
+		}
 	}
 	else
 	{
@@ -189,7 +195,7 @@ bool ZenGin::zCArchiver::ReadInt(std::string name, int& intVal)
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
 		std::string value;
-		if (!ReadPropertyASCII(name, "int", value))
+		if (!ReadASCIIProperty(name, "int", value))
 			return false;
 		intVal = std::stoi(value);
 
@@ -203,12 +209,50 @@ bool ZenGin::zCArchiver::ReadInt(std::string name, int& intVal)
 	return true;
 }
 
+bool ZenGin::zCArchiver::ReadByte(std::string name, char& byteVal)
+{
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		std::string value;
+		if (!ReadASCIIProperty(name, "int", value))
+			return false;
+		byteVal = std::stoi(value);
+
+		return true;
+	}
+	else if (type == ARCHIVER_TYPE_BINARY)
+	{
+		return file->Read(&byteVal, sizeof(byteVal));
+	}
+
+	return true;
+}
+
+bool ZenGin::zCArchiver::ReadWord(std::string name, short& wordVal)
+{
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		std::string value;
+		if (!ReadASCIIProperty(name, "int", value))
+			return false;
+		wordVal = std::stoi(value);
+
+		return true;
+	}
+	else if (type == ARCHIVER_TYPE_BINARY)
+	{
+		return file->Read(&wordVal, sizeof(wordVal));
+	}
+
+	return true;
+}
+
 bool ZenGin::zCArchiver::ReadFloat(std::string name, float& floatVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
 		std::string value;
-		if (!ReadPropertyASCII(name, "float", value))
+		if (!ReadASCIIProperty(name, "float", value))
 			return false;
 		floatVal = std::stof(value);
 
@@ -227,7 +271,7 @@ bool ZenGin::zCArchiver::ReadBool(std::string name, bool& boolVal)
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
 		std::string value;
-		if (!ReadPropertyASCII(name, "bool", value))
+		if (!ReadASCIIProperty(name, "bool", value))
 			return false;
 		boolVal = std::stoi(value);
 
@@ -246,7 +290,7 @@ bool ZenGin::zCArchiver::ReadString(std::string name, std::string& strVal)
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
 		std::string value;
-		if (!ReadPropertyASCII(name, "string", value))
+		if (!ReadASCIIProperty(name, "string", value))
 			return false;
 		strVal = value;
 
@@ -265,7 +309,7 @@ bool ZenGin::zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
 		std::string value;
-		if (!ReadPropertyASCII(name, "vec3", value))
+		if (!ReadASCIIProperty(name, "vec3", value))
 			return false;
 
 		if (sscanf_s(value.c_str(), "%f %f %f",
@@ -287,7 +331,7 @@ bool ZenGin::zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
 		std::string value;
-		if (!ReadPropertyASCII(name, "color", value))
+		if (!ReadASCIIProperty(name, "color", value))
 			return false;
 
 		int vals[4];
@@ -315,7 +359,7 @@ bool ZenGin::zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSi
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
 		std::string value;
-		if (!ReadPropertyASCII(name, "raw", value))
+		if (!ReadASCIIProperty(name, "raw", value))
 			return false;
 
 		if (value.size() / 2 != bufferSize)
@@ -348,7 +392,7 @@ bool ZenGin::zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
 		std::string value;
-		if (!ReadPropertyASCII(name, "rawFloat", value))
+		if (!ReadASCIIProperty(name, "rawFloat", value))
 			return false;
 
 		// Count floats
@@ -393,7 +437,7 @@ bool ZenGin::zCArchiver::ReadEnum(std::string name, int& enumVal)
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
 		std::string value;
-		if (!ReadPropertyASCII(name, "enum", value))
+		if (!ReadASCIIProperty(name, "enum", value))
 			return false;
 		enumVal = std::stoi(value);
 
@@ -407,6 +451,291 @@ bool ZenGin::zCArchiver::ReadEnum(std::string name, int& enumVal)
 	return false;
 }
 
+bool ZenGin::zCArchiver::ReadObject(std::string name, zCObject*& object)
+{
+	object = nullptr;
+
+	// Read object header
+	std::string className;
+	uint16_t classVersion;
+	uint32_t objectIndex;
+
+	if (!ReadChunkStart(&name, &className, &classVersion, &objectIndex))
+		return false;
+
+	if (className == "%")
+	{
+		// % = nullptr
+		object = nullptr;
+	}
+	else if (className == "§")
+	{
+		// § = existing object in list
+		return false;
+	}
+	else
+	{
+		// Create object based on read type
+		object = zCObject::CreateObject(className);
+
+		if (object == nullptr)
+			return false;
+
+		object->version = classVersion;
+
+		objectList[objectIndex] = object;
+
+		if (!object->Unarchive(this))
+			return false;
+	}
+
+	if (!ReadChunkEnd())
+		return false;
+
+	return true;
+}
+
+bool ZenGin::zCArchiver::ReadChunkStart(std::string* objectName, std::string* className, uint16_t* classVersion, uint32_t* objectIndex)
+{
+	if (type == ARCHIVER_TYPE_ASCII ||
+		type == ARCHIVER_TYPE_BIN_SAFE)
+	{
+		std::string line;
+
+		if (type == ARCHIVER_TYPE_BIN_SAFE)
+		{
+			char* str;
+			size_t length;
+			if (!ReadBinSafeProperty(BINSAFE_TYPE_STRING, str, length))
+				return false;
+
+			line = std::string(str, length);
+
+			delete[] str;
+		}
+		else
+		{
+			// While in ASCII mode, it is not always guaranteed
+			// that the chunks/properties will be in the correct
+			// order. Therefore we need to go through the entirity
+			// of the current chuck and find the one that matches
+			// the specified criteria.
+
+			// Go to the start of the current chunk before we
+			// perform the search.
+			//file->Seek(asciiChunksPositions[asciiChunksPositions.size() - 1]);
+
+			bool first = true;
+
+			bool looping = false;
+			uint64_t startPos = file->Tell();
+
+			int nesting = 0;
+
+			bool valid = false;
+
+			while (file->ReadLine(line))
+			{
+				LOG_DEBUG("ReadChunkStart    : " + line);
+
+				bool isHeader = false;
+
+				if (looping && file->Tell() >= startPos)
+				{
+					break;
+				}
+
+				// Figure out nesting
+				size_t tabCount = 0;
+
+				for (size_t i = 0; i < line.size(); i++)
+				{
+					if (line[i] != '\t')
+					{
+						tabCount = i;
+						break;
+					}
+				}
+
+				if (line.size() >= tabCount + 2 &&
+					line[tabCount] == '[')
+				{
+					if (line[tabCount + 1] == ']')
+						nesting--;
+					else
+					{
+						isHeader = true;
+						nesting++;
+					}
+				}
+
+				// If we have closed the current chunk but
+				// haven't found any other, the search failed.
+				if (nesting < 0)
+				{
+					nesting = 0;
+					looping = true;
+
+					// Go to start
+					file->Seek(asciiChunksPositions[asciiChunksPositions.size() - 1]);
+
+					continue;
+				}
+				else if (nesting == 1)
+				{
+					size_t sPos = line.find(" ");
+
+					if (isHeader && sPos != std::string::npos)
+					{
+						if (objectName == nullptr ||
+							(*objectName).empty())
+						{
+							valid = true;
+							break;
+						}
+						else
+						{
+							std::string chunkName = line.substr(tabCount + 1, sPos - tabCount - 1);
+
+							if ((*objectName) == chunkName)
+							{
+								valid = true;
+								break;
+							}
+						}
+					}
+
+					if (first)
+					{
+						first = false;
+						LOG_WARN("Incorrect chunk order, expected \"" + (*objectName) + "\"!");
+					}
+				}				
+			}
+
+			if (!valid)
+			{
+				LOG_ERROR("No chunk matching the desired criteria has been found!");
+				return false;
+			}
+
+			// Mark that we entered a new chunk
+			asciiChunksPositions.push_back(file->Tell());
+		}
+
+		size_t p1 = line.find("[");
+		size_t p2 = line.find(" ", p1 + 1);
+		size_t p3 = line.find(" ", p2 + 1);
+		size_t p4 = line.find(" ", p3 + 1);
+
+		if (objectName != nullptr)
+			*objectName	= line.substr(p1 + 1, p2 - p1 - 1);
+
+		if (className != nullptr)
+			*className	= line.substr(p2 + 1, p3 - p2 - 1);
+
+		if (classVersion != nullptr)
+			*classVersion = std::stoi(line.substr(p3));
+
+		if (objectIndex != nullptr)
+			*objectIndex = std::stoi(line.substr(p4));
+	}
+	else if (type == ARCHIVER_TYPE_BINARY)
+	{
+		BinaryObjectHeader header;
+		if (!file->Read(&header, sizeof(header)))
+			return false;
+
+		std::string readObjectName;
+		if (!file->ReadNullString(readObjectName))
+			return false;
+
+		std::string readClassName;
+		if (!file->ReadNullString(readClassName))
+			return false;
+
+		if (objectName != nullptr)
+			*objectName = readObjectName;
+
+		if (className != nullptr)
+			*className = readClassName;
+
+		if (classVersion != nullptr)
+			*classVersion = header.classVersion;
+
+		if (objectIndex != nullptr)
+			*objectIndex = header.objectIndex;
+	}
+
+	if (objectIndex != nullptr &&
+		*objectIndex >= objectList.size())
+	{
+		return false;
+	}
+
+	tabOffset++;
+
+
+	return true;
+}
+
+bool ZenGin::zCArchiver::ReadChunkEnd()
+{
+	if (type == ARCHIVER_TYPE_ASCII)
+	{
+		bool valid = false;
+
+		int nesting = 0;
+
+		std::string line;
+
+		while (file->ReadLine(line))
+		{
+			LOG_DEBUG("ReadChunkEnd      : " + line);
+
+			// Figure out nesting
+			size_t tabCount = 0;
+
+			for (size_t i = 0; i < line.size(); i++)
+			{
+				if (line[i] != '\t')
+				{
+					tabCount = i;
+					break;
+				}
+			}
+
+			if (line.size() >= tabCount + 2 &&
+				line[tabCount] == '[')
+			{
+				if (line[tabCount + 1] == ']')
+					nesting--;
+				else
+					nesting++;
+			}
+
+			// End reached
+			if (nesting < 0)
+			{
+				valid = true;
+				break;
+			}
+		}
+
+		if (!valid)
+		{
+			LOG_ERROR("End of the file reached, but the chunk remains open. This archive is invalid!");
+			return false;
+		}
+
+		asciiChunksPositions.pop_back();
+	}
+
+	tabOffset--;
+
+	return true;
+}
+
 ZenGin::zCObject* ZenGin::zCArchiver::GetContainedObject()
 {
 	if (objectList.size() != 0)
@@ -417,22 +746,108 @@ ZenGin::zCObject* ZenGin::zCArchiver::GetContainedObject()
 	return nullptr;
 }
 
-bool ZenGin::zCArchiver::ReadPropertyASCII(std::string name, std::string type, std::string& value)
+bool ZenGin::zCArchiver::ReadASCIIProperty(std::string name, std::string type, std::string& value)
 {
+	// While in ASCII mode, it is not always guaranteed
+	// that the chunks/properties will be in the correct
+	// order. Therefore we need to go through the entirity
+	// of the current chuck and find the one that matches
+	// the specified criteria.
+
+	// Go to the start of the current chunk before we
+	// perform the search.
+
+	bool first = true;
+
+	bool looping = false;
+	uint64_t startPos = file->Tell();
+
+	int nesting = 0;
+	
 	std::string line;
-	file->ReadLine(line);
+	while (file->ReadLine(line))
+	{
+		LOG_DEBUG("ReadASCIIProperty : " + line);
 
-	std::string s = name + "=" + type + ":";
-	size_t sp = line.find(s);
+		if (looping && file->Tell() >= startPos)
+		{
+			break;
+		}
 
-	if (sp == std::string::npos)
-		return false;
+		// Figure out nesting
+		size_t tabCount = 0;
 
-	value = line.substr(sp + s.size());
-	return true;
+		for (size_t i = 0; i < line.size(); i++)
+		{
+			if (line[i] != '\t')
+			{
+				tabCount = i;
+				break;
+			}
+		}
+
+		if (line.size() >= tabCount + 2 &&
+			line[tabCount] == '[')
+		{
+			if (line[tabCount + 1] == ']')
+				nesting--;
+			else
+				nesting++;
+		}
+
+		// If we have closed the current chunk but
+		// haven't found any other, the search failed.
+		if (nesting < 0)
+		{
+			nesting = 0;
+			looping = true;
+
+			// Go to start
+			file->Seek(asciiChunksPositions[asciiChunksPositions.size() - 1]);
+
+			continue;
+		}
+		else if (nesting > 0)
+		{
+			continue;
+		}
+
+		// Unpack line
+		size_t ePos = line.find("=", tabCount);
+		size_t cPos = line.find(":", ePos + 1);
+
+		if (ePos == std::string::npos || cPos == std::string::npos)
+		{
+			continue;
+		}
+
+		std::string readName	= line.substr(tabCount, ePos - tabCount);
+		std::string readType	= line.substr(ePos + 1, cPos - ePos - 1);
+		std::string readValue	= line.substr(cPos + 1);
+
+		if (readType != "groupBegin" && // ASCII_PROPS
+			readType != "groupEnd")
+		{
+			if (readName == name &&
+				readType == type)
+			{
+				value = readValue;
+				return true;
+			}
+			else if (first)
+			{
+				first = false;
+
+				LOG_WARN("Incorrect property order, expected \"" + name + "\", found \"" + readName + "\"!");
+			}
+		}
+	}
+
+	LOG_ERROR("Specified property not found in chunk!");
+	return false;
 }
 
-bool ZenGin::zCArchiver::ReadPropertyBinSafe(BINSAFE_TYPE type, char*& data, size_t& size)
+bool ZenGin::zCArchiver::ReadBinSafeProperty(BINSAFE_TYPE type, char*& data, size_t& size)
 {
 	// First read the type
 	char readType;
@@ -486,141 +901,6 @@ bool ZenGin::zCArchiver::ReadPropertyBinSafe(BINSAFE_TYPE type, char*& data, siz
 	default:
 		break;
 	}
-
-	return true;
-}
-
-bool ZenGin::zCArchiver::ReadChunkStart(std::string* objectName, std::string* className, uint16_t* classVersion, uint32_t* objectIndex)
-{
-	if (type == ARCHIVER_TYPE_ASCII ||
-		type == ARCHIVER_TYPE_BIN_SAFE)
-	{
-		std::string header;
-
-		if (type == ARCHIVER_TYPE_BIN_SAFE)
-		{
-			char* str;
-			size_t length;
-			if (!ReadPropertyBinSafe(BINSAFE_TYPE_STRING, str, length))
-				return false;
-
-			header = std::string(str, length);
-
-			delete[] str;
-		}
-		else
-		{
-			file->ReadLine(header);
-		}
-
-		size_t p1 = header.find("[");
-		size_t p2 = header.find(" ", p1 + 1);
-		size_t p3 = header.find(" ", p2 + 1);
-		size_t p4 = header.find(" ", p3 + 1);
-
-		if (objectName != nullptr)
-			*objectName	= header.substr(p1 + 1, p2 - p1 - 1);
-
-		if (className != nullptr)
-			*className	= header.substr(p2 + 1, p3 - p2 - 1);
-
-		if (classVersion != nullptr)
-			*classVersion = std::stoi(header.substr(p3));
-
-		if (objectIndex != nullptr)
-			*objectIndex = std::stoi(header.substr(p4));
-	}
-	else if (type == ARCHIVER_TYPE_BINARY)
-	{
-		BinaryObjectHeader header;
-		if (!file->Read(&header, sizeof(header)))
-			return false;
-
-		std::string readObjectName;
-		if (!file->ReadNullString(readObjectName))
-			return false;
-
-		std::string readClassName;
-		if (!file->ReadNullString(readClassName))
-			return false;
-
-		if (objectName != nullptr)
-			*objectName = readObjectName;
-
-		if (className != nullptr)
-			*className = readClassName;
-
-		if (classVersion != nullptr)
-			*classVersion = header.classVersion;
-
-		if (objectIndex != nullptr)
-			*objectIndex = header.objectIndex;
-	}
-
-	if (objectIndex != nullptr &&
-		*objectIndex >= objectList.size())
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool ZenGin::zCArchiver::ReadChunkEnd()
-{
-	if (type == ARCHIVER_TYPE_ASCII)
-	{
-		std::string end;
-		file->ReadLine(end);
-
-		if (end[end.size() - 2] != '[' ||
-			end[end.size() - 1] != ']')
-			return false;
-	}
-
-	return true;
-}
-
-bool ZenGin::zCArchiver::ReadObject(zCObject*& object)
-{
-	object = nullptr;
-
-	// Read object header
-	std::string objectName, className;
-	uint16_t classVersion;
-	uint32_t objectIndex;
-
-	if (!ReadChunkStart(&objectName, &className, &classVersion, &objectIndex))
-		return false;
-
-	if (className == "%")
-	{
-		// % = nullptr
-		object = nullptr;
-	}
-	else if (className == "§")
-	{
-		// § = existing object in list
-		return false;
-	}
-	else
-	{
-		// Create object based on read type
-		object = zCObject::CreateObject(className);
-
-		if (object == nullptr)
-			return false;
-
-		object->version = classVersion;
-
-		objectList[objectIndex] = object;
-
-		if (!object->Unarchive(this))
-			return false;
-	}
-
-	if (!ReadChunkEnd())
-		return false;
 
 	return true;
 }

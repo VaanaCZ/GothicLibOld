@@ -6,20 +6,6 @@
 
 #define GET_MACRO(_1,_2,_3,NAME,...) NAME
 
-//#define DEFINE_CLASS(c)															\
-//public:																			\
-//	static inline const char*	GetStaticClassname()	{ return className; }	\
-//	virtual const char*			GetClassName()			{ return className; }	\
-//private:																		\
-//	static inline const char* className = #c
-//
-//#define DEFINE_CLASS_EXTENDS(c, b)												\
-//public:																			\
-//	static inline const char*	GetStaticClassname()	{ return className; }	\
-//	virtual const char*			GetClassName()			{ return className; }	\
-//private:																		\
-//	static inline const char* className = #c ":" #b
-
 namespace GothicLib
 {
 	class FileStream;
@@ -68,6 +54,11 @@ namespace GothicLib
 			Archiver (.zen reading/writing)
 		*/
 
+		enum GAME
+		{
+			GAME_AUTODETECT = -1
+		};
+
 		class zCArchiver
 		{
 		public:
@@ -78,25 +69,28 @@ namespace GothicLib
 			bool Read(FileStream*);
 
 			bool ReadInt		(std::string, int&);
+			bool ReadByte		(std::string, char&);
+			bool ReadWord		(std::string, short&);
 			bool ReadFloat		(std::string, float&);
 			bool ReadBool		(std::string, bool&);
 			bool ReadString		(std::string, std::string&);
 			bool ReadVec3		(std::string, zVEC3&);
 			bool ReadColor		(std::string, zCOLOR&);
+			bool ReadEnum		(std::string, int&);
 			bool ReadRaw		(std::string, char*, size_t);
 			bool ReadRawFloat	(std::string, float*, size_t);
-			bool ReadEnum		(std::string, int&);
+
+			bool ReadObject(zCObject*& o) { return ReadObject(std::string(), o); }
+			bool ReadObject(std::string, zCObject*&);
 
 			bool ReadChunkStart(std::string*, std::string*, uint16_t*, uint32_t*);
 			bool ReadChunkEnd();
 		
-			bool ReadObject(zCObject*&);
-		
-			template <class C> bool ReadObject(C& object)
+			template <class C> bool ReadObject(std::string name, C& object)
 			{
 				zCObject* readObject;
 
-				if (!ReadObject(readObject))
+				if (!ReadObject(name, readObject))
 					return false;
 
 				if (readObject == nullptr)
@@ -110,25 +104,33 @@ namespace GothicLib
 				return true;
 			}
 
+			template <class C> bool ReadObject(C& object)
+			{
+				return ReadObject<C>(std::string(), object);
+			}
+
 			zCObject* GetContainedObject();
 
 		private:
 
 			enum BINSAFE_TYPE
 			{
-				BINSAFE_TYPE_STRING = 0x1,
-				BINSAFE_TYPE_INT = 0x2,
-				BINSAFE_TYPE_FLOAT = 0x3,
-				BINSAFE_TYPE_BOOL = 0x6,
-				BINSAFE_TYPE_VEC3 = 0x7,
-				BINSAFE_TYPE_COLOR = 0x8,
-				BINSAFE_TYPE_RAW = 0x9,
-				BINSAFE_TYPE_RAWFLOAT = 0x10,
-				BINSAFE_TYPE_ENUM = 0x11
+				BINSAFE_TYPE_STRING		= 0x1,
+				BINSAFE_TYPE_INT		= 0x2,
+				BINSAFE_TYPE_FLOAT		= 0x3,
+				BINSAFE_TYPE_BYTE		= 0x4,
+				BINSAFE_TYPE_WORD		= 0x5,
+				BINSAFE_TYPE_BOOL		= 0x6,
+				BINSAFE_TYPE_VEC3		= 0x7,
+				BINSAFE_TYPE_COLOR		= 0x8,
+				BINSAFE_TYPE_RAW		= 0x9,
+				BINSAFE_TYPE_RAWFLOAT	= 0x10,
+				BINSAFE_TYPE_ENUM		= 0x11,
+				BINSAFE_TYPE_HASH		= 0x12
 			};
 
-			bool ReadPropertyASCII(std::string, std::string, std::string&);
-			bool ReadPropertyBinSafe(BINSAFE_TYPE, char*&, size_t&);
+			bool ReadASCIIProperty(std::string, std::string, std::string&);
+			bool ReadBinSafeProperty(BINSAFE_TYPE, char*&, size_t&);
 
 			enum ARCHIVER_TYPE
 			{
@@ -145,6 +147,9 @@ namespace GothicLib
 			ARCHIVER_TYPE	type		= ARCHIVER_TYPE_NONE;
 			bool			savegame	= false;
 			uint32_t		objectCount = -1;
+			int				tabOffset = 0;
+
+			std::vector<uint64_t> asciiChunksPositions;
 
 			zCObject*				containedObject;
 
@@ -173,6 +178,16 @@ namespace GothicLib
 			};
 	#pragma pack(pop)
 
+		};
+
+		/*
+			Versioning
+		*/
+
+		class CLASS_REVISION
+		{
+			GAME		game;
+			uint16_t	version;
 		};
 
 		/*
