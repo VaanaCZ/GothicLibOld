@@ -17,6 +17,59 @@ namespace GothicLib
 		class zCObject;
 
 		/*
+			Macros
+		*/
+
+		// ZenGin Class Read
+
+#define ZCR_START(C)			std::string zcrName = #C;									\
+								bool zcrValid = true;
+
+#define ZCR_READINT(V)			if (!archiver->ReadInt(#V, V))								zcrValid = false;
+#define ZCR_READBYTE(V)			if (!archiver->ReadByte(#V, V))								zcrValid = false;
+#define ZCR_READWORD(V)			if (!archiver->ReadWord(#V, V))								zcrValid = false;
+#define ZCR_READFLOAT(V)		if (!archiver->ReadFloat(#V, V))							zcrValid = false;
+#define ZCR_READBOOL(V)			if (!archiver->ReadBool(#V, V))								zcrValid = false;
+#define ZCR_READSTRING(V)		if (!archiver->ReadString(#V, V))							zcrValid = false;
+#define ZCR_READVEC3(V)			if (!archiver->ReadVec3(#V, V))								zcrValid = false;
+#define ZCR_READCOLOR(V)		if (!archiver->ReadColor(#V, V))							zcrValid = false;
+#define ZCR_READENUM(V)			if (!archiver->ReadEnum(#V, *(int*)&V))						zcrValid = false;
+#define ZCR_READRAW(V)			if (!archiver->ReadRaw(#V, (char*)&V, sizeof(V)))			zcrValid = false;
+#define ZCR_READRAWFLOAT(V)		if (!archiver->ReadRawFloat(#V, (float*)&V, sizeof(V) / 4))	zcrValid = false;
+
+#define ZCR_READOBJECT(V, N, C)	if (!archiver->ReadObject<C>(N, V))							zcrValid = false;
+
+
+#define ZCR_END()				if (!zcrValid)												\
+								{															\
+									LOG_ERROR("Error while unarchiving class " + zcrName);	\
+									return false;											\
+								}
+
+		// ZenGin Class Write
+
+#define ZCW_START(C)			std::string zcwName = #C;									\
+								bool zcwValid = true;
+
+#define ZCW_WRITEINT(V)			if (!archiver->WriteInt(#V, V))								zcwValid = false;
+#define ZCW_WRITEBYTE(V)		if (!archiver->WriteByte(#V, V))							zcwValid = false;
+#define ZCW_WRITEWORD(V)		if (!archiver->WriteWord(#V, V))							zcwValid = false;
+#define ZCW_WRITEFLOAT(V)		if (!archiver->WriteFloat(#V, V))							zcwValid = false;
+#define ZCW_WRITEBOOL(V)		if (!archiver->WriteBool(#V, V))							zcwValid = false;
+#define ZCW_WRITESTRING(V)		if (!archiver->WriteString(#V, V))							zcwValid = false;
+#define ZCW_WRITEVEC3(V)		if (!archiver->WriteVec3(#V, V))							zcwValid = false;
+#define ZCW_WRITECOLOR(V)		if (!archiver->WriteColor(#V, V))							zcwValid = false;
+#define ZCW_WRITEENUM(V)		if (!archiver->WriteEnum(#V, *(int*)&V))					zcwValid = false;
+#define ZCW_WRITERAW(V)			if (!archiver->ReadRaw(#V, (char*)&V, sizeof(V)))			zcrValid = false;
+#define ZCW_WRITERAWFLOAT(V)	if (!archiver->ReadRawFloat(#V, (float*)&V, sizeof(V) / 4))	zcrValid = false;
+
+#define ZCW_END()				if (!zcwValid)												\
+								{															\
+									LOG_ERROR("Error while archiving class " + zcwName);	\
+									return false;											\
+								}
+
+		/*
 			Basic types
 		*/
 

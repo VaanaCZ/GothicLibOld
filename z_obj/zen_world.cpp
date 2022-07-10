@@ -99,71 +99,40 @@ bool ZenGin::zCVob::Archive(zCArchiver* archiver)
 
 bool ZenGin::zCVob::Unarchive(zCArchiver* archiver)
 {
-	if (!archiver->ReadInt("pack", pack))
-		return false;
+	ZCR_START(zCVob);
 
-	if (!archiver->ReadString("presetName", presetName))
-		return false;
-
-	if (!archiver->ReadRawFloat("bbox3DWS", (float*)&bbox3DWS, 6))
-		return false;
-
-	if (!archiver->ReadRaw("trafoOSToWSRot", (char*)&trafoOSToWSRot, sizeof(zMAT3)))
-		return false;
-
-	if (!archiver->ReadVec3("trafoOSToWSPos", trafoOSToWSPos))
-		return false;
-
-	if (!archiver->ReadString("vobName", vobName))
-		return false;
-
-	if (!archiver->ReadString("visual", visual))
-		return false;
-
-	if (!archiver->ReadBool("showVisual", showVisual))
-		return false;
-
-	if (!archiver->ReadEnum("visualCamAlign", *(int*)&visualCamAlign))
-		return false;
+	ZCR_READINT(pack);
+	ZCR_READSTRING(presetName);
+	ZCR_READRAWFLOAT(bbox3DWS);
+	ZCR_READRAW(trafoOSToWSRot);
+	ZCR_READVEC3(trafoOSToWSPos);
+	ZCR_READSTRING(vobName);
+	ZCR_READSTRING(visual);
+	ZCR_READBOOL(showVisual);
+	ZCR_READENUM(visualCamAlign);
 
 	if (version == 52224)
 	{
-		if (!archiver->ReadEnum("visualAniMode", *(int*)&visualAniMode))
-			return false;
-
-		if (!archiver->ReadFloat("visualAniModeStrength", visualAniModeStrength))
-			return false;
-
-		if (!archiver->ReadFloat("vobFarClipZScale", vobFarClipZScale))
-			return false;
+		ZCR_READENUM(visualAniMode);
+		ZCR_READFLOAT(visualAniModeStrength);
+		ZCR_READFLOAT(vobFarClipZScale);
 	}
 
-	if (!archiver->ReadBool("cdStatic", cdStatic))
-		return false;
-
-	if (!archiver->ReadBool("cdDyn", cdDyn))
-		return false;
-
-	if (!archiver->ReadBool("staticVob", staticVob))
-		return false;
-
-	if (!archiver->ReadEnum("dynShadow", *(int*)&dynShadow))
-		return false;
+	ZCR_READBOOL(cdStatic);
+	ZCR_READBOOL(cdDyn);
+	ZCR_READBOOL(staticVob);
+	ZCR_READENUM(dynShadow);
 
 	if (version == 52224)
 	{
-		if (!archiver->ReadInt("zbias", zbias))
-			return false;
-
-		if (!archiver->ReadBool("isAmbient", isAmbient))
-			return false;
+		ZCR_READINT(zbias);
+		ZCR_READBOOL(isAmbient);
 	}
 
-	if (!archiver->ReadObject<zCVisual*>("visual", visualPtr))
-		return false;
+	ZCR_READOBJECT(visualPtr, "visual", zCVisual*);
+	ZCR_READOBJECT(aiPtr, "ai", zCAIBase*);
 
-	if (!archiver->ReadObject<zCAIBase*>("ai", aiPtr))
-		return false;
+	ZCR_END();
 
 	return true;
 }
@@ -201,38 +170,21 @@ bool ZenGin::zCVobSound::Unarchive(zCArchiver* archiver)
 	if (!zCVob::Unarchive(archiver))
 		return false;
 
-	if (!archiver->ReadFloat("sndVolume", sndVolume))
-		return false;
+	ZCR_START(zCVobSound);
 
-	if (!archiver->ReadEnum("sndMode", *(int*)&sndMode))
-		return false;
+	ZCR_READFLOAT(sndVolume);
+	ZCR_READENUM(sndMode);
+	ZCR_READFLOAT(sndRandDelay);
+	ZCR_READFLOAT(sndRandDelayVar);
+	ZCR_READBOOL(sndStartOn);
+	ZCR_READBOOL(sndAmbient3D);
+	ZCR_READBOOL(sndObstruction);
+	ZCR_READFLOAT(sndConeAngle);
+	ZCR_READENUM(sndVolType);
+	ZCR_READFLOAT(sndRadius);
+	ZCR_READSTRING(sndName);
 
-	if (!archiver->ReadFloat("sndRandDelay", sndRandDelay))
-		return false;
-
-	if (!archiver->ReadFloat("sndRandDelayVar", sndRandDelayVar))
-		return false;
-
-	if (!archiver->ReadBool("sndStartOn", sndStartOn))
-		return false;
-
-	if (!archiver->ReadBool("sndAmbient3D", sndAmbient3D))
-		return false;
-
-	if (!archiver->ReadBool("sndObstruction", sndObstruction))
-		return false;
-
-	if (!archiver->ReadFloat("sndConeAngle", sndConeAngle))
-		return false;
-
-	if (!archiver->ReadEnum("sndVolType", *(int*)&sndVolType))
-		return false;
-
-	if (!archiver->ReadFloat("sndRadius", sndRadius))
-		return false;
-
-	if (!archiver->ReadString("sndName", sndName))
-		return false;
+	ZCR_END();
 
 	return true;
 }
@@ -250,50 +202,26 @@ bool ZenGin::zCVobLight::Unarchive(zCArchiver* archiver)
 	if (!zCVob::Unarchive(archiver))
 		return false;
 
-	if (!archiver->ReadString("lightPresetInUse", lightPresetInUse))
-		return false;
 
-	if (!archiver->ReadEnum("lightType", *(int*)&lightType))
-		return false;
+	ZCR_START(zCVobLight);
 
-	if (!archiver->ReadFloat("range", range))
-		return false;
+	ZCR_READSTRING(lightPresetInUse);
+	ZCR_READENUM(lightType);
+	ZCR_READFLOAT(range);
+	ZCR_READCOLOR(color);
+	ZCR_READFLOAT(spotConeAngle);
+	ZCR_READBOOL(lightStatic);
+	ZCR_READENUM(lightQuality);
+	ZCR_READSTRING(lensflareFX);
+	ZCR_READBOOL(turnedOn);
+	ZCR_READSTRING(rangeAniScale);
+	ZCR_READFLOAT(rangeAniFPS);
+	ZCR_READBOOL(rangeAniSmooth);
+	ZCR_READSTRING(colorAniList);
+	ZCR_READFLOAT(colorAniFPS);
+	ZCR_READBOOL(colorAniSmooth);
 
-	if (!archiver->ReadColor("color", color))
-		return false;
-
-	if (!archiver->ReadFloat("spotConeAngle", spotConeAngle))
-		return false;
-
-	if (!archiver->ReadBool("lightStatic", lightStatic))
-		return false;
-
-	if (!archiver->ReadEnum("lightQuality", *(int*)&lightQuality))
-		return false;
-
-	if (!archiver->ReadString("lensflareFX", lensflareFX))
-		return false;
-
-	if (!archiver->ReadBool("turnedOn", turnedOn))
-		return false;
-
-	if (!archiver->ReadString("rangeAniScale", rangeAniScale))
-		return false;
-
-	if (!archiver->ReadFloat("rangeAniFPS", rangeAniFPS))
-		return false;
-
-	if (!archiver->ReadBool("rangeAniSmooth", rangeAniSmooth))
-		return false;
-
-	if (!archiver->ReadString("colorAniList", colorAniList))
-		return false;
-
-	if (!archiver->ReadFloat("colorAniFPS", colorAniFPS))
-		return false;
-
-	if (!archiver->ReadBool("colorAniSmooth", colorAniSmooth))
-		return false;
+	ZCR_END();
 
 	return true;
 }
