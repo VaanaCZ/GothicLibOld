@@ -201,6 +201,30 @@ namespace GothicLib
 
 		};
 
+		class zCVobSoundDaytime : public zCVobSound
+		{
+		public:
+
+			DEFINE_CLASS(zCVobSoundDaytime, zCVobSound);
+		
+			zCVobSoundDaytime()				{ }
+			virtual ~zCVobSoundDaytime()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			float		sndStartTime	= 0.0f;
+			float		sndEndTime		= 0.0f;
+			std::string	sndName2;
+
+		private:
+
+		};
+
 		enum zTVobLightType
 		{
 			zVOBLIGHT_TYPE_POINT,
@@ -279,7 +303,7 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCMOB, oCVob);
+			DEFINE_CLASS(oCMOB, zCVob);
 
 			oCMOB()				{ }
 			virtual ~oCMOB()	{ }
@@ -342,6 +366,102 @@ namespace GothicLib
 
 			oCMobLadder()			{ }
 			virtual ~oCMobLadder()	{ }
+
+		private:
+
+		};
+
+		class oCMobLockable : public oCMobInter
+		{
+		public:
+
+			static inline ClassDefinition* classDef = nullptr;
+
+			oCMobLockable()				{ }
+			virtual ~oCMobLockable()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			bool		locked		= false;
+			std::string	keyInstance;
+			std::string	pickLockStr;
+
+
+		private:
+
+		};
+
+		class oCMobContainer : public oCMobLockable
+		{
+		public:
+
+			DEFINE_CLASS(oCMobContainer, oCMobInter);
+
+			oCMobContainer()			{ }
+			virtual ~oCMobContainer()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			std::string	contains;
+
+		private:
+
+		};
+
+		class oCMobDoor : public oCMobLockable
+		{
+		public:
+
+			DEFINE_CLASS(oCMobDoor, oCMobLockable);
+
+			oCMobDoor()				{ }
+			virtual ~oCMobDoor()	{ }
+
+		private:
+
+		};
+
+		class oCMobSwitch : public oCMobInter
+		{
+		public:
+
+			DEFINE_CLASS(oCMobSwitch, oCMobInter);
+
+			oCMobSwitch()			{ }
+			virtual ~oCMobSwitch()	{ }
+
+		private:
+
+		};
+
+		class oCMobFire : public oCMobInter
+		{
+		public:
+
+			DEFINE_CLASS(oCMobFire, oCMobInter);
+
+			oCMobFire()				{ }
+			virtual ~oCMobFire()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			std::string fireSlot;
+			std::string fireVobtreeName;
 
 		private:
 
@@ -439,11 +559,131 @@ namespace GothicLib
 
 		};
 
+		enum zTListProcess
+		{
+			LP_ALL,
+			LP_NEXT_ONE,
+			LP_RAND_ONE
+		};
+
+		class zCTriggerList : public zCTrigger
+		{
+		public:
+
+			DEFINE_CLASS(zCTriggerList, zCTrigger);
+
+			zCTriggerList()			{ }
+			virtual ~zCTriggerList()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			zTListProcess				listProcess		= LP_ALL;
+			std::vector<std::string>	triggerTargetList;
+			std::vector<float>			fireDelayList;
+			char						actTarget		= 0;	// Savegame
+			bool						sendOnTrigger	= true;	// Savegame
+
+		private:
+
+		};
+
+		enum zTMoverBehavior
+		{
+			MB_2STATE_TOGGLE,
+			MB_2STATE_TRIGGER_CONTROL,
+			MB_2STATE_OPEN_TIMED,
+			MB_NSTATE_LOOP,
+			MB_NSTATE_SINGLE_KEYS
+		};
+
+		enum zTPosLerpType
+		{
+			PL_LINEAR,
+			PL_CURVE
+		};
+
+		enum zTSpeedType
+		{
+			ST_CONST,
+			ST_SLOW_START_END,
+			ST_SLOW_START,
+			ST_SLOW_END,
+			ST_SEG_SLOW_START_END,
+			ST_SEG_SLOW_START,
+			ST_SEG_SLOW_END
+		};
+
+		enum zTMoverState
+		{
+			MOVER_STATE_OPEN,
+			MOVER_STATE_OPENING,
+			MOVER_STATE_CLOSED,
+			MOVER_STATE_CLOSING
+		};
+
+		class zCMover : public zCTrigger
+		{
+		public:
+
+			DEFINE_CLASS(zCMover, zCTrigger);
+
+			zCMover()			{ }
+			virtual ~zCMover()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			struct zTMov_Keyframe
+			{
+				zVEC3	pos;
+				zCQuat	quat;
+			};
+
+			zTMoverBehavior				moverBehavior		= MB_2STATE_TOGGLE;
+			float						touchBlockerDamage	= 0.0f;
+			float						stayOpenTimeSec		= 2.0f;
+			bool						moverLocked			= false;
+			bool						autoLinkEnabled		= false;
+			float						moveSpeed			= 0.3f;
+			zTPosLerpType				posLerpType			= PL_CURVE;
+			zTSpeedType					speedType			= ST_SLOW_START_END;
+			std::vector<zTMov_Keyframe>	keyframeList;
+			zVEC3						actKeyPosDelta		= {};					// Savegame
+			float						actKeyframeF		= 0.0f;					// Savegame
+			int							actKeyframe			= 0;					// Savegame
+			int							nextKeyframe		= 0;					// Savegame
+			float						moveSpeedUnit		= 0.0f;					// Savegame
+			float						advanceDir			= 0.0f;					// Savegame
+			zTMoverState				moverState			= MOVER_STATE_CLOSED;	// Savegame
+			int							numTriggerEvents	= 0;					// Savegame
+			float						stayOpenTimeDest	= 0.0f;					// Savegame
+			std::string					sfxOpenStart;
+			std::string					sfxOpenEnd;
+			std::string					sfxMoving;
+			std::string					sfxCloseStart;
+			std::string					sfxCloseEnd;
+			std::string					sfxLock;
+			std::string					sfxUnlock;
+			std::string					sfxUseLocked;
+
+		private:
+
+		};
+
 		class oCItem : public oCVob
 		{
 		public:
 
-			DEFINE_CLASS(oCItem, oCVob);
+			DEFINE_CLASS(oCItem, zCVob);
 
 			oCItem()				{ }
 			virtual ~oCItem()		{ }
@@ -463,6 +703,259 @@ namespace GothicLib
 
 		};
 
+		class zCZone : public zCVob
+		{
+		public:
+
+			static inline ClassDefinition* classDef = nullptr;
+
+			zCZone()			{ }
+			virtual ~zCZone()	{ }
+
+		private:
+
+		};
+
+		class zCZoneMusic : public zCZone
+		{
+		public:
+
+			static inline ClassDefinition* classDef = nullptr;
+
+			zCZoneMusic()			{ }
+			virtual ~zCZoneMusic()	{ }
+
+		private:
+
+		};
+
+		class oCZoneMusic : public zCZoneMusic
+		{
+		public:
+
+			DEFINE_CLASS(oCZoneMusic, zCVob);
+
+			oCZoneMusic()			{ }
+			virtual ~oCZoneMusic()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			bool	enabled				= true;
+			int		priority			= 1;
+			bool	ellipsoid			= false;
+			float	reverbLevel			= -3.219f;
+			float	volumeLevel			= 1.0f;
+			bool	loop				= true;
+			bool	local_enabled		= true;		// Savegame
+			bool	dayEntranceDone		= false;	// Savegame
+			bool	nightEntranceDone	= false;	// Savegame
+
+		private:
+
+		};
+
+		class oCZoneMusicDefault : public oCZoneMusic
+		{
+		public:
+
+			DEFINE_CLASS(oCZoneMusicDefault, oCZoneMusic);
+
+			oCZoneMusicDefault()			{ }
+			virtual ~oCZoneMusicDefault()	{ }
+
+		private:
+
+		};
+
+		class zCZoneZFog : public zCZone
+		{
+		public:
+
+			DEFINE_CLASS(zCZoneZFog, zCVob);
+
+			zCZoneZFog()			{ }
+			virtual ~zCZoneZFog()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			float	fogRangeCenter	= 3000.0f;
+			float	innerRangePerc	= 0.7f;
+			zCOLOR	fogColor		= { };
+
+		private:
+
+		};
+
+		class zCZoneZFogDefault : public zCZoneZFog
+		{
+		public:
+
+			DEFINE_CLASS(zCZoneZFogDefault, zCZoneZFog);
+
+			zCZoneZFogDefault()				{ }
+			virtual ~zCZoneZFogDefault()	{ }
+
+		private:
+
+		};
+
+		class zCZoneVobFarPlane : public zCZone
+		{
+		public:
+
+			DEFINE_CLASS(zCZoneVobFarPlane, zCVob);
+
+			zCZoneVobFarPlane()				{ }
+			virtual ~zCZoneVobFarPlane()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			float vobFarPlaneZ		= 3000.0f;
+			float innerRangePerc	= 0.7f;
+
+		private:
+
+		};
+
+		class zCZoneVobFarPlaneDefault : public zCZoneVobFarPlane
+		{
+		public:
+
+			DEFINE_CLASS(zCZoneVobFarPlaneDefault, zCZoneVobFarPlane);
+
+			zCZoneVobFarPlaneDefault()			{ }
+			virtual ~zCZoneVobFarPlaneDefault()	{ }
+
+		private:
+
+		};
+
+		class zCEffect : public zCVob
+		{
+		public:
+
+			static inline ClassDefinition* classDef = nullptr;
+
+			zCEffect()			{ }
+			virtual ~zCEffect()	{ }
+
+		private:
+
+		};
+
+		class zCPFXControler : public zCEffect
+		{
+		public:
+
+			DEFINE_CLASS(zCPFXControler, zCVob);
+
+			zCPFXControler()			{ }
+			virtual ~zCPFXControler()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			std::string pfxName;
+			bool killVobWhenDone	= true;
+			bool pfxStartOn			= true;
+
+		private:
+
+		};
+
+		class zCVobScreenFX : public zCEffect
+		{
+		public:
+
+			DEFINE_CLASS(zCVobScreenFX, zCVob);
+
+			zCVobScreenFX()				{ }
+			virtual ~zCVobScreenFX()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			//zTScreenFXSet	blend;			// Savegame
+			//zTScreenFXSet	cinema;			// Savegame
+			//zTScreenFXSet	fovMorph;		// Savegame
+			//zVEC2			fovSaved;		// Savegame
+			//zVEC2			fovSavedFirst;	// Savegame
+
+		private:
+
+		};
+
+		class zCVobAnimate : public zCEffect
+		{
+		public:
+
+			DEFINE_CLASS(zCVobAnimate, zCVob);
+
+			zCVobAnimate()			{ }
+			virtual ~zCVobAnimate()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			bool startOn	= true;
+			bool isRunning	= false; // Savegame
+
+		private:
+
+		};
+
+		class zCVobStair : public zCVob
+		{
+		public:
+
+			DEFINE_CLASS(zCVobStair, zCVob);
+
+			zCVobStair()			{ }
+			virtual ~zCVobStair()	{ }
+
+		private:
+
+		};
+
+		class zCVobStartpoint : public zCVob
+		{
+		public:
+
+			DEFINE_CLASS(zCVobStartpoint, zCVob);
+
+			zCVobStartpoint()			{ }
+			virtual ~zCVobStartpoint()	{ }
+
+		private:
+
+		};
 
 		/*
 			Visual classes
@@ -476,6 +969,19 @@ namespace GothicLib
 		
 			zCVisual()			{ }
 			virtual ~zCVisual()	{ }
+
+		private:
+
+		};
+
+		class zCVisualAnimate : public zCVisual
+		{
+		public:
+
+			static inline ClassDefinition* classDef = nullptr;
+
+			zCVisualAnimate()			{ }
+			virtual ~zCVisualAnimate()	{ }
 
 		private:
 
@@ -507,19 +1013,6 @@ namespace GothicLib
 
 		};
 
-		class zCVisualAnimate : public zCVisual
-		{
-		public:
-
-			DEFINE_CLASS(zCVisualAnimate, zCVisual);
-
-			zCVisualAnimate()			{ }
-			virtual ~zCVisualAnimate()	{ }
-
-		private:
-
-		};
-
 		class zCModel : public zCVisualAnimate
 		{
 		public:
@@ -541,6 +1034,19 @@ namespace GothicLib
 
 			zCProgMeshProto()			{ }
 			virtual ~zCProgMeshProto()	{ }
+
+		private:
+
+		};
+		
+		class zCMorphMesh : public zCVisualAnimate
+		{
+		public:
+
+			DEFINE_CLASS(zCMorphMesh, zCVisualAnimate);
+
+			zCMorphMesh()			{ }
+			virtual ~zCMorphMesh()	{ }
 
 		private:
 

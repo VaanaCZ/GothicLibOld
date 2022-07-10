@@ -103,6 +103,11 @@ namespace GothicLib
 			unsigned char b, g, r, a;
 		};
 
+		struct zCQuat
+		{
+			float qx, qy, qz, qw;
+		};
+
 		struct zTBBox3D
 		{
 			zVEC3 min, max;

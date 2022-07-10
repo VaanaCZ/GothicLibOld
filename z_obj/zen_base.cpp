@@ -548,7 +548,7 @@ bool ZenGin::zCArchiver::ReadChunkStart(std::string* objectName, std::string* cl
 
 			while (file->ReadLine(line))
 			{
-				LOG_DEBUG("ReadChunkStart    : " + line);
+				//LOG_DEBUG("ReadChunkStart    : " + line);
 
 				bool isHeader = false;
 
@@ -700,7 +700,7 @@ bool ZenGin::zCArchiver::ReadChunkEnd()
 
 		while (file->ReadLine(line))
 		{
-			LOG_DEBUG("ReadChunkEnd      : " + line);
+			//LOG_DEBUG("ReadChunkEnd      : " + line);
 
 			// Figure out nesting
 			size_t tabCount = 0;
