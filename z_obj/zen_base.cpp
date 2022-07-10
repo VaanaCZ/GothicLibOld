@@ -774,7 +774,7 @@ bool ZenGin::zCArchiver::ReadASCIIProperty(std::string name, std::string type, s
 	std::string line;
 	while (file->ReadLine(line))
 	{
-		LOG_DEBUG("ReadASCIIProperty : " + line);
+		//LOG_DEBUG("ReadASCIIProperty : " + line);
 
 		if (looping && file->Tell() >= startPos)
 		{

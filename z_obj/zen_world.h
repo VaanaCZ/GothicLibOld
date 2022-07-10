@@ -9,6 +9,7 @@ namespace GothicLib
 		class zCVob;
 		class zCVisual;
 		class zCAIBase;
+		class zCWayNet;
 
 		/*
 			World classes
@@ -28,7 +29,8 @@ namespace GothicLib
 
 			virtual bool UnarcVobTree(zCVob*, zCArchiver*, size_t&);
 
-			zCVob* vobTree;
+			zCVob*		vobTree = nullptr;
+			zCWayNet*	wayNet = nullptr;
 
 		private:
 
@@ -1104,6 +1106,78 @@ namespace GothicLib
 
 			zCAIBase()			{ }
 			virtual ~zCAIBase()	{ }
+
+		private:
+
+		};
+
+		/*
+			Waynet
+		*/
+
+		class zCWaypoint : public zCObject
+		{
+		public:
+
+			DEFINE_CLASS(zCWaypoint, zCObject);
+
+			zCWaypoint()				{ }
+			virtual ~zCWaypoint()		{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+			
+			std::string	wpName;
+			int			waterDepth		= 0;
+			bool		underWater		= false;
+			zVEC3		position		= {};
+			zVEC3		direction		= {};
+
+		private:
+
+		};
+		
+		class zCWay
+		{
+		public:
+
+			zCWay()				{ }
+			virtual ~zCWay()	{ }
+
+			/*
+				Properties
+			*/
+
+			zCWaypoint* left;
+			zCWaypoint* right;
+
+		private:
+
+		};
+
+		class zCWayNet : public zCObject
+		{
+		public:
+
+			DEFINE_CLASS(zCWayNet, zCObject);
+
+			zCWayNet()				{ }
+			virtual ~zCWayNet()		{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			int waynetVersion			= 0;
+			std::vector<zCWaypoint*>	waypointList;
+			std::vector<zCWay>			wayList;
 
 		private:
 

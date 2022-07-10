@@ -33,7 +33,10 @@ bool ZenGin::zCWorld::Unarchive(zCArchiver* archiver)
 		}
 		else if (objectName == "WayNet")
 		{
-			break;
+			if (!archiver->ReadObject<zCWayNet*>(wayNet))
+			{
+				return false;
+			}
 		}
 		else if (objectName == "EndMarker")
 		{
@@ -899,3 +902,90 @@ bool ZenGin::zCDecal::Unarchive(zCArchiver* archiver)
 /*
 	AI classes
 */
+
+
+/*
+	Waynet
+*/
+
+bool ZenGin::zCWayNet::Archive(zCArchiver* archiver)
+{
+	return false;
+}
+
+bool ZenGin::zCWayNet::Unarchive(zCArchiver* archiver)
+{
+	ZCR_START(zCWayNet);
+
+	ZCR_READINT(waynetVersion);
+
+	// Waypoints
+	int numWaypoints = 0;
+	ZCR_READINT(numWaypoints);
+	
+	if (numWaypoints > 0)
+	{
+		waypointList.resize(numWaypoints);
+
+		for (size_t i = 0; i < numWaypoints; i++)
+		{
+			std::string waypointKey = "waypoint" + std::to_string(i);
+
+			zCWaypoint* waypoint;
+			ZCR_READOBJECT(waypoint, waypointKey, zCWaypoint*);
+
+			waypointList[i] = waypoint;
+		}
+	}
+
+	// Ways
+	int numWays = 0;
+	ZCR_READINT(numWays);
+
+	if (numWays > 0)
+	{
+		wayList.resize(numWays);
+
+		for (size_t i = 0; i < numWays; i++)
+		{
+			std::string waylKey = "wayl" + std::to_string(i);
+
+			zCWaypoint* wayl;
+			ZCR_READOBJECT(wayl, waylKey, zCWaypoint*);
+
+			std::string wayrKey = "wayr" + std::to_string(i);
+
+			zCWaypoint* wayr;
+			ZCR_READOBJECT(wayr, wayrKey, zCWaypoint*);
+
+			zCWay way;
+			way.left	= wayl;
+			way.right	= wayr;
+			wayList[i] = way;
+		}
+	}
+
+	ZCR_END();
+
+	return true;
+}
+
+bool ZenGin::zCWaypoint::Archive(zCArchiver* archiver)
+{
+	return false;
+}
+
+bool ZenGin::zCWaypoint::Unarchive(zCArchiver* archiver)
+{
+	ZCR_START(zCWaypoint);
+
+	ZCR_READSTRING(wpName);
+	ZCR_READINT(waterDepth);
+	ZCR_READBOOL(underWater);
+	ZCR_READVEC3(position);
+	ZCR_READVEC3(direction);
+
+	ZCR_END();
+
+	return true;
+}
