@@ -73,6 +73,11 @@ namespace GothicLib
 			Basic types
 		*/
 
+		struct zVEC2
+		{
+			float x, y;
+		};
+
 		struct zVEC3
 		{
 			float x, y, z;
@@ -164,6 +169,9 @@ namespace GothicLib
 
 			zCObject* GetContainedObject();
 
+			inline bool	IsSavegame()	{ return savegame; }
+			inline bool	IsProps()		{ return props; }
+
 		private:
 
 			enum BINSAFE_TYPE
@@ -200,7 +208,7 @@ namespace GothicLib
 			ARCHIVER_TYPE	type		= ARCHIVER_TYPE_NONE;
 			bool			savegame	= false;
 			uint32_t		objectCount = -1;
-			int				tabOffset = 0;
+			bool			props		= false;
 
 			std::vector<uint64_t> asciiChunksPositions;
 
@@ -256,8 +264,8 @@ namespace GothicLib
 			zCObject()			{ }
 			virtual ~zCObject()	{ }
 
-			virtual bool Archive(zCArchiver*) = 0;
-			virtual bool Unarchive(zCArchiver*) = 0;
+			virtual bool Archive(zCArchiver*)	{ return true; }
+			virtual bool Unarchive(zCArchiver*) { return true; }
 
 
 			//virtual const char* GetClassName() = 0;

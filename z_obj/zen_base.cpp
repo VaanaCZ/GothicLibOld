@@ -64,9 +64,14 @@ bool ZenGin::zCArchiver::Read(FileStream* _file)
 		/*
 			ASCII / BINARY / BIN_SAFE
 		*/
-		if (line == "ASCII")			type = ARCHIVER_TYPE_ASCII;
-		else if (line == "BINARY")		type = ARCHIVER_TYPE_BINARY;
+		if (line == "BINARY")			type = ARCHIVER_TYPE_BINARY;
+		else if (line == "ASCII")		type = ARCHIVER_TYPE_ASCII;
 		else if (line == "BIN_SAFE")	type = ARCHIVER_TYPE_BIN_SAFE;
+		else if (line == "ASCII_PROPS")
+		{
+			type = ARCHIVER_TYPE_ASCII;
+			props = true;
+		}
 
 		/*
 			saveGame 0 / saveGame 1
@@ -463,6 +468,13 @@ bool ZenGin::zCArchiver::ReadObject(std::string name, zCObject*& object)
 	if (!ReadChunkStart(&name, &className, &classVersion, &objectIndex))
 		return false;
 
+	// Error checking
+	if (objectIndex < 0 || objectIndex >= objectList.size())
+	{
+		LOG_ERROR("The specified object index is not within an accepted range! Archive must be invalid!");
+		return false;
+	}
+
 	if (className == "%")
 	{
 		// % = nullptr
@@ -471,7 +483,7 @@ bool ZenGin::zCArchiver::ReadObject(std::string name, zCObject*& object)
 	else if (className == "§")
 	{
 		// § = existing object in list
-		return false;
+		object = objectList[objectIndex];
 	}
 	else
 	{
@@ -673,9 +685,6 @@ bool ZenGin::zCArchiver::ReadChunkStart(std::string* objectName, std::string* cl
 		return false;
 	}
 
-	tabOffset++;
-
-
 	return true;
 }
 
@@ -730,8 +739,6 @@ bool ZenGin::zCArchiver::ReadChunkEnd()
 
 		asciiChunksPositions.pop_back();
 	}
-
-	tabOffset--;
 
 	return true;
 }
