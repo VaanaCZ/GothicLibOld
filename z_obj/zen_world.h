@@ -12,6 +12,24 @@ namespace GothicLib
 		class zCWayNet;
 
 		/*
+			BSP
+		*/
+
+		class zCBspTree
+		{
+		public:
+
+			zCBspTree()				{ }
+			virtual ~zCBspTree()	{ }
+
+			bool SaveBIN(FileStream*);
+			bool LoadBIN(FileStream*);
+
+		private:
+
+		};
+
+		/*
 			World classes
 		*/
 		
@@ -29,6 +47,7 @@ namespace GothicLib
 
 			virtual bool UnarcVobTree(zCVob*, zCArchiver*, size_t&);
 
+			zCBspTree	bsp;
 			zCVob*		vobTree = nullptr;
 			zCWayNet*	wayNet = nullptr;
 
@@ -42,8 +61,8 @@ namespace GothicLib
 
 			DEFINE_CLASS(oCWorld, zCWorld);
 
-			oCWorld() { }
-			virtual ~oCWorld() { }
+			oCWorld()			{ }
+			virtual ~oCWorld()	{ }
 
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);

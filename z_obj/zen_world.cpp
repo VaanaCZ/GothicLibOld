@@ -21,6 +21,13 @@ bool ZenGin::zCWorld::Unarchive(zCArchiver* archiver)
 
 		archiver->ReadChunkStart(&objectName, nullptr, nullptr, nullptr);
 
+		if (objectName == "MeshAndBsp")
+		{
+			if (!bsp.LoadBIN(archiver->GetFile()))
+			{
+				return false;
+			}
+		}
 		if (objectName == "VobTree")
 		{
 			vobTree = new zCVob();
@@ -100,6 +107,20 @@ bool ZenGin::oCWorld::Unarchive(zCArchiver* archiver)
 	//todo: savegame
 
 	return true;
+}
+
+/*
+	BSP
+*/
+
+bool ZenGin::zCBspTree::SaveBIN(FileStream* file)
+{
+	return false;
+}
+
+bool ZenGin::zCBspTree::LoadBIN(FileStream* file)
+{
+	return false;
 }
 
 /*

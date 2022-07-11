@@ -174,6 +174,8 @@ namespace GothicLib
 
 			zCObject* GetContainedObject();
 
+			inline FileStream*	GetFile() { return file; }
+
 			inline bool	IsSavegame()	{ return savegame; }
 			inline bool	IsProps()		{ return props; }
 
