@@ -686,3 +686,4 @@ FodyWeavers.xsd
 # End of https://www.toptal.com/developers/gitignore/api/c,c++,windows,linux,macos,android,visualstudio,jetbrains+all,xcode
 
 *.tga
+res/

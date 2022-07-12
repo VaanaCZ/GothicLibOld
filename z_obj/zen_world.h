@@ -32,7 +32,38 @@ namespace GothicLib
 		/*
 			World classes
 		*/
-		
+
+#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
+		inline bool ParsePWFLine(std::string _line, std::string& key, std::string& value)
+		{
+			std::string line = _line;
+
+			for (size_t i = 0; i < line.size(); i++)
+			{
+				if (line[i] != ' ')
+				{
+					if (i != 0)
+						line = line.substr(i);
+					break;
+				}
+			}
+
+			size_t sPos = line.find(" (");
+			size_t ePos = line.find(")", sPos + 2);
+
+			if (sPos == std::string::npos ||
+				ePos == std::string::npos)
+			{
+				return false;
+			}
+
+			key		= line.substr(0, sPos);
+			value	= line.substr(sPos + 2, ePos - sPos - 2);
+
+			return true;
+		}
+#endif
+
 		class zCWorld : public zCObject
 		{
 		public:
@@ -47,11 +78,24 @@ namespace GothicLib
 
 			virtual bool UnarcVobTree(zCVob*, zCArchiver*, size_t&);
 
+			void LoadWorld(FileStream*);
+			void SaveWorld(FileStream*);
+
+#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
+			void LoadWorldFile(FileStream*);
+			void SaveWorldFile(FileStream*);
+#endif
+
 			zCBspTree	bsp;
 			zCVob*		vobTree = nullptr;
 			zCWayNet*	wayNet = nullptr;
 
 		private:
+
+#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
+			void LoadPWFVobTree(zCVob*, FileStream*);
+			void SavePWFVobTree(zCVob*, FileStream*);
+#endif
 
 		};
 
@@ -102,6 +146,23 @@ namespace GothicLib
 			zVOB_AWAKE_DOAI_ONLY = 2
 		};
 
+		enum zTVobType
+		{
+			zVOB_TYPE_NORMAL,
+			zVOB_TYPE_LIGHT,
+			zVOB_TYPE_SOUND,
+			zVOB_TYPE_LEVEL_COMPONENT,
+			zVOB_TYPE_SPOT,
+			zVOB_TYPE_CAMERA,
+			zVOB_TYPE_STARTPOINT,
+			zVOB_TYPE_WAYPOINT,
+			zVOB_TYPE_MARKER,
+			zVOB_TYPE_SEPARATOR = 127,
+			zVOB_TYPE_MOB,
+			zVOB_TYPE_ITEM,
+			zVOB_TYPE_NSC
+		};
+
 		class zCVob : public zCObject
 		{
 		public:
@@ -114,6 +175,11 @@ namespace GothicLib
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
 
+#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
+			virtual void Save(FileStream*);
+			virtual void Load(FileStream*);
+#endif
+
 			std::vector<zCVob*> children;
 
 			/*
@@ -121,8 +187,13 @@ namespace GothicLib
 			*/
 
 			int					pack					= 0;
+			zTVobType			vobType					= zVOB_TYPE_NORMAL;		// Legacy
+			int					vobId;											// Legacy
 			std::string			presetName;
+			bool				drawBBox3D				= false;				// Legacy
 			zTBBox3D			bbox3DWS				= {};
+			zMAT3				trafoRot				= {};					// Legacy
+			zVEC3				trafoPos				= {};					// Legacy
 			zMAT3				trafoOSToWSRot			= {};
 			zVEC3				trafoOSToWSPos			= {};
 			std::string			vobName;
@@ -273,6 +344,11 @@ namespace GothicLib
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
 
+#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
+			virtual void Save(FileStream*);
+			virtual void Load(FileStream*);
+#endif
+
 			/*
 				Properties
 			*/
@@ -310,6 +386,33 @@ namespace GothicLib
 
 		};
 
+		class oCNpc : public oCVob
+		{
+		public:
+
+			DEFINE_CLASS(oCNpc, zCVob);
+
+			oCNpc()				{ }
+			virtual ~oCNpc()	{ }
+
+			//virtual bool Archive(zCArchiver*);
+			//virtual bool Unarchive(zCArchiver*);
+
+#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
+			virtual void Save(FileStream*);
+			virtual void Load(FileStream*);
+#endif
+
+			/*
+				Properties
+			*/
+
+			std::string		instance;					// Legacy
+
+		private:
+
+		};
+
 		enum oTSndMaterial
 		{
 			SND_MAT_WOOD,
@@ -332,6 +435,11 @@ namespace GothicLib
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
 
+#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
+			virtual void Save(FileStream*);
+			virtual void Load(FileStream*);
+#endif
+
 			/*
 				Properties
 			*/
@@ -346,7 +454,8 @@ namespace GothicLib
 			std::string		visualDestroyed;
 			std::string		owner;
 			std::string		ownerGuild;
-			bool			isDestroyed		= false; // Props
+			bool			isDestroyed		= false;	// Props
+			std::string		instance;					// Legacy
 
 		private:
 
@@ -711,6 +820,11 @@ namespace GothicLib
 
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
+
+#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
+			virtual void Save(FileStream*);
+			virtual void Load(FileStream*);
+#endif
 
 			/*
 				Properties
@@ -1097,6 +1211,11 @@ namespace GothicLib
 
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
+
+#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
+			virtual void Save(FileStream*);
+			virtual void Load(FileStream*);
+#endif
 
 			/*
 				Properties

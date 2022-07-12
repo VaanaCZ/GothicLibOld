@@ -6,6 +6,8 @@
 
 #define GET_MACRO(_1,_2,_3,NAME,...) NAME
 
+#define GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
+
 namespace GothicLib
 {
 	class FileStream;
@@ -273,6 +275,11 @@ namespace GothicLib
 
 			virtual bool Archive(zCArchiver*)	{ return true; }
 			virtual bool Unarchive(zCArchiver*) { return true; }
+
+#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
+			virtual void Save(FileStream*) { }
+			virtual void Load(FileStream*) { }
+#endif
 
 
 			//virtual const char* GetClassName() = 0;

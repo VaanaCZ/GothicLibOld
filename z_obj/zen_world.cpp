@@ -94,6 +94,508 @@ bool ZenGin::zCWorld::UnarcVobTree(zCVob* vob, zCArchiver* archiver, size_t& vob
 	return true;
 }
 
+void GothicLib::ZenGin::zCWorld::LoadWorld(FileStream* file)
+{
+}
+
+void GothicLib::ZenGin::zCWorld::SaveWorld(FileStream* file)
+{
+}
+
+#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
+
+void ZenGin::zCWorld::LoadWorldFile(FileStream* file)
+{
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		// Check if we entered the right chunk
+		if (line.find("VobHierarchy") != std::string::npos)
+		{
+			vobTree = new zCVob();
+			LoadPWFVobTree(vobTree, file);
+		}
+	}
+
+}
+
+void ZenGin::zCWorld::SaveWorldFile(FileStream* file)
+{
+}
+
+void ZenGin::zCWorld::LoadPWFVobTree(zCVob* parentVob, FileStream* file)
+{	
+	bool inVob = false;
+	zCVob* vob = nullptr;
+
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		std::string key;
+		std::string value;
+
+		bool chunkStart = ParsePWFLine(line, key, value);
+
+		if (chunkStart && key == "zCVob")
+		{
+			int vobId = std::stoi(value);
+			zTVobType vobType = (zTVobType)std::stoi(value.substr(value.find(" ") + 1));
+
+			switch (vobType)
+			{
+			case zVOB_TYPE_NORMAL:			vob = new zCVob();				break;
+			case zVOB_TYPE_LIGHT:			vob = new zCVobLight();			break;
+			case zVOB_TYPE_SOUND:			vob = new zCVobSound();			break;
+			case zVOB_TYPE_LEVEL_COMPONENT:	vob = new zCVobLevelCompo();	break;
+			case zVOB_TYPE_SPOT:			vob = new zCVobSpot();			break;
+			case zVOB_TYPE_CAMERA:			vob = new zCVob();				break;
+			case zVOB_TYPE_STARTPOINT:		vob = new zCVob();				break;
+			case zVOB_TYPE_WAYPOINT:		vob = new zCVob();				break;
+			case zVOB_TYPE_MARKER:			vob = new zCVob();				break;
+			case zVOB_TYPE_MOB:				vob = new oCMOB();				break;
+			case zVOB_TYPE_ITEM:			vob = new oCItem();				break;
+			case zVOB_TYPE_NSC:				vob = new oCNpc();				break;
+			default:
+				break;
+			}
+
+			inVob = true;
+
+			parentVob->children.push_back(vob);
+		}
+		else if (inVob)
+		{
+			if (line == "{")
+			{
+				vob->Load(file);
+			}
+			else if (line == "}")
+			{
+				inVob = false;
+				return;
+			}
+			else if (ParsePWFLine(line, key, value))
+			{
+				if (key == "zCDecal")
+				{
+					vob->visualPtr = new zCDecal();
+					((zCDecal*)vob->visualPtr)->name = vob->visual;
+					vob->visualPtr->Load(file);
+				}
+				else
+				{
+					// error
+				}
+			}
+		}
+		else if (chunkStart && key == "childs")
+		{
+			int childCount = std::stoi(value);
+
+			for (size_t i = 0; i < childCount; i++)
+			{
+				LoadPWFVobTree(parentVob, file);
+			}
+		}
+	}
+}
+
+void ZenGin::zCWorld::SavePWFVobTree(zCVob* parentVob, FileStream* file)
+{
+}
+
+void ZenGin::zCVob::Save(FileStream* file)
+{
+}
+
+void ZenGin::zCVob::Load(FileStream* file)
+{
+	bool inVob = false;
+
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		if (line == "{")
+		{
+			inVob = true;
+		}
+		else if (inVob)
+		{
+			std::string key;
+			std::string value;
+
+			if (line == "}")
+			{
+				inVob = false;
+				return;
+			}
+			else if (ParsePWFLine(line, key, value))
+			{
+				if (key == "vobType")
+				{
+					vobType = (zTVobType)std::stoi(value);
+				}
+				else if (key == "visual")
+				{
+					visual = value;
+				}
+				else if (key == "vobName")
+				{
+					vobName = value;
+				}
+				else if (key == "visualCamAlign")
+				{
+					if (value == "NONE")		visualCamAlign = zVISUAL_CAMALIGN_NONE;
+					else if (value == "YAW")	visualCamAlign = zVISUAL_CAMALIGN_YAW;
+					else if (value == "FULL")	visualCamAlign = zVISUAL_CAMALIGN_FULL;
+				}
+				else if (key == "showVisual")
+				{
+					showVisual = (value == "1");
+				}
+				else if (key == "drawBBox3D")
+				{
+					drawBBox3D = (value == "1");
+				}
+				else if (key == "cdStatic")
+				{
+					cdStatic = (value == "1");
+				}
+				else if (key == "cdDyn")
+				{
+					cdDyn = (value == "1");
+				}
+				else if (key == "staticVob")
+				{
+					staticVob = (value == "1");
+				}
+				else if (key == "bbox3DWSpace")
+				{
+					if (sscanf_s(value.c_str(), "%f %f %f %f %f %f",
+						&bbox3DWS.min.x, &bbox3DWS.min.y, &bbox3DWS.min.z,
+						&bbox3DWS.max.x, &bbox3DWS.max.y, &bbox3DWS.max.z) != 6)
+					{
+						return;
+					}
+				}
+				else if (key == "trafoRot")
+				{
+					if (sscanf_s(value.c_str(), "%f %f %f %f %f %f %f %f %f",
+						&trafoRot.x.x, &trafoRot.x.y, &trafoRot.x.z, 
+						&trafoRot.y.x, &trafoRot.y.y, &trafoRot.y.z,
+						&trafoRot.z.x, &trafoRot.z.y, &trafoRot.z.z) != 9)
+					{
+						return;
+					}
+				}
+				else if (key == "trafoPos")
+				{
+					if (sscanf_s(value.c_str(), "%f %f %f",
+						&trafoPos.x, &trafoPos.y, &trafoPos.z) != 3)
+					{
+						return;
+					}
+				}
+				else if (key == "trafoOSToWSRot")
+				{
+					if (sscanf_s(value.c_str(), "%f %f %f %f %f %f %f %f %f",
+						&trafoOSToWSRot.x.x, &trafoOSToWSRot.x.y, &trafoOSToWSRot.x.z, 
+						&trafoOSToWSRot.y.x, &trafoOSToWSRot.y.y, &trafoOSToWSRot.y.z,
+						&trafoOSToWSRot.z.x, &trafoOSToWSRot.z.y, &trafoOSToWSRot.z.z) != 9)
+					{
+						return;
+					}
+				}
+				else if (key == "trafoOSToWSPos")
+				{
+					if (sscanf_s(value.c_str(), "%f %f %f",
+						&trafoOSToWSPos.x, &trafoOSToWSPos.y, &trafoOSToWSPos.z) != 3)
+					{
+						return;
+					}
+				}
+			}
+		}
+	}
+}
+
+void ZenGin::zCVobLight::Save(FileStream* file)
+{
+}
+
+void ZenGin::zCVobLight::Load(FileStream* file)
+{
+	zCVob::Load(file);
+
+	bool inVob = false;
+
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		if (line == "{")
+		{
+			inVob = true;
+		}
+		else if (inVob)
+		{
+			std::string key;
+			std::string value;
+
+			if (line == "}")
+			{
+				inVob = false;
+				return;
+			}
+			else if (ParsePWFLine(line, key, value))
+			{
+				if (key == "range")
+				{
+					range = std::stof(value);
+				}
+				else if (key == "colorRGBA")
+				{
+					float r, g, b, a;
+
+					if (sscanf_s(value.c_str(), "%f %f %f %f", &r, &g, &b, &a) != 4)
+					{
+						return;
+					}
+
+					color.r = r;
+					color.g = g;
+					color.b = b;
+					color.a = a;
+				}
+				else if (key == "lightStatic")
+				{
+					lightStatic = (value == "1");
+				}
+				else if (key == "lightQual")
+				{
+					lightQuality = (zTVobLightQuality)std::stoi(value);
+				}
+				else if (key == "lensflareFX")
+				{
+					lensflareFX = value; // todo: fix
+				}
+				else if (key == "rangeAniScale")
+				{
+					rangeAniScale = value;
+				}
+				else if (key == "rangeAniFPS")
+				{
+					rangeAniFPS = std::stof(value);
+				}
+				else if (key == "rangeAniSmooth")
+				{
+					rangeAniSmooth = (value == "1");
+				}
+				else if (key == "colorAniList")
+				{
+					colorAniList = value; // todo: parse array
+				}
+				else if (key == "colorAniFPS")
+				{
+					colorAniFPS = std::stof(value);
+				}
+				else if (key == "colorAniSmooth")
+				{
+					colorAniSmooth = (value == "1");
+				}
+			}
+		}
+	}
+}
+
+void ZenGin::oCNpc::Save(FileStream* file)
+{
+}
+
+void ZenGin::oCNpc::Load(FileStream* file)
+{
+	zCVob::Load(file);
+
+	bool inVob = false;
+
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		if (line == "{")
+		{
+			inVob = true;
+		}
+		else if (inVob)
+		{
+			std::string key;
+			std::string value;
+
+			if (line == "}")
+			{
+				inVob = false;
+				return;
+			}
+			else if (ParsePWFLine(line, key, value))
+			{
+				if (key == "INSTANCE")
+				{
+					instance = value;
+				}
+			}
+		}
+	}
+}
+
+void ZenGin::oCMOB::Save(FileStream* file)
+{
+}
+
+void ZenGin::oCMOB::Load(FileStream* file)
+{
+	zCVob::Load(file);
+
+	bool inVob = false;
+
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		if (line == "{")
+		{
+			inVob = true;
+		}
+		else if (inVob)
+		{
+			std::string key;
+			std::string value;
+
+			if (line == "}")
+			{
+				inVob = false;
+				return;
+			}
+			else if (ParsePWFLine(line, key, value))
+			{
+				if (key == "INSTANCE")
+				{
+					instance = value;
+				}
+			}
+		}
+	}
+}
+
+void ZenGin::oCItem::Save(FileStream* file)
+{
+}
+
+void ZenGin::oCItem::Load(FileStream* file)
+{
+	zCVob::Load(file);
+
+	bool inVob = false;
+
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		if (line == "{")
+		{
+			inVob = true;
+		}
+		else if (inVob)
+		{
+			std::string key;
+			std::string value;
+
+			if (line == "}")
+			{
+				inVob = false;
+				return;
+			}
+			else if (ParsePWFLine(line, key, value))
+			{
+				if (key == "INSTANCE")
+				{
+					itemInstance = value;
+				}
+			}
+		}
+	}
+}
+
+void ZenGin::zCDecal::Save(FileStream* file)
+{
+}
+
+void ZenGin::zCDecal::Load(FileStream* file)
+{
+	bool inVob = false;
+
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		if (line == "{")
+		{
+			inVob = true;
+		}
+		else if (inVob)
+		{
+			std::string key;
+			std::string value;
+
+			if (line == "}")
+			{
+				inVob = false;
+				return;
+			}
+			else if (ParsePWFLine(line, key, value))
+			{
+				if (key == "decalDim")
+				{
+					if (sscanf_s(value.c_str(), "%f %f",
+						&decalDim.x, &decalDim.y) != 2)
+					{
+						return;
+					}
+				}
+				else if (key == "decalOffset")
+				{
+					if (sscanf_s(value.c_str(), "%f %f",
+						&decalOffset.x, &decalOffset.y) != 2)
+					{
+						return;
+					}
+				}
+				else if (key == "decal2Sided")
+				{
+					decal2Sided = (value == "1");
+				}
+				else if (key == "decalAlphaFunc")
+				{
+					if (value == "MAT_DEFAULT")		decalAlphaFunc = zRND_ALPHA_FUNC_MAT_DEFAULT;
+					else if (value == "NONE")		decalAlphaFunc = zRND_ALPHA_FUNC_NONE;
+					else if (value == "BLEND")		decalAlphaFunc = zRND_ALPHA_FUNC_BLEND;
+					else if (value == "ADD")		decalAlphaFunc = zRND_ALPHA_FUNC_ADD;
+					else if (value == "SUB")		decalAlphaFunc = zRND_ALPHA_FUNC_SUB;
+					else if (value == "MUL")		decalAlphaFunc = zRND_ALPHA_FUNC_MUL;
+				}
+				else if (key == "decalTexAniFPS")
+				{
+					decalTexAniFPS = std::stof(value);
+				}
+			}
+		}
+	}
+}
+
+#endif
+
 bool ZenGin::oCWorld::Archive(zCArchiver* archiver)
 {
 	return false;

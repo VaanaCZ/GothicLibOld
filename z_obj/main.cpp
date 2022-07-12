@@ -1,5 +1,6 @@
 
 #define GOTHICLIB_ALL
+#define GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
 #include "gothiclib.h"
 
 #include <iostream>
@@ -22,7 +23,7 @@ int main(int argc, char* argv[])
 {
 	Log::SetCallback(&logfunc);
 
-	
+	/*
 
 	ZenGin::FileSystem fs;
 	
@@ -47,6 +48,16 @@ int main(int argc, char* argv[])
 
 	//stream.Open("D:\\Temp\\G3_DATA\\Projects_compiled\\Projects.prj", 'r');
 	
+	*/
+
+	FileStream* f = new FileStream();
+	//f->Open("D:\\Gothic\\Gothic_demo3\\Data\\Worlds\\Surface\\surface_test.pwf", 'r');
+	//f->Open("D:\\Gothic\\Gothic_demo3\\Data\\Worlds\\Test\\testlevel_uncompiled.pwf", 'r');
+	f->Open("D:\\Gothic\\Gothic_demo3\\Data\\Worlds\\Combi-VOBs\\campfire.pwf", 'r');
+
+	ZenGin::zCWorld world;
+
+	world.LoadWorldFile(f);
 
 
 	return 0;
