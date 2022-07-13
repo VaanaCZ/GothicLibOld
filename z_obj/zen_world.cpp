@@ -209,7 +209,10 @@ bool ZenGin::zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 		{
 			if (line == "{")
 			{
-				vob->Load(file);
+				if (!vob->Load(file))
+				{
+					return false;
+				}
 			}
 			else if (line == "}")
 			{
@@ -570,12 +573,16 @@ bool ZenGin::zCVobLight::Unarchive(zCArchiver* archiver)
 
 bool ZenGin::zCVobLight::Save(FileStream* file)
 {
+	if (!zCVob::Save(file))
+		return false;
+
 	return false;
 }
 
 bool ZenGin::zCVobLight::Load(FileStream* file)
 {
-	zCVob::Load(file);
+	if (!zCVob::Load(file))
+		return false;
 
 	bool inVob = false;
 
@@ -662,12 +669,16 @@ bool ZenGin::zCVobLight::Load(FileStream* file)
 
 bool ZenGin::oCNpc::Save(FileStream* file)
 {
+	if (!zCVob::Save(file))
+		return false;
+
 	return false;
 }
 
 bool ZenGin::oCNpc::Load(FileStream* file)
 {
-	zCVob::Load(file);
+	if (!zCVob::Load(file))
+		return false;
 
 	bool inVob = false;
 
@@ -694,6 +705,74 @@ bool ZenGin::oCNpc::Load(FileStream* file)
 				if (key == "INSTANCE")
 				{
 					instance = value;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+bool ZenGin::oCMob::Archive(zCArchiver* archiver)
+{
+	if (!oCVob::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCMob::Unarchive(zCArchiver* archiver)
+{
+	if (!oCVob::Unarchive(archiver))
+		return false;
+
+	ZCR_START(oCMob);
+
+	ZCR_READSTRING(mobInstance);
+
+	ZCR_END();
+
+	return true;
+}
+
+bool ZenGin::oCMob::Save(FileStream* file)
+{
+	if (!zCVob::Save(file))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCMob::Load(FileStream* file)
+{
+	if (!zCVob::Load(file))
+		return false;
+
+	bool inVob = false;
+
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		if (line == "{")
+		{
+			inVob = true;
+		}
+		else if (inVob)
+		{
+			std::string key;
+			std::string value;
+
+			if (line == "}")
+			{
+				inVob = false;
+				return true;
+			}
+			else if (ParsePWFLine(line, key, value))
+			{
+				if (key == "INSTANCE")
+				{
+					mobInstance = value;
 				}
 			}
 		}
@@ -736,48 +815,6 @@ bool ZenGin::oCMOB::Unarchive(zCArchiver* archiver)
 	ZCR_END();
 
 	return true;
-}
-
-bool ZenGin::oCMOB::Save(FileStream* file)
-{
-	return false;
-}
-
-bool ZenGin::oCMOB::Load(FileStream* file)
-{
-	zCVob::Load(file);
-
-	bool inVob = false;
-
-	std::string line;
-
-	while (file->ReadLine(line))
-	{
-		if (line == "{")
-		{
-			inVob = true;
-		}
-		else if (inVob)
-		{
-			std::string key;
-			std::string value;
-
-			if (line == "}")
-			{
-				inVob = false;
-				return true;
-			}
-			else if (ParsePWFLine(line, key, value))
-			{
-				if (key == "INSTANCE")
-				{
-					instance = value;
-				}
-			}
-		}
-	}
-
-	return false;
 }
 
 bool ZenGin::oCMobInter::Archive(zCArchiver* archiver)
@@ -1164,12 +1201,16 @@ bool ZenGin::oCItem::Unarchive(zCArchiver* archiver)
 
 bool ZenGin::oCItem::Save(FileStream* file)
 {
+	if (!zCVob::Save(file))
+		return false;
+
 	return false;
 }
 
 bool ZenGin::oCItem::Load(FileStream* file)
 {
-	zCVob::Load(file);
+	if (!zCVob::Load(file))
+		return false;
 
 	bool inVob = false;
 

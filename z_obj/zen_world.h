@@ -407,6 +407,31 @@ namespace GothicLib
 
 		};
 
+		class oCMob : public oCVob
+		{
+		public:
+
+			DEFINE_CLASS(oCMob, zCVob);
+
+			oCMob()				{ }
+			virtual ~oCMob()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			virtual bool Save(FileStream*);
+			virtual bool Load(FileStream*);
+
+			/*
+				Properties
+			*/
+
+			std::string		mobInstance;				// Legacy
+
+		private:
+
+		};
+
 		enum oTSndMaterial
 		{
 			SND_MAT_WOOD,
@@ -429,9 +454,6 @@ namespace GothicLib
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
 
-			virtual bool Save(FileStream*);
-			virtual bool Load(FileStream*);
-
 			/*
 				Properties
 			*/
@@ -447,7 +469,6 @@ namespace GothicLib
 			std::string		owner;
 			std::string		ownerGuild;
 			bool			isDestroyed		= false;	// Props
-			std::string		instance;					// Legacy
 
 		private:
 
