@@ -6,34 +6,16 @@ namespace GothicLib
 {
 	namespace ZenGin
 	{
+		class zCBspTree;
 		class zCVob;
 		class zCVisual;
 		class zCAIBase;
 		class zCWayNet;
 
 		/*
-			BSP
-		*/
-
-		class zCBspTree
-		{
-		public:
-
-			zCBspTree()				{ }
-			virtual ~zCBspTree()	{ }
-
-			bool SaveBIN(FileStream*);
-			bool LoadBIN(FileStream*);
-
-		private:
-
-		};
-
-		/*
 			World classes
 		*/
 
-#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
 		inline bool ParsePWFLine(std::string _line, std::string& key, std::string& value)
 		{
 			std::string line = _line;
@@ -62,7 +44,6 @@ namespace GothicLib
 
 			return true;
 		}
-#endif
 
 		class zCWorld : public zCObject
 		{
@@ -72,30 +53,29 @@ namespace GothicLib
 
 			zCWorld()			{ }
 			virtual ~zCWorld()	{ }
+			
+			bool LoadWorld(FileStream*);
+			bool SaveWorld(FileStream*);
 
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
 
-			virtual bool UnarcVobTree(zCVob*, zCArchiver*, size_t&);
-
-			void LoadWorld(FileStream*);
-			void SaveWorld(FileStream*);
-
-#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
-			void LoadWorldFile(FileStream*);
-			void SaveWorldFile(FileStream*);
-#endif
-
-			zCBspTree	bsp;
-			zCVob*		vobTree = nullptr;
-			zCWayNet*	wayNet = nullptr;
+			zCBspTree*	bsp;
+			zCVob*		vobTree;
+			zCWayNet*	wayNet;
 
 		private:
 
-#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
-			void LoadPWFVobTree(zCVob*, FileStream*);
-			void SavePWFVobTree(zCVob*, FileStream*);
-#endif
+			// .ZEN
+			bool ArcVobTree(zCArchiver*, zCVob*, size_t&);
+			bool UnarcVobTree(zCArchiver*, zCVob*, size_t&);
+
+			// .PWF
+			bool LoadWorldFile(FileStream*);
+			bool SaveWorldFile(FileStream*);
+
+			bool LoadVobTree(FileStream*, zCVob*);
+			bool SaveVobTree(FileStream*, zCVob*);
 
 		};
 
@@ -110,6 +90,26 @@ namespace GothicLib
 
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
+
+		private:
+
+		};
+
+		/*
+			BSP
+		*/
+
+		class zCBspTree
+		{
+		public:
+
+			zCBspTree()				{ }
+			virtual ~zCBspTree()	{ }
+
+			bool SaveBIN(FileStream*);
+			bool LoadBIN(FileStream*);
+
+			GAME game;
 
 		private:
 
@@ -175,10 +175,8 @@ namespace GothicLib
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
 
-#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
-			virtual void Save(FileStream*);
-			virtual void Load(FileStream*);
-#endif
+			virtual bool Save(FileStream*);
+			virtual bool Load(FileStream*);
 
 			std::vector<zCVob*> children;
 
@@ -344,10 +342,8 @@ namespace GothicLib
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
 
-#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
-			virtual void Save(FileStream*);
-			virtual void Load(FileStream*);
-#endif
+			virtual bool Save(FileStream*);
+			virtual bool Load(FileStream*);
 
 			/*
 				Properties
@@ -398,10 +394,8 @@ namespace GothicLib
 			//virtual bool Archive(zCArchiver*);
 			//virtual bool Unarchive(zCArchiver*);
 
-#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
-			virtual void Save(FileStream*);
-			virtual void Load(FileStream*);
-#endif
+			virtual bool Save(FileStream*);
+			virtual bool Load(FileStream*);
 
 			/*
 				Properties
@@ -435,10 +429,8 @@ namespace GothicLib
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
 
-#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
-			virtual void Save(FileStream*);
-			virtual void Load(FileStream*);
-#endif
+			virtual bool Save(FileStream*);
+			virtual bool Load(FileStream*);
 
 			/*
 				Properties
@@ -821,10 +813,8 @@ namespace GothicLib
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
 
-#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
-			virtual void Save(FileStream*);
-			virtual void Load(FileStream*);
-#endif
+			virtual bool Save(FileStream*);
+			virtual bool Load(FileStream*);
 
 			/*
 				Properties
@@ -1212,10 +1202,8 @@ namespace GothicLib
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
 
-#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
-			virtual void Save(FileStream*);
-			virtual void Load(FileStream*);
-#endif
+			virtual bool Save(FileStream*);
+			virtual bool Load(FileStream*);
 
 			/*
 				Properties

@@ -17,8 +17,6 @@
 // 
 // Special macros:
 // 
-// GOTHICLIB_ZENGIN_PWF
-// 
 //
 
 #ifndef GOTHICLIB_DISABLE

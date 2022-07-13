@@ -86,7 +86,9 @@ namespace GothicLib
 #define DEFINE_CLASS(C, B)													\
 	static C* CreateInstance() { return new C(); }							\
 	inline static ClassDefinition* classDef =								\
-		new ClassDefinition(classManager, #C, #B, &C::CreateInstance);
+		new ClassDefinition(classManager, #C, #B, &C::CreateInstance);		\
+	inline static ClassDefinition* GetStaticClassDef() { return classDef; }	\
+	virtual ClassDefinition* GetClassDef() { return classDef; }
 
 
 #define DEFINE_PROPERTY(T, N)												\

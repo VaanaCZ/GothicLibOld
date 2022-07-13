@@ -6,8 +6,6 @@
 
 #define GET_MACRO(_1,_2,_3,NAME,...) NAME
 
-#define GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
-
 namespace GothicLib
 {
 	class FileStream;
@@ -38,9 +36,6 @@ namespace GothicLib
 #define ZCR_READENUM(V)			if (!archiver->ReadEnum(#V, *(int*)&V))						zcrValid = false;
 #define ZCR_READRAW(V)			if (!archiver->ReadRaw(#V, (char*)&V, sizeof(V)))			zcrValid = false;
 #define ZCR_READRAWFLOAT(V)		if (!archiver->ReadRawFloat(#V, (float*)&V, sizeof(V) / 4))	zcrValid = false;
-
-#define ZCR_READOBJECT(V, N, C)	if (!archiver->ReadObject<C>(N, V))							zcrValid = false;
-
 
 #define ZCR_END()				if (!zcrValid)												\
 								{															\
@@ -121,7 +116,41 @@ namespace GothicLib
 
 		enum GAME
 		{
-			GAME_AUTODETECT = -1
+			/* Versions */
+			GAME_DEMO3,
+
+				GAME_G1_056C = GAME_DEMO3,
+
+			GAME_DEMO5,
+
+				GAME_G1_064B = GAME_DEMO5,
+
+			GAME_SEPTEMBERDEMO,
+
+				GAME_G1_094K = GAME_SEPTEMBERDEMO,
+
+			//GAME_G1_100B,
+
+			GAME_CHRISTMASEDITION,
+
+				GAME_G1_101D = GAME_CHRISTMASEDITION,
+				GAME_G1_101E = GAME_CHRISTMASEDITION,
+
+			GAME_GOTHIC1,
+
+				GAME_G1_104D = GAME_GOTHIC1,
+				GAME_G1_106L = GAME_GOTHIC1,
+				GAME_G1_107C = GAME_GOTHIC1,
+				GAME_G1_108H = GAME_GOTHIC1,
+				GAME_G1_108I = GAME_GOTHIC1,
+				GAME_G1_108J = GAME_GOTHIC1,
+				GAME_G1_108K = GAME_GOTHIC1,
+
+			GAME_GOTHICSEQUEL,
+
+				GAME_G1A_112F = GAME_GOTHICSEQUEL,
+
+			GAME_NONE = -1
 		};
 
 		class zCArchiver
@@ -131,7 +160,7 @@ namespace GothicLib
 			zCArchiver()	{ }
 			~zCArchiver()	{ }
 
-			bool Read(FileStream*);
+			bool Open(FileStream*);
 
 			bool ReadInt		(std::string, int&);
 			bool ReadByte		(std::string, char&);
@@ -145,33 +174,25 @@ namespace GothicLib
 			bool ReadRaw		(std::string, char*, size_t);
 			bool ReadRawFloat	(std::string, float*, size_t);
 
-			bool ReadObject(zCObject*& o) { return ReadObject(std::string(), o); }
-			bool ReadObject(std::string, zCObject*&);
+			zCObject* ReadObject(zCObject* o = nullptr) { return ReadObject(std::string(), o); }
+			zCObject* ReadObject(std::string, zCObject* = nullptr);
 
 			bool ReadChunkStart(std::string*, std::string*, uint16_t*, uint32_t*);
 			bool ReadChunkEnd();
 		
-			template <class C> bool ReadObject(std::string name, C& object)
+			template <class C> C ReadObjectAs(std::string name, C object = nullptr)
 			{
-				zCObject* readObject;
-
-				if (!ReadObject(name, readObject))
-					return false;
+				zCObject* readObject = ReadObject(name, object);
 
 				if (readObject == nullptr)
-					return true;
+					return nullptr;
 
-				object = dynamic_cast<C>(readObject);
-
-				if (object == nullptr)
-					return false;
-			
-				return true;
+				return dynamic_cast<C>(readObject);
 			}
 
-			template <class C> bool ReadObject(C& object)
+			template <class C> C ReadObjectAs(C o = nullptr)
 			{
-				return ReadObject<C>(std::string(), object);
+				return ReadObjectAs<C>(std::string(), o);
 			}
 
 			zCObject* GetContainedObject();
@@ -276,17 +297,15 @@ namespace GothicLib
 			virtual bool Archive(zCArchiver*)	{ return true; }
 			virtual bool Unarchive(zCArchiver*) { return true; }
 
-#ifdef GOTHICLIB_ZENGIN_OLD_SAVE_LOAD
-			virtual void Save(FileStream*) { }
-			virtual void Load(FileStream*) { }
-#endif
+			virtual bool Save(FileStream*)		{ return true; }
+			virtual bool Load(FileStream*)		{ return true; }
 
-
-			//virtual const char* GetClassName() = 0;
+			virtual ClassDefinition* GetClassDef() { return classDef; }
 
 			static zCObject* CreateObject(std::string);
 
-			int version = -1;
+			int		version	= -1;
+			GAME	game	= GAME_NONE;
 
 		private:
 

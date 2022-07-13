@@ -26,7 +26,7 @@ ZenGin::zCObject* ZenGin::zCObject::CreateObject(std::string _className)
 	return nullptr;
 }
 
-bool ZenGin::zCArchiver::Read(FileStream* _file)
+bool ZenGin::zCArchiver::Open(FileStream* _file)
 {
 	file = _file;
 
@@ -188,10 +188,6 @@ bool ZenGin::zCArchiver::Read(FileStream* _file)
 		file->Seek(startPos);
 	}
 	
-	// Read objects
-	if (!ReadObject(containedObject))
-		return false;
-
 	return true;
 }
 
@@ -456,9 +452,9 @@ bool ZenGin::zCArchiver::ReadEnum(std::string name, int& enumVal)
 	return false;
 }
 
-bool ZenGin::zCArchiver::ReadObject(std::string name, zCObject*& object)
+ZenGin::zCObject* ZenGin::zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 {
-	object = nullptr;
+	zCObject* object = nullptr;
 
 	// Read object header
 	std::string className;
@@ -466,13 +462,15 @@ bool ZenGin::zCArchiver::ReadObject(std::string name, zCObject*& object)
 	uint32_t objectIndex;
 
 	if (!ReadChunkStart(&name, &className, &classVersion, &objectIndex))
-		return false;
+	{
+		return nullptr;
+	}
 
 	// Error checking
 	if (objectIndex < 0 || objectIndex >= objectList.size())
 	{
 		LOG_ERROR("The specified object index is not within an accepted range! Archive must be invalid!");
-		return false;
+		return nullptr;
 	}
 
 	if (className == "%")
@@ -484,27 +482,60 @@ bool ZenGin::zCArchiver::ReadObject(std::string name, zCObject*& object)
 	{
 		// § = existing object in list
 		object = objectList[objectIndex];
+
+		if (existingObject != nullptr &&
+			object != existingObject)
+		{
+			object = existingObject;
+		}
 	}
 	else
 	{
-		// Create object based on read type
-		object = zCObject::CreateObject(className);
+		if (existingObject)
+		{
+			// Use the specified object if it is the 
+			// same class.
+			std::string name = className;
+			
+			if (name.find(":") != std::string::npos)
+				name = name.substr(0, name.find(":"));
 
-		if (object == nullptr)
-			return false;
+			if (existingObject->GetClassDef()->name == name)
+			{
+				object = existingObject;
+			}
+			else
+			{
+				return nullptr;
+			}
+		}
+		else
+		{
+			// Create object based on read type
+			object = zCObject::CreateObject(className);
+
+			if (object == nullptr)
+			{
+				return nullptr;
+			}
+		}
 
 		object->version = classVersion;
 
 		objectList[objectIndex] = object;
 
 		if (!object->Unarchive(this))
-			return false;
+		{
+			return nullptr;
+		}
 	}
 
 	if (!ReadChunkEnd())
-		return false;
+	{
+		return nullptr;
+	}
 
-	return true;
+	return object;
 }
 
 bool ZenGin::zCArchiver::ReadChunkStart(std::string* objectName, std::string* className, uint16_t* classVersion, uint32_t* objectIndex)

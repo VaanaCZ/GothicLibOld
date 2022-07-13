@@ -23,6 +23,19 @@ int main(int argc, char* argv[])
 {
 	Log::SetCallback(&logfunc);
 
+	ZenGin::FileSystem fs;
+	//if (!fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic Original"))
+	//	return 1;
+	//FileStream* f = fs.OpenFile("WORLD.zen", true);
+	FileStream* f = new FileStream();
+	f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\SURFACE_UNCOMPILED.ZEN", 'r');
+
+	ZenGin::oCWorld world;
+	world.game = ZenGin::GAME_GOTHIC1;
+	world.LoadWorld(f);
+
+
+
 	/*
 
 	ZenGin::FileSystem fs;
@@ -50,14 +63,14 @@ int main(int argc, char* argv[])
 	
 	*/
 
-	FileStream* f = new FileStream();
+	//FileStream* f = new FileStream();
 	//f->Open("D:\\Gothic\\Gothic_demo3\\Data\\Worlds\\Surface\\surface_test.pwf", 'r');
-	//f->Open("D:\\Gothic\\Gothic_demo3\\Data\\Worlds\\Test\\testlevel_uncompiled.pwf", 'r');
-	f->Open("D:\\Gothic\\Gothic_demo3\\Data\\Worlds\\Combi-VOBs\\campfire.pwf", 'r');
-
-	ZenGin::zCWorld world;
-
-	world.LoadWorldFile(f);
+	////f->Open("D:\\Gothic\\Gothic_demo3\\Data\\Worlds\\Test\\testlevel_uncompiled.pwf", 'r');
+	////f->Open("D:\\Gothic\\Gothic_demo3\\Data\\Worlds\\Combi-VOBs\\campfire.pwf", 'r');
+	//
+	//ZenGin::zCWorld world;
+	//
+	//world.LoadWorldFile(f);
 
 
 	return 0;
