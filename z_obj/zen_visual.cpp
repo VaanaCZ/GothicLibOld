@@ -6,6 +6,24 @@ using namespace GothicLib;
 	Visual classes
 */
 
+/*
+	zCVisual
+		zCDecal
+		zCFlash
+		zCMesh
+		zCParticleFX
+			zCUnderwaterPFX
+		zCPolyStrip
+			zCFlash::zCBolt
+			zCLightning::zCBolt
+		zCProgMeshProto
+			zCMeshSoftSkin
+		zCQuadMark
+		zCVisualAnimate
+			zCModel
+			zCMorphMesh
+*/
+
 bool ZenGin::zCDecal::Archive(zCArchiver* archiver)
 {
 	if (!zCVisual::Archive(archiver))

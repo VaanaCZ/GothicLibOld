@@ -10,6 +10,24 @@ namespace GothicLib
 			Visual classes
 		*/
 
+		/*
+			zCVisual
+				zCDecal
+				zCFlash
+				zCMesh
+				zCParticleFX
+					zCUnderwaterPFX
+				zCPolyStrip
+					zCFlash::zCBolt
+					zCLightning::zCBolt
+				zCProgMeshProto
+					zCMeshSoftSkin
+				zCQuadMark
+				zCVisualAnimate
+					zCModel
+					zCMorphMesh
+		*/
+
 		class zCVisual : public zCObject
 		{
 		public:
@@ -34,7 +52,20 @@ namespace GothicLib
 
 		};
 
-		class zCVisualAnimate : public zCVisual
+		enum zTRnd_AlphaBlendFunc
+		{
+			zRND_ALPHA_FUNC_MAT_DEFAULT,
+			zRND_ALPHA_FUNC_NONE,
+			zRND_ALPHA_FUNC_BLEND,
+			zRND_ALPHA_FUNC_ADD,
+			zRND_ALPHA_FUNC_SUB,
+			zRND_ALPHA_FUNC_MUL,
+			zRND_ALPHA_FUNC_MUL2,
+			zRND_ALPHA_FUNC_TEST,
+			zRND_ALPHA_FUNC_BLEND_TEST
+		};
+		
+		class zCDecal : public zCVisual
 		{
 		public:
 
@@ -45,14 +76,31 @@ namespace GothicLib
 				{ GAME_CHRISTMASEDITION,	0 },
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
-				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2,				1 },
+				{ GAME_GOTHIC2NOTR,			1 },
 			};
 
-			ZEN_DECLARE_CLASS_ABSTRACT(zCVisualAnimate, zCVisual);
+			ZEN_DECLARE_CLASS(zCDecal, zCVisual);
 
-			zCVisualAnimate()			{ }
-			virtual ~zCVisualAnimate()	{ }
+			zCDecal()				{ }
+			virtual ~zCDecal()		{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			virtual bool Save(FileStream*);
+			virtual bool Load(FileStream*);
+
+			/*
+				Properties
+			*/
+
+			std::string				name;
+			zVEC2					decalDim		= { 25, 25 };
+			zVEC2					decalOffset		= {};
+			bool					decal2Sided		= false;
+			zTRnd_AlphaBlendFunc	decalAlphaFunc	= zRND_ALPHA_FUNC_MAT_DEFAULT;
+			float					decalTexAniFPS	= 0.0f;
 
 		private:
 
@@ -69,8 +117,8 @@ namespace GothicLib
 				{ GAME_CHRISTMASEDITION,	0 },
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
-				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2,				1 },
+				{ GAME_GOTHIC2NOTR,			1 },
 			};
 
 			ZEN_DECLARE_CLASS(zCMesh, zCVisual);
@@ -106,6 +154,52 @@ namespace GothicLib
 
 		};
 
+		class zCProgMeshProto : public zCVisual
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				1 },
+				{ GAME_GOTHIC2NOTR,			1 },
+			};
+
+			ZEN_DECLARE_CLASS(zCProgMeshProto, zCVisual);
+
+			zCProgMeshProto()			{ }
+			virtual ~zCProgMeshProto()	{ }
+
+		private:
+
+		};
+
+		class zCVisualAnimate : public zCVisual
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS_ABSTRACT(zCVisualAnimate, zCVisual);
+
+			zCVisualAnimate()			{ }
+			virtual ~zCVisualAnimate()	{ }
+
+		private:
+
+		};
+
 		class zCModel : public zCVisualAnimate
 		{
 		public:
@@ -125,30 +219,6 @@ namespace GothicLib
 
 			zCModel()			{ }
 			virtual ~zCModel()	{ }
-
-		private:
-
-		};
-
-		class zCProgMeshProto : public zCVisual
-		{
-		public:
-
-			inline static CLASS_REVISION revisions[] =
-			{
-				{ GAME_DEMO5,				0 },
-				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
-				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
-			};
-
-			ZEN_DECLARE_CLASS(zCProgMeshProto, zCVisual);
-
-			zCProgMeshProto()			{ }
-			virtual ~zCProgMeshProto()	{ }
 
 		private:
 
@@ -173,60 +243,6 @@ namespace GothicLib
 
 			zCMorphMesh()			{ }
 			virtual ~zCMorphMesh()	{ }
-
-		private:
-
-		};
-
-		enum zTRnd_AlphaBlendFunc
-		{
-			zRND_ALPHA_FUNC_MAT_DEFAULT,
-			zRND_ALPHA_FUNC_NONE,
-			zRND_ALPHA_FUNC_BLEND,
-			zRND_ALPHA_FUNC_ADD,
-			zRND_ALPHA_FUNC_SUB,
-			zRND_ALPHA_FUNC_MUL,
-			zRND_ALPHA_FUNC_MUL2,
-			zRND_ALPHA_FUNC_TEST,
-			zRND_ALPHA_FUNC_BLEND_TEST
-		};
-
-		class zCDecal : public zCVisual
-		{
-		public:
-
-			inline static CLASS_REVISION revisions[] =
-			{
-				{ GAME_DEMO5,				0 },
-				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
-				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
-			};
-
-			ZEN_DECLARE_CLASS(zCDecal, zCVisual);
-
-			zCDecal()				{ }
-			virtual ~zCDecal()		{ }
-
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
-
-			virtual bool Save(FileStream*);
-			virtual bool Load(FileStream*);
-
-			/*
-				Properties
-			*/
-
-			std::string				name;
-			zVEC2					decalDim		= { 25, 25 };
-			zVEC2					decalOffset		= {};
-			bool					decal2Sided		= false;
-			zTRnd_AlphaBlendFunc	decalAlphaFunc	= zRND_ALPHA_FUNC_MAT_DEFAULT;
-			float					decalTexAniFPS	= 0.0f;
 
 		private:
 
