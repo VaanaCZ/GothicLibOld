@@ -168,7 +168,7 @@ bool ZenGin::zCWorld::SaveWorldFile(FileStream* file)
 bool ZenGin::zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 {	
 	bool inVob = false;
-	zCVob* vob = nullptr;
+	zCVob* vob = parentVob;
 
 	std::string line;
 
@@ -192,7 +192,7 @@ bool ZenGin::zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 			case zVOB_TYPE_LEVEL_COMPONENT:	vob = new zCVobLevelCompo();	break;
 			case zVOB_TYPE_SPOT:			vob = new zCVobSpot();			break;
 			//case zVOB_TYPE_CAMERA:			vob = new zCVob();				break;
-			case zVOB_TYPE_STARTPOINT:		vob = new zCVob();				break;
+			case zVOB_TYPE_STARTPOINT:		vob = new zCVobStartpoint();	break;
 			case zVOB_TYPE_WAYPOINT:		vob = new zCVob();				break; // todo
 			case zVOB_TYPE_MARKER:			vob = new zCVob();				break; // todo
 			case zVOB_TYPE_MOB:				vob = new oCMOB();				break;
@@ -282,6 +282,11 @@ bool ZenGin::zCBspTree::LoadBIN(FileStream* file)
 
 /*
 	Vob classes
+*/
+
+/*
+	zCVob
+		oCVob
 */
 
 bool ZenGin::zCVob::Archive(zCArchiver* archiver)
@@ -461,7 +466,500 @@ bool ZenGin::zCVob::Load(FileStream* file)
 	return false;
 }
 
-bool ZenGin::zCVobSound::Archive(zCArchiver* archiver)
+/*
+	zCCSCamera
+*/
+
+
+/*
+	zCCamTrj_KeyFrame
+*/
+
+
+/*
+	oCDummyVobGenerator
+*/
+
+
+/*
+	zCEffect
+		zCEarthquake
+		zCMusicControler
+		zCPFXControler
+		zCTouchAnimate
+			zCTouchAnimateSound
+		zCTouchDamage
+			oCTouchDamage
+		oCVisualFX
+			oCVisFX_Lightning [GOTHIC 1]
+			oCVisFX_MultiTarget
+		zCVobAnimate
+		zCVobLensFlare
+		zCVobScreenFX
+*/
+
+bool ZenGin::zCPFXControler::Archive(zCArchiver* archiver)
+{
+	if (!zCEffect::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::zCPFXControler::Unarchive(zCArchiver* archiver)
+{
+	if (!zCEffect::Unarchive(archiver))
+		return false;
+
+	ZCR_START(zCPFXControler);
+
+	ZCR_READSTRING(pfxName);
+	ZCR_READBOOL(killVobWhenDone);
+	ZCR_READBOOL(pfxStartOn);
+
+	ZCR_END();
+
+	return true;
+}
+
+bool ZenGin::zCVobAnimate::Archive(zCArchiver* archiver)
+{
+	if (!zCEffect::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::zCVobAnimate::Unarchive(zCArchiver* archiver)
+{
+	if (!zCEffect::Unarchive(archiver))
+		return false;
+
+	ZCR_START(zCVobAnimate);
+
+	ZCR_READBOOL(startOn);
+
+	if (archiver->IsSavegame())
+	{
+		ZCR_READBOOL(isRunning);
+	}
+	else
+	{
+		isRunning = startOn;
+	}
+
+	ZCR_END();
+
+	return true;
+}
+
+bool ZenGin::zCVobScreenFX::Archive(zCArchiver* archiver)
+{
+	if (!zCEffect::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::zCVobScreenFX::Unarchive(zCArchiver* archiver)
+{
+	if (!zCEffect::Unarchive(archiver))
+		return false;
+
+	ZCR_START(zCVobScreenFX);
+
+	if (archiver->IsSavegame())
+	{
+		// todo
+		//ZCR_READRAW(blend);
+		//ZCR_READRAW(cinema);
+		//ZCR_READRAW(fovMorph);
+		//ZCR_READRAW(fovSaved);
+		//ZCR_READRAW(fovSaved1st);
+	}
+
+	ZCR_END();
+
+	return true;
+}
+
+/*
+	oCItem
+*/
+
+bool ZenGin::oCItem::Archive(zCArchiver* archiver)
+{
+	if (!oCVob::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCItem::Unarchive(zCArchiver* archiver)
+{
+	if (!oCVob::Unarchive(archiver))
+		return false;
+
+	ZCR_START(oCItem);
+
+	ZCR_READSTRING(itemInstance);
+
+	if (archiver->IsSavegame())
+	{
+		ZCR_READINT(amount);
+		ZCR_READINT(flags);
+	}
+
+	ZCR_END();
+
+	return true;
+}
+
+bool ZenGin::oCItem::Save(FileStream* file)
+{
+	if (!zCVob::Save(file))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCItem::Load(FileStream* file)
+{
+	if (!zCVob::Load(file))
+		return false;
+
+	bool inVob = false;
+
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		if (line == "{")
+		{
+			inVob = true;
+		}
+		else if (inVob)
+		{
+			std::string key;
+			std::string value;
+
+			if (line == "}")
+			{
+				inVob = false;
+				return true;
+			}
+			else if (ParseFileLine(line, key, value))
+			{
+				if (key == "INSTANCE")
+				{
+					itemInstance = value;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+/*
+	oCMOB
+		oCMobInter
+			oCMobBed
+			oCMobFire
+			oCMobItemSlot
+			oCMobLadder
+			oCMobLockable
+				oCMobContainer
+				oCMobDoor
+			oCMobSwitch
+			oCMobWheel
+*/
+
+
+bool ZenGin::oCMOB::Archive(zCArchiver* archiver)
+{
+	if (!oCVob::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCMOB::Unarchive(zCArchiver* archiver)
+{
+	if (!oCVob::Unarchive(archiver))
+		return false;
+
+	ZCR_START(oCMOB);
+
+	ZCR_READSTRING(focusName);
+	ZCR_READINT(hitpoints);
+	ZCR_READINT(damage);
+	ZCR_READBOOL(moveable);
+	ZCR_READBOOL(takeable);
+	ZCR_READBOOL(focusOverride);
+	ZCR_READENUM(soundMaterial);
+	ZCR_READSTRING(visualDestroyed);
+	ZCR_READSTRING(owner);
+	ZCR_READSTRING(ownerGuild);
+
+	if (!archiver->IsProps())
+	{
+		ZCR_READBOOL(isDestroyed);
+	}
+
+	ZCR_END();
+
+	return true;
+}
+
+bool ZenGin::oCMobInter::Archive(zCArchiver* archiver)
+{
+	if (!oCMOB::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCMobInter::Unarchive(zCArchiver* archiver)
+{
+	if (!oCMOB::Unarchive(archiver))
+		return false;
+
+	ZCR_START(oCMobInter);
+
+	if (!archiver->IsProps())
+	{
+		ZCR_READINT(stateNum);
+	}
+
+	ZCR_READSTRING(triggerTarget);
+	ZCR_READSTRING(useWithItem);
+	ZCR_READSTRING(conditionFunc);
+	ZCR_READSTRING(onStateFunc);
+	ZCR_READBOOL(rewind);
+
+	ZCR_END();
+
+	return true;
+}
+
+bool ZenGin::oCMobFire::Archive(zCArchiver* archiver)
+{
+	if (!oCMobInter::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCMobFire::Unarchive(zCArchiver* archiver)
+{
+	if (!oCMobInter::Unarchive(archiver))
+		return false;
+
+	ZCR_START(oCMobFire);
+
+	ZCR_READSTRING(fireSlot);
+	ZCR_READSTRING(fireVobtreeName);
+
+	ZCR_END();
+
+	return true;
+}
+
+bool ZenGin::oCMobLockable::Archive(zCArchiver* archiver)
+{
+	if (!oCMobInter::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCMobLockable::Unarchive(zCArchiver* archiver)
+{
+	if (!oCMobInter::Unarchive(archiver))
+		return false;
+
+	ZCR_START(oCMobLockable);
+
+	ZCR_READBOOL(locked);
+	ZCR_READSTRING(keyInstance);
+	ZCR_READSTRING(pickLockStr);
+
+	ZCR_END();
+
+	return true;
+}
+
+bool ZenGin::oCMobContainer::Archive(zCArchiver* archiver)
+{
+	if (!oCMobLockable::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCMobContainer::Unarchive(zCArchiver* archiver)
+{
+	if (!oCMobLockable::Unarchive(archiver))
+		return false;
+
+	ZCR_START(oCMobContainer);
+
+	ZCR_READSTRING(contains);
+
+	ZCR_END();
+
+	return true;
+}
+
+/*
+	oCMob
+
+	Legacy class, not to be confused with oCMOB and its derivatives.
+	Only included to support demo5 loading.
+*/
+
+bool ZenGin::oCMob::Archive(zCArchiver* archiver)
+{
+	if (!oCVob::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCMob::Unarchive(zCArchiver* archiver)
+{
+	if (!oCVob::Unarchive(archiver))
+		return false;
+
+	ZCR_START(oCMob);
+
+	ZCR_READSTRING(mobInstance);
+
+	ZCR_END();
+
+	return true;
+}
+
+bool ZenGin::oCMob::Save(FileStream* file)
+{
+	if (!zCVob::Save(file))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCMob::Load(FileStream* file)
+{
+	if (!zCVob::Load(file))
+		return false;
+
+	bool inVob = false;
+
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		if (line == "{")
+		{
+			inVob = true;
+		}
+		else if (inVob)
+		{
+			std::string key;
+			std::string value;
+
+			if (line == "}")
+			{
+				inVob = false;
+				return true;
+			}
+			else if (ParseFileLine(line, key, value))
+			{
+				if (key == "INSTANCE")
+				{
+					mobInstance = value;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+/*
+	oCNpc
+*/
+
+bool ZenGin::oCNpc::Save(FileStream* file)
+{
+	if (!zCVob::Save(file))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCNpc::Load(FileStream* file)
+{
+	if (!zCVob::Load(file))
+		return false;
+
+	bool inVob = false;
+
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		if (line == "{")
+		{
+			inVob = true;
+		}
+		else if (inVob)
+		{
+			std::string key;
+			std::string value;
+
+			if (line == "}")
+			{
+				inVob = false;
+				return true;
+			}
+			else if (ParseFileLine(line, key, value))
+			{
+				if (key == "INSTANCE")
+				{
+					npcInstance = value;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+/*
+	oCObjectGenerator
+*/
+
+/*
+	zCTriggerBase
+		zCCodeMaster
+		zCMessageFilter
+		zCMoverControler
+		zCTrigger
+			oCCSTrigger
+			zCMover
+			oCTriggerChangeLevel
+			zCTriggerJumper [DEMO5]
+			zCTriggerList
+			oCTriggerScript
+			zCTriggerTeleport
+		zCTriggerUntouch
+		zCTriggerWorldStart
+*/
+
+
+bool ZenGin::zCTriggerBase::Archive(zCArchiver* archiver)
 {
 	if (!zCVob::Archive(archiver))
 		return false;
@@ -469,64 +967,259 @@ bool ZenGin::zCVobSound::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCVobSound::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCTriggerBase::Unarchive(zCArchiver* archiver)
 {
 	if (!zCVob::Unarchive(archiver))
 		return false;
 
-	ZCR_START(zCVobSound);
+	ZCR_START(zCTriggerBase);
 
-	ZCR_READFLOAT(sndVolume);
-	ZCR_READENUM(sndMode);
-	ZCR_READFLOAT(sndRandDelay);
-	ZCR_READFLOAT(sndRandDelayVar);
-	ZCR_READBOOL(sndStartOn);
-	ZCR_READBOOL(sndAmbient3D);
-	ZCR_READBOOL(sndObstruction);
-	ZCR_READFLOAT(sndConeAngle);
-	ZCR_READENUM(sndVolType);
-	ZCR_READFLOAT(sndRadius);
-	ZCR_READSTRING(sndName);
-
-	if (archiver->IsSavegame())
-	{
-		ZCR_READBOOL(soundIsRunning);
-		ZCR_READBOOL(soundAllowedToRun);
-	}
-	else
-	{
-		soundIsRunning		= sndStartOn;
-		soundAllowedToRun	= sndStartOn;
-	}
+	ZCR_READSTRING(triggerTarget);
 
 	ZCR_END();
 
 	return true;
 }
 
-bool ZenGin::zCVobSoundDaytime::Archive(zCArchiver* archiver)
+bool ZenGin::zCTrigger::Archive(zCArchiver* archiver)
 {
-	if (!zCVobSound::Archive(archiver))
+	if (!zCTriggerBase::Archive(archiver))
 		return false;
 
 	return false;
 }
 
-bool ZenGin::zCVobSoundDaytime::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCTrigger::Unarchive(zCArchiver* archiver)
 {
-	if (!zCVobSound::Unarchive(archiver))
+	if (!zCTriggerBase::Unarchive(archiver))
 		return false;
 
-	ZCR_START(zCVobSound);
+	ZCR_START(zCTrigger);
 
-	ZCR_READFLOAT(sndStartTime);
-	ZCR_READFLOAT(sndEndTime);
-	ZCR_READSTRING(sndName2);
+
+	if (!archiver->IsProps())
+	{
+		ZCR_READRAW(flags);
+		ZCR_READRAW(filterFlags);
+	}
+	else
+	{
+		bool reactToOnTrigger;
+		ZCR_READBOOL(reactToOnTrigger);
+		filterFlags.reactToOnTrigger = reactToOnTrigger;
+
+		bool reactToOnTouch;
+		ZCR_READBOOL(reactToOnTouch);
+		filterFlags.reactToOnTouch = reactToOnTouch;
+
+		bool reactToOnDamage;
+		ZCR_READBOOL(reactToOnDamage);
+		filterFlags.reactToOnDamage = reactToOnDamage;
+
+		bool respondToObject;
+		ZCR_READBOOL(respondToObject);
+		filterFlags.respondToObject = respondToObject;
+
+		bool respondToPC;
+		ZCR_READBOOL(respondToPC);
+		filterFlags.respondToPC = respondToPC;
+
+		bool respondToNPC;
+		ZCR_READBOOL(respondToNPC);
+		filterFlags.respondToNPC = respondToNPC;
+
+		bool startEnabled;
+		ZCR_READBOOL(startEnabled);
+		flags.startEnabled = startEnabled;
+	}
+
+	ZCR_READSTRING(respondToVobName);
+	ZCR_READINT(numCanBeActivated);
+	ZCR_READFLOAT(retriggerWaitSec);
+	ZCR_READFLOAT(damageThreshold);
+	ZCR_READFLOAT(fireDelaySec);
+
+	if (archiver->IsProps())
+	{
+		ZCR_READBOOL(sendUntrigger);
+	}
+
+	if (archiver->IsSavegame())
+	{
+		ZCR_READFLOAT(nextTimeTriggerable);
+		savedOtherVobPtr = archiver->ReadObjectAs<zCVob*>("savedOtherVob");
+		ZCR_READINT(countCanBeActivated);
+
+		bool isEnabled;
+		ZCR_READBOOL(isEnabled);
+		flags.isEnabled = isEnabled;
+	}
+	else
+	{
+		flags.isEnabled = flags.startEnabled;
+	}
 
 	ZCR_END();
 
 	return true;
 }
+
+bool ZenGin::zCMover::Archive(zCArchiver* archiver)
+{
+	if (!zCTrigger::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::zCMover::Unarchive(zCArchiver* archiver)
+{
+	if (!zCTrigger::Unarchive(archiver))
+		return false;
+
+	ZCR_START(zCMover);
+
+	ZCR_READENUM(moverBehavior);
+	ZCR_READFLOAT(touchBlockerDamage);
+	ZCR_READFLOAT(stayOpenTimeSec);
+	ZCR_READBOOL(moverLocked);
+	ZCR_READBOOL(autoLinkEnabled);
+	// todo: G2 - autoRotate
+
+	short numKeyframes;
+	ZCR_READWORD(numKeyframes);
+
+	if (numKeyframes > 0)
+	{
+		ZCR_READFLOAT(moveSpeed);
+		ZCR_READENUM(posLerpType);
+		ZCR_READENUM(speedType);
+
+		if (!archiver->IsProps())
+		{
+			keyframeList.resize(numKeyframes);
+
+			if (!archiver->ReadRaw("keyframes", (char*)&keyframeList[0],
+				numKeyframes * sizeof(zTMov_Keyframe)))
+			{
+				zcrValid = false;
+			}
+		}
+	}
+
+	if (archiver->IsSavegame())
+	{
+		ZCR_READVEC3(actKeyPosDelta);
+		ZCR_READFLOAT(actKeyframeF);
+		ZCR_READINT(actKeyframe);
+		ZCR_READINT(nextKeyframe);
+		ZCR_READFLOAT(moveSpeedUnit);
+		ZCR_READFLOAT(advanceDir);
+		ZCR_READENUM(moverState);
+		ZCR_READINT(numTriggerEvents);
+		ZCR_READFLOAT(stayOpenTimeDest);
+	}
+
+	ZCR_READSTRING(sfxOpenStart);
+	ZCR_READSTRING(sfxOpenEnd);
+	ZCR_READSTRING(sfxMoving);
+	ZCR_READSTRING(sfxCloseStart);
+	ZCR_READSTRING(sfxCloseEnd);
+	ZCR_READSTRING(sfxLock);
+	ZCR_READSTRING(sfxUnlock);
+	ZCR_READSTRING(sfxUseLocked);
+
+	ZCR_END();
+
+	return true;
+}
+
+bool ZenGin::oCTriggerChangeLevel::Archive(zCArchiver* archiver)
+{
+	if (!zCTrigger::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCTriggerChangeLevel::Unarchive(zCArchiver* archiver)
+{
+	if (!zCTrigger::Unarchive(archiver))
+		return false;
+
+	ZCR_START(oCTriggerChangeLevel);
+
+	ZCR_READSTRING(levelName);
+	ZCR_READSTRING(startVobName);
+
+	ZCR_END();
+
+	return true;
+}
+
+bool ZenGin::zCTriggerList::Archive(zCArchiver* archiver)
+{
+	if (!zCTrigger::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::zCTriggerList::Unarchive(zCArchiver* archiver)
+{
+	if (!zCTrigger::Unarchive(archiver))
+		return false;
+
+	ZCR_START(zCTriggerList);
+
+	ZCR_READENUM(listProcess);
+
+	char numTarget = 6;
+
+	if (!archiver->IsProps())
+	{
+		ZCR_READBYTE(numTarget);
+	}
+
+	fireDelayList.resize(numTarget);
+	triggerTargetList.resize(numTarget);
+
+	for (size_t i = 0; i < numTarget; i++)
+	{
+		std::string	currTriggerTarget;
+		float		currFireDelay;
+
+		std::string currTriggerTargetKey	= "triggerTarget" + std::to_string(i);
+		std::string currFireDelayKey		= "fireDelay" + std::to_string(i);
+
+		if (!archiver->ReadString(currTriggerTargetKey, currTriggerTarget) ||
+			!archiver->ReadFloat(currFireDelayKey, currFireDelay))
+		{
+			zcrValid = false;
+		}
+
+		triggerTargetList[i]	= currTriggerTarget;
+		fireDelayList[i]		= currFireDelay;
+	}
+
+	if (archiver->IsSavegame())
+	{
+		ZCR_READBYTE(actTarget);
+		ZCR_READBOOL(sendOnTrigger);
+	}
+
+	ZCR_END();
+
+	return true;
+}
+
+/*
+	zCVobLevelCompo
+*/
+
+/*
+	zCVobLight
+*/
 
 bool ZenGin::zCVobLight::Archive(zCArchiver* archiver)
 {
@@ -668,257 +1361,38 @@ bool ZenGin::zCVobLight::Load(FileStream* file)
 	return false;
 }
 
-bool ZenGin::oCNpc::Save(FileStream* file)
-{
-	if (!zCVob::Save(file))
-		return false;
+/*
+	zCVobSpot
+*/
 
-	return false;
-}
+/*
+	zCVobStair
+*/
 
-bool ZenGin::oCNpc::Load(FileStream* file)
-{
-	if (!zCVob::Load(file))
-		return false;
+/*
+	zCVobStartpoint
+*/
 
-	bool inVob = false;
+/*
+	zCVobWaypoint
+*/
 
-	std::string line;
+/*
+	zCZone
+		zCVobSound
+			zCVobSoundDaytime
+		zCZoneMusic
+			oCZoneMusic
+				oCZoneMusicDefault
+		zCZoneReverb
+			zCZoneReverbDefault
+		zCZoneVobFarPlane
+			zCZoneVobFarPlaneDefault
+		zCZoneZFog
+			zCZoneZFogDefault
+*/
 
-	while (file->ReadLine(line))
-	{
-		if (line == "{")
-		{
-			inVob = true;
-		}
-		else if (inVob)
-		{
-			std::string key;
-			std::string value;
-
-			if (line == "}")
-			{
-				inVob = false;
-				return true;
-			}
-			else if (ParseFileLine(line, key, value))
-			{
-				if (key == "INSTANCE")
-				{
-					npcInstance = value;
-				}
-			}
-		}
-	}
-
-	return false;
-}
-
-bool ZenGin::oCMob::Archive(zCArchiver* archiver)
-{
-	if (!oCVob::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::oCMob::Unarchive(zCArchiver* archiver)
-{
-	if (!oCVob::Unarchive(archiver))
-		return false;
-
-	ZCR_START(oCMob);
-
-	ZCR_READSTRING(mobInstance);
-
-	ZCR_END();
-
-	return true;
-}
-
-bool ZenGin::oCMob::Save(FileStream* file)
-{
-	if (!zCVob::Save(file))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::oCMob::Load(FileStream* file)
-{
-	if (!zCVob::Load(file))
-		return false;
-
-	bool inVob = false;
-
-	std::string line;
-
-	while (file->ReadLine(line))
-	{
-		if (line == "{")
-		{
-			inVob = true;
-		}
-		else if (inVob)
-		{
-			std::string key;
-			std::string value;
-
-			if (line == "}")
-			{
-				inVob = false;
-				return true;
-			}
-			else if (ParseFileLine(line, key, value))
-			{
-				if (key == "INSTANCE")
-				{
-					mobInstance = value;
-				}
-			}
-		}
-	}
-
-	return false;
-}
-
-bool ZenGin::oCMOB::Archive(zCArchiver* archiver)
-{
-	if (!oCVob::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::oCMOB::Unarchive(zCArchiver* archiver)
-{
-	if (!oCVob::Unarchive(archiver))
-		return false;
-
-	ZCR_START(oCMOB);
-
-	ZCR_READSTRING(focusName);
-	ZCR_READINT(hitpoints);
-	ZCR_READINT(damage);
-	ZCR_READBOOL(moveable);
-	ZCR_READBOOL(takeable);
-	ZCR_READBOOL(focusOverride);
-	ZCR_READENUM(soundMaterial);
-	ZCR_READSTRING(visualDestroyed);
-	ZCR_READSTRING(owner);
-	ZCR_READSTRING(ownerGuild);
-
-	if (!archiver->IsProps())
-	{
-		ZCR_READBOOL(isDestroyed);
-	}
-
-	ZCR_END();
-
-	return true;
-}
-
-bool ZenGin::oCMobInter::Archive(zCArchiver* archiver)
-{
-	if (!oCMOB::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::oCMobInter::Unarchive(zCArchiver* archiver)
-{
-	if (!oCMOB::Unarchive(archiver))
-		return false;
-
-	ZCR_START(oCMobInter);
-
-	if (!archiver->IsProps())
-	{
-		ZCR_READINT(stateNum);
-	}
-
-	ZCR_READSTRING(triggerTarget);
-	ZCR_READSTRING(useWithItem);
-	ZCR_READSTRING(conditionFunc);
-	ZCR_READSTRING(onStateFunc);
-	ZCR_READBOOL(rewind);
-
-	ZCR_END();
-
-	return true;
-}
-
-bool ZenGin::oCMobLockable::Archive(zCArchiver* archiver)
-{
-	if (!oCMobInter::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::oCMobLockable::Unarchive(zCArchiver* archiver)
-{
-	if (!oCMobInter::Unarchive(archiver))
-		return false;
-
-	ZCR_START(oCMobLockable);
-
-	ZCR_READBOOL(locked);
-	ZCR_READSTRING(keyInstance);
-	ZCR_READSTRING(pickLockStr);
-
-	ZCR_END();
-
-	return true;
-}
-
-bool ZenGin::oCMobContainer::Archive(zCArchiver* archiver)
-{
-	if (!oCMobLockable::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::oCMobContainer::Unarchive(zCArchiver* archiver)
-{
-	if (!oCMobLockable::Unarchive(archiver))
-		return false;
-
-	ZCR_START(oCMobContainer);
-
-	ZCR_READSTRING(contains);
-
-	ZCR_END();
-
-	return true;
-}
-
-bool ZenGin::oCMobFire::Archive(zCArchiver* archiver)
-{
-	if (!oCMobInter::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::oCMobFire::Unarchive(zCArchiver* archiver)
-{
-	if (!oCMobInter::Unarchive(archiver))
-		return false;
-
-	ZCR_START(oCMobFire);
-
-	ZCR_READSTRING(fireSlot);
-	ZCR_READSTRING(fireVobtreeName);
-
-	ZCR_END();
-
-	return true;
-}
-
-bool ZenGin::zCTriggerBase::Archive(zCArchiver* archiver)
+bool ZenGin::zCVobSound::Archive(zCArchiver* archiver)
 {
 	if (!zCVob::Archive(archiver))
 		return false;
@@ -926,96 +1400,34 @@ bool ZenGin::zCTriggerBase::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCTriggerBase::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCVobSound::Unarchive(zCArchiver* archiver)
 {
 	if (!zCVob::Unarchive(archiver))
 		return false;
 
-	ZCR_START(zCTriggerBase);
+	ZCR_START(zCVobSound);
 
-	ZCR_READSTRING(triggerTarget);
+	ZCR_READFLOAT(sndVolume);
+	ZCR_READENUM(sndMode);
+	ZCR_READFLOAT(sndRandDelay);
+	ZCR_READFLOAT(sndRandDelayVar);
+	ZCR_READBOOL(sndStartOn);
+	ZCR_READBOOL(sndAmbient3D);
+	ZCR_READBOOL(sndObstruction);
+	ZCR_READFLOAT(sndConeAngle);
+	ZCR_READENUM(sndVolType);
+	ZCR_READFLOAT(sndRadius);
+	ZCR_READSTRING(sndName);
 
-	ZCR_END();
-
-	return true;
-}
-
-bool ZenGin::zCTrigger::Archive(zCArchiver* archiver)
-{
-	if (!zCTriggerBase::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::zCTrigger::Unarchive(zCArchiver* archiver)
-{
-	if (!zCTriggerBase::Unarchive(archiver))
-		return false;
-
-	ZCR_START(zCTrigger);
-
-
-	if (!archiver->IsProps())
+	if (archiver->IsSavegame())
 	{
-		ZCR_READRAW(flags);
-		ZCR_READRAW(filterFlags);
+		ZCR_READBOOL(soundIsRunning);
+		ZCR_READBOOL(soundAllowedToRun);
 	}
 	else
 	{
-		bool reactToOnTrigger;
-		ZCR_READBOOL(reactToOnTrigger);
-		filterFlags.reactToOnTrigger = reactToOnTrigger;
-
-		bool reactToOnTouch;
-		ZCR_READBOOL(reactToOnTouch);
-		filterFlags.reactToOnTouch = reactToOnTouch;
-
-		bool reactToOnDamage;
-		ZCR_READBOOL(reactToOnDamage);
-		filterFlags.reactToOnDamage = reactToOnDamage;
-
-		bool respondToObject;
-		ZCR_READBOOL(respondToObject);
-		filterFlags.respondToObject = respondToObject;
-
-		bool respondToPC;
-		ZCR_READBOOL(respondToPC);
-		filterFlags.respondToPC = respondToPC;
-
-		bool respondToNPC;
-		ZCR_READBOOL(respondToNPC);
-		filterFlags.respondToNPC = respondToNPC;
-
-		bool startEnabled;
-		ZCR_READBOOL(startEnabled);
-		flags.startEnabled = startEnabled;
-	}
-
-	ZCR_READSTRING(respondToVobName);
-	ZCR_READINT(numCanBeActivated);
-	ZCR_READFLOAT(retriggerWaitSec);
-	ZCR_READFLOAT(damageThreshold);
-	ZCR_READFLOAT(fireDelaySec);
-
-	if (archiver->IsProps())
-	{
-		ZCR_READBOOL(sendUntrigger);
-	}
-
-	if (archiver->IsSavegame())
-	{
-		ZCR_READFLOAT(nextTimeTriggerable);
-		savedOtherVobPtr = archiver->ReadObjectAs<zCVob*>("savedOtherVob");
-		ZCR_READINT(countCanBeActivated);
-
-		bool isEnabled;
-		ZCR_READBOOL(isEnabled);
-		flags.isEnabled = isEnabled;
-	}
-	else
-	{
-		flags.isEnabled = flags.startEnabled;
+		soundIsRunning		= sndStartOn;
+		soundAllowedToRun	= sndStartOn;
 	}
 
 	ZCR_END();
@@ -1023,227 +1435,28 @@ bool ZenGin::zCTrigger::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::oCTriggerChangeLevel::Archive(zCArchiver* archiver)
+bool ZenGin::zCVobSoundDaytime::Archive(zCArchiver* archiver)
 {
-	if (!zCTrigger::Archive(archiver))
+	if (!zCVobSound::Archive(archiver))
 		return false;
 
 	return false;
 }
 
-bool ZenGin::oCTriggerChangeLevel::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCVobSoundDaytime::Unarchive(zCArchiver* archiver)
 {
-	if (!zCTrigger::Unarchive(archiver))
+	if (!zCVobSound::Unarchive(archiver))
 		return false;
 
-	ZCR_START(oCTriggerChangeLevel);
+	ZCR_START(zCVobSound);
 
-	ZCR_READSTRING(levelName);
-	ZCR_READSTRING(startVobName);
+	ZCR_READFLOAT(sndStartTime);
+	ZCR_READFLOAT(sndEndTime);
+	ZCR_READSTRING(sndName2);
 
 	ZCR_END();
 
 	return true;
-}
-
-bool ZenGin::zCTriggerList::Archive(zCArchiver* archiver)
-{
-	if (!zCTrigger::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::zCTriggerList::Unarchive(zCArchiver* archiver)
-{
-	if (!zCTrigger::Unarchive(archiver))
-		return false;
-
-	ZCR_START(zCTriggerList);
-
-	ZCR_READENUM(listProcess);
-
-	char numTarget = 6;
-
-	if (!archiver->IsProps())
-	{
-		ZCR_READBYTE(numTarget);
-	}
-
-	fireDelayList.resize(numTarget);
-	triggerTargetList.resize(numTarget);
-
-	for (size_t i = 0; i < numTarget; i++)
-	{
-		std::string	currTriggerTarget;
-		float		currFireDelay;
-
-		std::string currTriggerTargetKey	= "triggerTarget" + std::to_string(i);
-		std::string currFireDelayKey		= "fireDelay" + std::to_string(i);
-
-		if (!archiver->ReadString(currTriggerTargetKey, currTriggerTarget) ||
-			!archiver->ReadFloat(currFireDelayKey, currFireDelay))
-		{
-			zcrValid = false;
-		}
-
-		triggerTargetList[i]	= currTriggerTarget;
-		fireDelayList[i]		= currFireDelay;
-	}
-
-	if (archiver->IsSavegame())
-	{
-		ZCR_READBYTE(actTarget);
-		ZCR_READBOOL(sendOnTrigger);
-	}
-
-	ZCR_END();
-
-	return true;
-}
-
-bool ZenGin::zCMover::Archive(zCArchiver* archiver)
-{
-	if (!zCTrigger::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::zCMover::Unarchive(zCArchiver* archiver)
-{
-	if (!zCTrigger::Unarchive(archiver))
-		return false;
-
-	ZCR_START(zCMover);
-
-	ZCR_READENUM(moverBehavior);
-	ZCR_READFLOAT(touchBlockerDamage);
-	ZCR_READFLOAT(stayOpenTimeSec);
-	ZCR_READBOOL(moverLocked);
-	ZCR_READBOOL(autoLinkEnabled);
-	// todo: G2 - autoRotate
-
-	short numKeyframes;
-	ZCR_READWORD(numKeyframes);
-
-	if (numKeyframes > 0)
-	{
-		ZCR_READFLOAT(moveSpeed);
-		ZCR_READENUM(posLerpType);
-		ZCR_READENUM(speedType);
-
-		if (!archiver->IsProps())
-		{
-			keyframeList.resize(numKeyframes);
-
-			if (!archiver->ReadRaw("keyframes", (char*)&keyframeList[0],
-				numKeyframes * sizeof(zTMov_Keyframe)))
-			{
-				zcrValid = false;
-			}
-		}
-	}
-
-	if (archiver->IsSavegame())
-	{
-		ZCR_READVEC3(actKeyPosDelta);
-		ZCR_READFLOAT(actKeyframeF);
-		ZCR_READINT(actKeyframe);
-		ZCR_READINT(nextKeyframe);
-		ZCR_READFLOAT(moveSpeedUnit);
-		ZCR_READFLOAT(advanceDir);
-		ZCR_READENUM(moverState);
-		ZCR_READINT(numTriggerEvents);
-		ZCR_READFLOAT(stayOpenTimeDest);
-	}
-
-	ZCR_READSTRING(sfxOpenStart);
-	ZCR_READSTRING(sfxOpenEnd);
-	ZCR_READSTRING(sfxMoving);
-	ZCR_READSTRING(sfxCloseStart);
-	ZCR_READSTRING(sfxCloseEnd);
-	ZCR_READSTRING(sfxLock);
-	ZCR_READSTRING(sfxUnlock);
-	ZCR_READSTRING(sfxUseLocked);
-
-	ZCR_END();
-
-	return true;
-}
-
-bool ZenGin::oCItem::Archive(zCArchiver* archiver)
-{
-	if (!oCVob::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::oCItem::Unarchive(zCArchiver* archiver)
-{
-	if (!oCVob::Unarchive(archiver))
-		return false;
-
-	ZCR_START(oCItem);
-
-	ZCR_READSTRING(itemInstance);
-
-	if (archiver->IsSavegame())
-	{
-		ZCR_READINT(amount);
-		ZCR_READINT(flags);
-	}
-
-	ZCR_END();
-
-	return true;
-}
-
-bool ZenGin::oCItem::Save(FileStream* file)
-{
-	if (!zCVob::Save(file))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::oCItem::Load(FileStream* file)
-{
-	if (!zCVob::Load(file))
-		return false;
-
-	bool inVob = false;
-
-	std::string line;
-
-	while (file->ReadLine(line))
-	{
-		if (line == "{")
-		{
-			inVob = true;
-		}
-		else if (inVob)
-		{
-			std::string key;
-			std::string value;
-
-			if (line == "}")
-			{
-				inVob = false;
-				return true;
-			}
-			else if (ParseFileLine(line, key, value))
-			{
-				if (key == "INSTANCE")
-				{
-					itemInstance = value;
-				}
-			}
-		}
-	}
-
-	return false;
 }
 
 bool ZenGin::oCZoneMusic::Archive(zCArchiver* archiver)
@@ -1284,32 +1497,6 @@ bool ZenGin::oCZoneMusic::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCZoneZFog::Archive(zCArchiver* archiver)
-{
-	if (!zCZone::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::zCZoneZFog::Unarchive(zCArchiver* archiver)
-{
-	if (!zCZone::Unarchive(archiver))
-		return false;
-
-	ZCR_START(zCZoneZFog);
-
-	ZCR_READFLOAT(fogRangeCenter);
-	ZCR_READFLOAT(innerRangePerc);
-	ZCR_READCOLOR(fogColor);
-	// todo: G2 - fadeOutSky
-	// todo: G2 - overrideColor
-
-	ZCR_END();
-
-	return true;
-}
-
 bool ZenGin::zCZoneVobFarPlane::Archive(zCArchiver* archiver)
 {
 	if (!zCZone::Archive(archiver))
@@ -1333,85 +1520,26 @@ bool ZenGin::zCZoneVobFarPlane::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCPFXControler::Archive(zCArchiver* archiver)
+bool ZenGin::zCZoneZFog::Archive(zCArchiver* archiver)
 {
-	if (!zCEffect::Archive(archiver))
+	if (!zCZone::Archive(archiver))
 		return false;
 
 	return false;
 }
 
-bool ZenGin::zCPFXControler::Unarchive(zCArchiver* archiver)
+bool ZenGin::zCZoneZFog::Unarchive(zCArchiver* archiver)
 {
-	if (!zCEffect::Unarchive(archiver))
+	if (!zCZone::Unarchive(archiver))
 		return false;
 
-	ZCR_START(zCPFXControler);
+	ZCR_START(zCZoneZFog);
 
-	ZCR_READSTRING(pfxName);
-	ZCR_READBOOL(killVobWhenDone);
-	ZCR_READBOOL(pfxStartOn);
-
-	ZCR_END();
-
-	return true;
-}
-
-bool ZenGin::zCVobScreenFX::Archive(zCArchiver* archiver)
-{
-	if (!zCEffect::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::zCVobScreenFX::Unarchive(zCArchiver* archiver)
-{
-	if (!zCEffect::Unarchive(archiver))
-		return false;
-
-	ZCR_START(zCVobScreenFX);
-
-	if (archiver->IsSavegame())
-	{
-		// todo
-		//ZCR_READRAW(blend);
-		//ZCR_READRAW(cinema);
-		//ZCR_READRAW(fovMorph);
-		//ZCR_READRAW(fovSaved);
-		//ZCR_READRAW(fovSaved1st);
-	}
-
-	ZCR_END();
-
-	return true;
-}
-
-bool ZenGin::zCVobAnimate::Archive(zCArchiver* archiver)
-{
-	if (!zCEffect::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::zCVobAnimate::Unarchive(zCArchiver* archiver)
-{
-	if (!zCEffect::Unarchive(archiver))
-		return false;
-
-	ZCR_START(zCVobAnimate);
-
-	ZCR_READBOOL(startOn);
-
-	if (archiver->IsSavegame())
-	{
-		ZCR_READBOOL(isRunning);
-	}
-	else
-	{
-		isRunning = startOn;
-	}
+	ZCR_READFLOAT(fogRangeCenter);
+	ZCR_READFLOAT(innerRangePerc);
+	ZCR_READCOLOR(fogColor);
+	// todo: G2 - fadeOutSky
+	// todo: G2 - overrideColor
 
 	ZCR_END();
 
