@@ -452,8 +452,8 @@ namespace GothicLib
 			{
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC1,				1 },
+				{ GAME_GOTHICSEQUEL,		1 },
 				{ GAME_GOTHIC2,				1 },
 				{ GAME_GOTHIC2NOTR,			1 },
 			};
@@ -555,8 +555,8 @@ namespace GothicLib
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC1,				2 },
+				{ GAME_GOTHICSEQUEL,		2 },
 				{ GAME_GOTHIC2,				2 },
 				{ GAME_GOTHIC2NOTR,			2 },
 			};
@@ -598,8 +598,8 @@ namespace GothicLib
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC1,				3 },
+				{ GAME_GOTHICSEQUEL,		3 },
 				{ GAME_GOTHIC2,				3 },
 				{ GAME_GOTHIC2NOTR,			3 },
 			};
@@ -635,8 +635,8 @@ namespace GothicLib
 			{
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC1,				2 },
+				{ GAME_GOTHICSEQUEL,		2 },
 				{ GAME_GOTHIC2,				2 },
 				{ GAME_GOTHIC2NOTR,			2 },
 			};
@@ -729,8 +729,8 @@ namespace GothicLib
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC1,				1 },
+				{ GAME_GOTHICSEQUEL,		1 },
 				{ GAME_GOTHIC2,				1 },
 				{ GAME_GOTHIC2NOTR,			1 },
 			};
@@ -785,8 +785,8 @@ namespace GothicLib
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC1,				1 },
+				{ GAME_GOTHICSEQUEL,		1 },
 				{ GAME_GOTHIC2,				1 },
 				{ GAME_GOTHIC2NOTR,			1 },
 			};
@@ -850,8 +850,8 @@ namespace GothicLib
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC1,				7 },
+				{ GAME_GOTHICSEQUEL,		7 },
 				{ GAME_GOTHIC2,				7 },
 				{ GAME_GOTHIC2NOTR,			7 },
 			};
@@ -940,8 +940,8 @@ namespace GothicLib
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC1,				2 },
+				{ GAME_GOTHICSEQUEL,		2 },
 				{ GAME_GOTHIC2,				2 },
 				{ GAME_GOTHIC2NOTR,			2 },
 			};
@@ -1032,8 +1032,8 @@ namespace GothicLib
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC1,				1 },
+				{ GAME_GOTHICSEQUEL,		1 },
 				{ GAME_GOTHIC2,				1 },
 				{ GAME_GOTHIC2NOTR,			1 },
 			};
@@ -1629,8 +1629,8 @@ namespace GothicLib
 			{
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC1,				2 },
+				{ GAME_GOTHICSEQUEL,		2 },
 				{ GAME_GOTHIC2,				2 },
 				{ GAME_GOTHIC2NOTR,			2 },
 			};

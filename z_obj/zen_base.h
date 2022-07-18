@@ -18,6 +18,8 @@ namespace GothicLib
 
 		// ZenGin Class Read
 
+#define ARC_ARGS(V)	#V, V
+
 #define ZCR_START(C)			std::string zcrName = #C;									\
 								bool zcrValid = true;
 
