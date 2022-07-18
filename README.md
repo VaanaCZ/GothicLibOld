@@ -6,6 +6,7 @@ A set of libraries intended for reading and writing data in the native formats o
 **Table of contents** 
 1. [ZenGin](#zengine)  
 1.1. [Description](#zen_desc)  
+1.2. [Status](#zen_desc)  
 2. [Genome Engine](#genome)  
 3. [CodeCreatures](#codecreatures)  
 4. [Space&Time](#space)  
@@ -15,6 +16,22 @@ A set of libraries intended for reading and writing data in the native formats o
 
 <a name="zen_desc"></a>
 ### 1.1. Description
+
+<a name="zen_desc"></a>
+### 1.2. Status
+
+**ZenGin Archive**
+
+|       | ASCII | ASCII_PROPS | BINARY | BIN_SAFE |
+|-------|-------|-------------|--------|----------|
+| Read  | ✔     | ✔           | ✔      | ✔         |
+| Write | ✖     | ✖           | ✖      | ✖         |
+
+
+**zCVob\***
+
+**zCVisual\***
+
 
 ### 1.1. File structure
 ```

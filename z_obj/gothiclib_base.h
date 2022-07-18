@@ -47,104 +47,103 @@ namespace GothicLib
 
 	};
 
-	//
-	// Object reflection
-	//
-
-	class ClassDefinition;
-
-	/*
-		Manager
-	*/
-
-	class ClassManager
-	{
-	public:
-
-		ClassManager()
-		{
-			size_t a = 0;
-		}
-		~ClassManager() {}
-
-		ClassManager(const ClassManager&) = delete;
-		ClassManager& operator=(const ClassManager&) = delete;
-
-		void AddClassDef(ClassDefinition*);
-		ClassDefinition* GetClassDef(std::string);
-
-	private:
-
-		std::unordered_map<std::string, ClassDefinition*> classes;
-
-	};
-
-	/*
-		Macros and templates
-	*/
-
-#define DEFINE_CLASS(C, B)													\
-	static C* CreateInstance() { return new C(); }							\
-	inline static ClassDefinition* classDef =								\
-		new ClassDefinition(classManager, #C, #B, &C::CreateInstance);		\
-	inline static ClassDefinition* GetStaticClassDef() { return classDef; }	\
-	virtual ClassDefinition* GetClassDef() { return classDef; }
-
-
-#define DEFINE_PROPERTY(T, N)												\
-	T N;																	\
-	inline static PropertyDefinition* classDef ##N = 						\
-		new PropertyDefinition(classDef, #N, #T, ((T*)nullptr)->N &C::CreateInstance);
-
-
-	class ClassDefinition;
-
-	class PropertyDefinition
-	{
-	public:
-
-		PropertyDefinition(ClassDefinition* classDefinition, std::string _name, std::string _type, size_t _offset, size_t _size)
-		{
-			name	= _name;
-			type	= _type;
-			offset	= _offset;
-			size	= _size;
-
-			//classDefinition->AddClassDef(this);
-		}
-
-		std::string	name;
-		std::string	type;
-		size_t		offset;
-		size_t		size;
-
-	};
-
-	class ClassDefinition
-	{
-	public:
-
-		ClassDefinition(ClassManager*& classManager, std::string _name, std::string _baseName, void* _createFunc)
-		{
-			name		= _name;
-			baseName	= _baseName;
-			createFunc	= _createFunc;
-
-			if (!classManager)
-				classManager = new ClassManager();
-
-			classManager->AddClassDef(this);
-		}
-
-		std::string	name;
-		std::string	baseName;
-		void*		createFunc;
-
-		std::vector<PropertyDefinition*> properties;
-
-	};	
-
-
+//	//
+//	// Object reflection
+//	//
+//	
+//	class ClassDefinition;
+//
+//	/*
+//		Manager
+//	*/
+//
+//	class ClassManager
+//	{
+//	public:
+//
+//		ClassManager()
+//		{
+//			size_t a = 0;
+//		}
+//		~ClassManager() {}
+//
+//		ClassManager(const ClassManager&) = delete;
+//		ClassManager& operator=(const ClassManager&) = delete;
+//
+//		void AddClassDef(ClassDefinition*);
+//		ClassDefinition* GetClassDef(std::string);
+//
+//	private:
+//
+//		std::unordered_map<std::string, ClassDefinition*> classes;
+//
+//	};
+//
+//	/*
+//		Macros and templates
+//	*/
+//
+//#define DEFINE_CLASS(C, B)													\
+//	static C* CreateInstance() { return new C(); }							\
+//	inline static ClassDefinition* classDef =								\
+//		new ClassDefinition(classManager, #C, #B, &C::CreateInstance);		\
+//	inline static ClassDefinition* GetStaticClassDef() { return classDef; }	\
+//	virtual ClassDefinition* GetClassDef() { return classDef; }
+//
+//
+//#define DEFINE_PROPERTY(T, N)												\
+//	T N;																	\
+//	inline static PropertyDefinition* classDef ##N = 						\
+//		new PropertyDefinition(classDef, #N, #T, ((T*)nullptr)->N &C::CreateInstance);
+//
+//
+//	class ClassDefinition;
+//
+//	class PropertyDefinition
+//	{
+//	public:
+//
+//		PropertyDefinition(ClassDefinition* classDefinition, std::string _name, std::string _type, size_t _offset, size_t _size)
+//		{
+//			name	= _name;
+//			type	= _type;
+//			offset	= _offset;
+//			size	= _size;
+//
+//			//classDefinition->AddClassDef(this);
+//		}
+//
+//		std::string	name;
+//		std::string	type;
+//		size_t		offset;
+//		size_t		size;
+//
+//	};
+//
+//	class ClassDefinition
+//	{
+//	public:
+//
+//		ClassDefinition(ClassManager*& classManager, std::string _name, std::string _baseName, void* _createFunc)
+//		{
+//			name		= _name;
+//			baseName	= _baseName;
+//			createFunc	= _createFunc;
+//
+//			if (!classManager)
+//				classManager = new ClassManager();
+//
+//			classManager->AddClassDef(this);
+//		}
+//
+//		std::string	name;
+//		std::string	baseName;
+//		void*		createFunc;
+//
+//		std::vector<PropertyDefinition*> properties;
+//
+//	};	
+	
 	//
 	// File stream abstraction which allows reading
 	// both from a file and a memory buffer.

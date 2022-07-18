@@ -1,6 +1,7 @@
 #pragma once
 
 #include "zen_base.h"
+#include "zen_visual.h"
 
 namespace GothicLib
 {
@@ -16,40 +17,22 @@ namespace GothicLib
 			World classes
 		*/
 
-		inline bool ParsePWFLine(std::string _line, std::string& key, std::string& value)
-		{
-			std::string line = _line;
-
-			for (size_t i = 0; i < line.size(); i++)
-			{
-				if (line[i] != ' ')
-				{
-					if (i != 0)
-						line = line.substr(i);
-					break;
-				}
-			}
-
-			size_t sPos = line.find(" (");
-			size_t ePos = line.find(")", sPos + 2);
-
-			if (sPos == std::string::npos ||
-				ePos == std::string::npos)
-			{
-				return false;
-			}
-
-			key		= line.substr(0, sPos);
-			value	= line.substr(sPos + 2, ePos - sPos - 2);
-
-			return true;
-		}
-
 		class zCWorld : public zCObject
 		{
 		public:
 
-			DEFINE_CLASS(zCWorld, zCObject);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		1 },
+				{ GAME_CHRISTMASEDITION,	1 },
+				{ GAME_GOTHIC1,				1 },
+				{ GAME_GOTHICSEQUEL,		1 },
+				{ GAME_GOTHIC2,				1 },
+				{ GAME_GOTHIC2NOTR,			1 },
+			};
+
+			ZEN_DECLARE_CLASS(zCWorld, zCObject);
 
 			zCWorld()			{ }
 			virtual ~zCWorld()	{ }
@@ -83,7 +66,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCWorld, zCWorld);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCWorld, zCWorld);
 
 			oCWorld()			{ }
 			virtual ~oCWorld()	{ }
@@ -167,7 +161,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCVob, zCObject);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		2 },
+				{ GAME_CHRISTMASEDITION,	3 },
+				{ GAME_GOTHIC1,				4 },
+				{ GAME_GOTHICSEQUEL,		4 },
+				{ GAME_GOTHIC2,				5 },
+				{ GAME_GOTHIC2NOTR,			5 },
+			};
+
+			ZEN_DECLARE_CLASS(zCVob, zCObject);
 
 			zCVob()				{ }
 			virtual ~zCVob()	{ }
@@ -222,7 +227,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCVobLevelCompo, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCVobLevelCompo, zCVob);
 
 			zCVobLevelCompo()			{ }
 			virtual ~zCVobLevelCompo()	{ }
@@ -235,81 +251,21 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCVobSpot, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCVobSpot, zCVob);
 
 			zCVobSpot()				{ }
 			virtual ~zCVobSpot()	{ }
-
-		private:
-
-		};
-
-		enum zTSoundMode
-		{
-			SM_LOOPING,
-			SM_ONCE,
-			SM_RANDOM
-		};
-
-		enum zTSoundVolType
-		{
-			SV_SPHERE,
-			SV_ELLIPSOID
-		};
-
-		class zCVobSound : public zCVob
-		{
-		public:
-
-			DEFINE_CLASS(zCVobSound, zCVob);
-		
-			zCVobSound()			{ }
-			virtual ~zCVobSound()	{ }
-
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
-
-			/*
-				Properties
-			*/
-
-			float			sndVolume			= 100;
-			zTSoundMode		sndMode				= SM_LOOPING;
-			float			sndRandDelay		= 5;
-			float			sndRandDelayVar		= 2;
-			bool			sndStartOn			= 1;
-			bool			sndAmbient3D		= 0;
-			bool			sndObstruction		= 0;
-			float			sndConeAngle		= 0;
-			zTSoundVolType	sndVolType			= SV_SPHERE;
-			float			sndRadius			= 1500;
-			std::string		sndName;
-			bool			soundIsRunning		= 0; // Savegame
-			bool			soundAllowedToRun	= 0; // Savegame
-
-		private:
-
-		};
-
-		class zCVobSoundDaytime : public zCVobSound
-		{
-		public:
-
-			DEFINE_CLASS(zCVobSoundDaytime, zCVobSound);
-		
-			zCVobSoundDaytime()				{ }
-			virtual ~zCVobSoundDaytime()	{ }
-
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
-
-			/*
-				Properties
-			*/
-
-			float		sndStartTime	= 0.0f;
-			float		sndEndTime		= 0.0f;
-			std::string	sndName2;
 
 		private:
 
@@ -334,7 +290,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCVobLight, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				4 },
+				{ GAME_GOTHICSEQUEL,		4 },
+				{ GAME_GOTHIC2,				5 },
+				{ GAME_GOTHIC2NOTR,			5 },
+			};
+
+			ZEN_DECLARE_CLASS(zCVobLight, zCVob);
 
 			zCVobLight()			{ }
 			virtual ~zCVobLight()	{ }
@@ -373,7 +340,18 @@ namespace GothicLib
 		{
 		public:
 
-			static inline ClassDefinition* classDef = nullptr;
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS_ABSTRACT(oCVob, zCVob);
 
 			oCVob()				{ }
 			virtual ~oCVob()	{ }
@@ -386,7 +364,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCNpc, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCNpc, oCVob);
 
 			oCNpc()				{ }
 			virtual ~oCNpc()	{ }
@@ -401,7 +390,7 @@ namespace GothicLib
 				Properties
 			*/
 
-			std::string		instance;					// Legacy
+			std::string		npcInstance;
 
 		private:
 
@@ -411,7 +400,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCMob, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCMob, oCVob);
 
 			oCMob()				{ }
 			virtual ~oCMob()	{ }
@@ -446,7 +446,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCMOB, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCMOB, oCVob);
 
 			oCMOB()				{ }
 			virtual ~oCMOB()	{ }
@@ -478,7 +489,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCMobInter, oCMOB);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCMobInter, oCMOB);
 
 			oCMobInter()			{ }
 			virtual ~oCMobInter()	{ }
@@ -505,7 +527,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCMobLadder, oCMobInter);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCMobLadder, oCMobInter);
 
 			oCMobLadder()			{ }
 			virtual ~oCMobLadder()	{ }
@@ -518,7 +551,18 @@ namespace GothicLib
 		{
 		public:
 
-			static inline ClassDefinition* classDef = nullptr;
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS_ABSTRACT(oCMobLockable, oCMobInter);
 
 			oCMobLockable()				{ }
 			virtual ~oCMobLockable()	{ }
@@ -542,8 +586,19 @@ namespace GothicLib
 		class oCMobContainer : public oCMobLockable
 		{
 		public:
+			
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
 
-			DEFINE_CLASS(oCMobContainer, oCMobInter);
+			ZEN_DECLARE_CLASS(oCMobContainer, oCMobLockable);
 
 			oCMobContainer()			{ }
 			virtual ~oCMobContainer()	{ }
@@ -565,7 +620,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCMobDoor, oCMobLockable);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCMobDoor, oCMobLockable);
 
 			oCMobDoor()				{ }
 			virtual ~oCMobDoor()	{ }
@@ -578,7 +644,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCMobSwitch, oCMobInter);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCMobSwitch, oCMobLockable);
 
 			oCMobSwitch()			{ }
 			virtual ~oCMobSwitch()	{ }
@@ -591,7 +668,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCMobFire, oCMobInter);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCMobFire, oCMobInter);
 
 			oCMobFire()				{ }
 			virtual ~oCMobFire()	{ }
@@ -614,7 +702,18 @@ namespace GothicLib
 		{
 		public:
 
-			static inline ClassDefinition* classDef = nullptr;
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS_ABSTRACT(zCTriggerBase, zCVob);
 
 			zCTriggerBase()				{ }
 			virtual ~zCTriggerBase()	{ }
@@ -636,7 +735,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCTrigger, zCTriggerBase);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCTrigger, zCTriggerBase);
 
 			zCTrigger()				{ }
 			virtual ~zCTrigger()	{ }
@@ -683,7 +793,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCTriggerChangeLevel, zCTrigger);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCTriggerChangeLevel, zCTrigger);
 
 			oCTriggerChangeLevel()			{ }
 			virtual ~oCTriggerChangeLevel()	{ }
@@ -713,7 +834,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCTriggerList, zCTrigger);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCTriggerList, zCTrigger);
 
 			zCTriggerList()			{ }
 			virtual ~zCTriggerList()	{ }
@@ -773,7 +905,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCMover, zCTrigger);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCMover, zCTrigger);
 
 			zCMover()			{ }
 			virtual ~zCMover()	{ }
@@ -826,7 +969,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCItem, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCItem, oCVob);
 
 			oCItem()				{ }
 			virtual ~oCItem()		{ }
@@ -853,10 +1007,114 @@ namespace GothicLib
 		{
 		public:
 
-			static inline ClassDefinition* classDef = nullptr;
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS_ABSTRACT(zCZone, zCVob);
 
 			zCZone()			{ }
 			virtual ~zCZone()	{ }
+
+		private:
+
+		};
+
+		enum zTSoundMode
+		{
+			SM_LOOPING,
+			SM_ONCE,
+			SM_RANDOM
+		};
+
+		enum zTSoundVolType
+		{
+			SV_SPHERE,
+			SV_ELLIPSOID
+		};
+
+		class zCVobSound : public zCZone
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				4 },
+				{ GAME_GOTHIC2NOTR,			4 },
+			};
+
+			ZEN_DECLARE_CLASS(zCVobSound, zCZone);
+		
+			zCVobSound()			{ }
+			virtual ~zCVobSound()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			float			sndVolume			= 100;
+			zTSoundMode		sndMode				= SM_LOOPING;
+			float			sndRandDelay		= 5;
+			float			sndRandDelayVar		= 2;
+			bool			sndStartOn			= 1;
+			bool			sndAmbient3D		= 0;
+			bool			sndObstruction		= 0;
+			float			sndConeAngle		= 0;
+			zTSoundVolType	sndVolType			= SV_SPHERE;
+			float			sndRadius			= 1500;
+			std::string		sndName;
+			bool			soundIsRunning		= 0; // Savegame
+			bool			soundAllowedToRun	= 0; // Savegame
+
+		private:
+
+		};
+
+		class zCVobSoundDaytime : public zCVobSound
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCVobSoundDaytime, zCVobSound);
+		
+			zCVobSoundDaytime()				{ }
+			virtual ~zCVobSoundDaytime()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			float		sndStartTime	= 0.0f;
+			float		sndEndTime		= 0.0f;
+			std::string	sndName2;
 
 		private:
 
@@ -866,7 +1124,18 @@ namespace GothicLib
 		{
 		public:
 
-			static inline ClassDefinition* classDef = nullptr;
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS_ABSTRACT(zCZoneMusic, zCZone);
 
 			zCZoneMusic()			{ }
 			virtual ~zCZoneMusic()	{ }
@@ -879,7 +1148,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCZoneMusic, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCZoneMusic, zCZoneMusic);
 
 			oCZoneMusic()			{ }
 			virtual ~oCZoneMusic()	{ }
@@ -909,7 +1189,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(oCZoneMusicDefault, oCZoneMusic);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCZoneMusicDefault, oCZoneMusic);
 
 			oCZoneMusicDefault()			{ }
 			virtual ~oCZoneMusicDefault()	{ }
@@ -922,7 +1213,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCZoneZFog, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCZoneZFog, zCZone);
 
 			zCZoneZFog()			{ }
 			virtual ~zCZoneZFog()	{ }
@@ -946,7 +1248,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCZoneZFogDefault, zCZoneZFog);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCZoneZFogDefault, zCZoneZFog);
 
 			zCZoneZFogDefault()				{ }
 			virtual ~zCZoneZFogDefault()	{ }
@@ -959,7 +1272,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCZoneVobFarPlane, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCZoneVobFarPlane, zCZone);
 
 			zCZoneVobFarPlane()				{ }
 			virtual ~zCZoneVobFarPlane()	{ }
@@ -982,7 +1306,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCZoneVobFarPlaneDefault, zCZoneVobFarPlane);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCZoneVobFarPlaneDefault, zCZoneVobFarPlane);
 
 			zCZoneVobFarPlaneDefault()			{ }
 			virtual ~zCZoneVobFarPlaneDefault()	{ }
@@ -995,7 +1330,18 @@ namespace GothicLib
 		{
 		public:
 
-			static inline ClassDefinition* classDef = nullptr;
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS_ABSTRACT(zCEffect, zCVob);
 
 			zCEffect()			{ }
 			virtual ~zCEffect()	{ }
@@ -1008,7 +1354,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCPFXControler, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCPFXControler, zCEffect);
 
 			zCPFXControler()			{ }
 			virtual ~zCPFXControler()	{ }
@@ -1032,7 +1389,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCVobScreenFX, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCVobScreenFX, zCEffect);
 
 			zCVobScreenFX()				{ }
 			virtual ~zCVobScreenFX()	{ }
@@ -1058,7 +1426,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCVobAnimate, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCVobAnimate, zCEffect);
 
 			zCVobAnimate()			{ }
 			virtual ~zCVobAnimate()	{ }
@@ -1081,7 +1460,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCVobStair, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCVobStair, zCVob);
 
 			zCVobStair()			{ }
 			virtual ~zCVobStair()	{ }
@@ -1094,148 +1484,21 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCVobStartpoint, zCVob);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCVobStartpoint, zCVob);
 
 			zCVobStartpoint()			{ }
 			virtual ~zCVobStartpoint()	{ }
-
-		private:
-
-		};
-
-		/*
-			Visual classes
-		*/
-
-		class zCVisual : public zCObject
-		{
-		public:
-
-			static inline ClassDefinition* classDef = nullptr;
-		
-			zCVisual()			{ }
-			virtual ~zCVisual()	{ }
-
-		private:
-
-		};
-
-		class zCVisualAnimate : public zCVisual
-		{
-		public:
-
-			static inline ClassDefinition* classDef = nullptr;
-
-			zCVisualAnimate()			{ }
-			virtual ~zCVisualAnimate()	{ }
-
-		private:
-
-		};
-
-		class zCMesh : public zCVisual
-		{
-		public:
-
-			DEFINE_CLASS(zCMesh, zCVisual);
-		
-			zCMesh()			{ }
-			virtual ~zCMesh()	{ }
-
-		private:
-
-		};
-
-		class zCParticleFX : public zCVisual
-		{
-		public:
-
-			DEFINE_CLASS(zCParticleFX, zCVisual);
-
-			zCParticleFX()			{ }
-			virtual ~zCParticleFX()	{ }
-
-		private:
-
-		};
-
-		class zCModel : public zCVisualAnimate
-		{
-		public:
-
-			DEFINE_CLASS(zCModel, zCVisualAnimate);
-
-			zCModel()			{ }
-			virtual ~zCModel()	{ }
-
-		private:
-
-		};
-
-		class zCProgMeshProto : public zCVisual
-		{
-		public:
-
-			DEFINE_CLASS(zCProgMeshProto, zCVisual);
-
-			zCProgMeshProto()			{ }
-			virtual ~zCProgMeshProto()	{ }
-
-		private:
-
-		};
-		
-		class zCMorphMesh : public zCVisualAnimate
-		{
-		public:
-
-			DEFINE_CLASS(zCMorphMesh, zCVisualAnimate);
-
-			zCMorphMesh()			{ }
-			virtual ~zCMorphMesh()	{ }
-
-		private:
-
-		};
-
-		enum zTRnd_AlphaBlendFunc
-		{
-			zRND_ALPHA_FUNC_MAT_DEFAULT,
-			zRND_ALPHA_FUNC_NONE,
-			zRND_ALPHA_FUNC_BLEND,
-			zRND_ALPHA_FUNC_ADD,
-			zRND_ALPHA_FUNC_SUB,
-			zRND_ALPHA_FUNC_MUL,
-			zRND_ALPHA_FUNC_MUL2,
-			zRND_ALPHA_FUNC_TEST,
-			zRND_ALPHA_FUNC_BLEND_TEST
-		};
-
-		class zCDecal : public zCVisual
-		{
-		public:
-
-			DEFINE_CLASS(zCDecal, zCVisual);
-
-			zCDecal()				{ }
-			virtual ~zCDecal()		{ }
-
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
-
-			virtual bool Save(FileStream*);
-			virtual bool Load(FileStream*);
-
-			/*
-				Properties
-			*/
-
-			std::string				name;
-			zVEC2					decalDim		= { 25, 25 };
-			zVEC2					decalOffset		= {};
-			bool					decal2Sided		= false;
-			zTRnd_AlphaBlendFunc	decalAlphaFunc	= zRND_ALPHA_FUNC_MAT_DEFAULT;
-			float					decalTexAniFPS	= 0.0f;
 
 		private:
 
@@ -1266,7 +1529,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCWaypoint, zCObject);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCWaypoint, zCObject);
 
 			zCWaypoint()				{ }
 			virtual ~zCWaypoint()		{ }
@@ -1310,7 +1584,18 @@ namespace GothicLib
 		{
 		public:
 
-			DEFINE_CLASS(zCWayNet, zCObject);
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2NOTR,			0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCWayNet, zCObject);
 
 			zCWayNet()				{ }
 			virtual ~zCWayNet()		{ }

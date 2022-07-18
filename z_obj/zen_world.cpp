@@ -18,7 +18,8 @@ bool GothicLib::ZenGin::zCWorld::LoadWorld(FileStream* file)
 	else if (game >= GAME_G1_064B)
 	{
 		zCArchiver archiver;
-		if (!archiver.Open(file))
+		archiver.game = game;
+		if (!archiver.Read(file))
 		{
 			return false;
 		}
@@ -176,7 +177,7 @@ bool ZenGin::zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 		std::string key;
 		std::string value;
 
-		bool chunkStart = ParsePWFLine(line, key, value);
+		bool chunkStart = ParseFileLine(line, key, value);
 
 		if (chunkStart && key == "zCVob")
 		{
@@ -219,7 +220,7 @@ bool ZenGin::zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 				inVob = false;
 				return false;
 			}
-			else if (ParsePWFLine(line, key, value))
+			else if (ParseFileLine(line, key, value))
 			{
 				if (key == "zCDecal")
 				{
@@ -302,23 +303,23 @@ bool ZenGin::zCVob::Unarchive(zCArchiver* archiver)
 	ZCR_READBOOL(showVisual);
 	ZCR_READENUM(visualCamAlign);
 
-	if (version == 52224)
-	{
-		ZCR_READENUM(visualAniMode);
-		ZCR_READFLOAT(visualAniModeStrength);
-		ZCR_READFLOAT(vobFarClipZScale);
-	}
+	//if (version == 52224)
+	//{
+	//	ZCR_READENUM(visualAniMode);
+	//	ZCR_READFLOAT(visualAniModeStrength);
+	//	ZCR_READFLOAT(vobFarClipZScale);
+	//}
 
 	ZCR_READBOOL(cdStatic);
 	ZCR_READBOOL(cdDyn);
 	ZCR_READBOOL(staticVob);
 	ZCR_READENUM(dynShadow);
 
-	if (version == 52224)
-	{
-		ZCR_READINT(zbias);
-		ZCR_READBOOL(isAmbient);
-	}
+	//if (version == 52224)
+	//{
+	//	ZCR_READINT(zbias);
+	//	ZCR_READBOOL(isAmbient);
+	//}
 
 	visualPtr = archiver->ReadObjectAs<zCVisual*>("visual");
 	aiPtr = archiver->ReadObjectAs<zCAIBase*>("ai");
@@ -368,7 +369,7 @@ bool ZenGin::zCVob::Load(FileStream* file)
 				inVob = false;
 				return true;
 			}
-			else if (ParsePWFLine(line, key, value))
+			else if (ParseFileLine(line, key, value))
 			{
 				if (key == "vobType")
 				{
@@ -604,7 +605,7 @@ bool ZenGin::zCVobLight::Load(FileStream* file)
 				inVob = false;
 				return true;
 			}
-			else if (ParsePWFLine(line, key, value))
+			else if (ParseFileLine(line, key, value))
 			{
 				if (key == "range")
 				{
@@ -700,11 +701,11 @@ bool ZenGin::oCNpc::Load(FileStream* file)
 				inVob = false;
 				return true;
 			}
-			else if (ParsePWFLine(line, key, value))
+			else if (ParseFileLine(line, key, value))
 			{
 				if (key == "INSTANCE")
 				{
-					instance = value;
+					npcInstance = value;
 				}
 			}
 		}
@@ -768,7 +769,7 @@ bool ZenGin::oCMob::Load(FileStream* file)
 				inVob = false;
 				return true;
 			}
-			else if (ParsePWFLine(line, key, value))
+			else if (ParseFileLine(line, key, value))
 			{
 				if (key == "INSTANCE")
 				{
@@ -1232,7 +1233,7 @@ bool ZenGin::oCItem::Load(FileStream* file)
 				inVob = false;
 				return true;
 			}
-			else if (ParsePWFLine(line, key, value))
+			else if (ParseFileLine(line, key, value))
 			{
 				if (key == "INSTANCE")
 				{
@@ -1415,108 +1416,6 @@ bool ZenGin::zCVobAnimate::Unarchive(zCArchiver* archiver)
 	ZCR_END();
 
 	return true;
-}
-
-/*
-	Visual classes
-*/
-
-bool ZenGin::zCDecal::Archive(zCArchiver* archiver)
-{
-	if (!zCVisual::Archive(archiver))
-		return false;
-
-	return false;
-}
-
-bool ZenGin::zCDecal::Unarchive(zCArchiver* archiver)
-{
-	if (!zCVisual::Unarchive(archiver))
-		return false;
-
-	ZCR_START(zCDecal);
-
-	ZCR_READSTRING(name);
-	ZCR_READRAWFLOAT(decalDim);
-	ZCR_READRAWFLOAT(decalOffset);
-	ZCR_READBOOL(decal2Sided);
-	ZCR_READENUM(decalAlphaFunc);
-	ZCR_READFLOAT(decalTexAniFPS);
-	// todo: decalAlphaWeight - G2
-	// todo: ignoreDayLight - G2
-
-	ZCR_END();
-
-	return true;
-}
-
-bool ZenGin::zCDecal::Save(FileStream* file)
-{
-	return true;
-}
-
-bool ZenGin::zCDecal::Load(FileStream* file)
-{
-	bool inVob = false;
-
-	std::string line;
-
-	while (file->ReadLine(line))
-	{
-		if (line == "{")
-		{
-			inVob = true;
-		}
-		else if (inVob)
-		{
-			std::string key;
-			std::string value;
-
-			if (line == "}")
-			{
-				inVob = false;
-				return true;
-			}
-			else if (ParsePWFLine(line, key, value))
-			{
-				if (key == "decalDim")
-				{
-					if (sscanf_s(value.c_str(), "%f %f",
-						&decalDim.x, &decalDim.y) != 2)
-					{
-						return false;
-					}
-				}
-				else if (key == "decalOffset")
-				{
-					if (sscanf_s(value.c_str(), "%f %f",
-						&decalOffset.x, &decalOffset.y) != 2)
-					{
-						return false;
-					}
-				}
-				else if (key == "decal2Sided")
-				{
-					decal2Sided = (value == "1");
-				}
-				else if (key == "decalAlphaFunc")
-				{
-					if (value == "MAT_DEFAULT")		decalAlphaFunc = zRND_ALPHA_FUNC_MAT_DEFAULT;
-					else if (value == "NONE")		decalAlphaFunc = zRND_ALPHA_FUNC_NONE;
-					else if (value == "BLEND")		decalAlphaFunc = zRND_ALPHA_FUNC_BLEND;
-					else if (value == "ADD")		decalAlphaFunc = zRND_ALPHA_FUNC_ADD;
-					else if (value == "SUB")		decalAlphaFunc = zRND_ALPHA_FUNC_SUB;
-					else if (value == "MUL")		decalAlphaFunc = zRND_ALPHA_FUNC_MUL;
-				}
-				else if (key == "decalTexAniFPS")
-				{
-					decalTexAniFPS = std::stof(value);
-				}
-			}
-		}
-	}
-
-	return false;
 }
 
 /*

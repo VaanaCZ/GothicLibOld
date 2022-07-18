@@ -36,6 +36,9 @@
     <ClCompile Include="gothiclib_base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="zen_visual.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="zen_vdfs.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gothiclib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="zen_visual.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

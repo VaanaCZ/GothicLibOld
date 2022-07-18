@@ -1,32 +1,19 @@
-#include "gothiclib_base.h"
 #include "zen_base.h"
-
 #include "zen_vdfs.h"
 #include "zen_world.h"
 
-using namespace GothicLib;
+using namespace GothicLib::ZenGin;
 
-ClassManager* ZenGin::classManager = nullptr;
-
-ZenGin::zCObject* ZenGin::zCObject::CreateObject(std::string _className)
-{
-	std::string className = _className;
-
-	if (className.find(":") != std::string::npos)
-		className = className.substr(0, className.find(":"));
-
-	if (classManager)
-	{
-		ClassDefinition* classDef = classManager->GetClassDef(className);
-
-		if (classDef)
-			return ((zCObject* (*)())classDef->createFunc)();
-	}
-
-	return nullptr;
-}
-
-bool ZenGin::zCArchiver::Open(FileStream* _file)
+//
+// bool Read(FileStream* _file)
+// 
+// Opens a file stream for reading as a
+// ZenGin Archive.
+// 
+//   - _file
+//         file stream to use.
+//
+bool zCArchiver::Read(FileStream* _file)
 {
 	file = _file;
 
@@ -191,7 +178,7 @@ bool ZenGin::zCArchiver::Open(FileStream* _file)
 	return true;
 }
 
-bool ZenGin::zCArchiver::ReadInt(std::string name, int& intVal)
+bool zCArchiver::ReadInt(std::string name, int& intVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -210,7 +197,7 @@ bool ZenGin::zCArchiver::ReadInt(std::string name, int& intVal)
 	return true;
 }
 
-bool ZenGin::zCArchiver::ReadByte(std::string name, char& byteVal)
+bool zCArchiver::ReadByte(std::string name, char& byteVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -229,7 +216,7 @@ bool ZenGin::zCArchiver::ReadByte(std::string name, char& byteVal)
 	return true;
 }
 
-bool ZenGin::zCArchiver::ReadWord(std::string name, short& wordVal)
+bool zCArchiver::ReadWord(std::string name, short& wordVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -248,7 +235,7 @@ bool ZenGin::zCArchiver::ReadWord(std::string name, short& wordVal)
 	return true;
 }
 
-bool ZenGin::zCArchiver::ReadFloat(std::string name, float& floatVal)
+bool zCArchiver::ReadFloat(std::string name, float& floatVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -267,7 +254,7 @@ bool ZenGin::zCArchiver::ReadFloat(std::string name, float& floatVal)
 	return true;
 }
 
-bool ZenGin::zCArchiver::ReadBool(std::string name, bool& boolVal)
+bool zCArchiver::ReadBool(std::string name, bool& boolVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -286,7 +273,7 @@ bool ZenGin::zCArchiver::ReadBool(std::string name, bool& boolVal)
 	return true;
 }
 
-bool ZenGin::zCArchiver::ReadString(std::string name, std::string& strVal)
+bool zCArchiver::ReadString(std::string name, std::string& strVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -305,7 +292,7 @@ bool ZenGin::zCArchiver::ReadString(std::string name, std::string& strVal)
 	return false;
 }
 
-bool ZenGin::zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
+bool zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -327,7 +314,7 @@ bool ZenGin::zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
 	return false;
 }
 
-bool ZenGin::zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
+bool zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -355,7 +342,7 @@ bool ZenGin::zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
 	return false;
 }
 
-bool ZenGin::zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSize)
+bool zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSize)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -388,7 +375,7 @@ bool ZenGin::zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSi
 	return false;
 }
 
-bool ZenGin::zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t floatCount)
+bool zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t floatCount)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -433,7 +420,7 @@ bool ZenGin::zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t
 	return false;
 }
 
-bool ZenGin::zCArchiver::ReadEnum(std::string name, int& enumVal)
+bool zCArchiver::ReadEnum(std::string name, int& enumVal)
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -452,7 +439,7 @@ bool ZenGin::zCArchiver::ReadEnum(std::string name, int& enumVal)
 	return false;
 }
 
-ZenGin::zCObject* ZenGin::zCArchiver::ReadObject(std::string name, zCObject* existingObject)
+zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 {
 	zCObject* object = nullptr;
 
@@ -500,7 +487,7 @@ ZenGin::zCObject* ZenGin::zCArchiver::ReadObject(std::string name, zCObject* exi
 			if (name.find(":") != std::string::npos)
 				name = name.substr(0, name.find(":"));
 
-			if (existingObject->GetClassDef()->name == name)
+			if (existingObject->GetClassDef()->GetName() == name)
 			{
 				object = existingObject;
 			}
@@ -512,15 +499,38 @@ ZenGin::zCObject* ZenGin::zCArchiver::ReadObject(std::string name, zCObject* exi
 		else
 		{
 			// Create object based on read type
-			object = zCObject::CreateObject(className);
 
-			if (object == nullptr)
+			std::string truncClassName = className;
+
+			if (truncClassName.find(":") != std::string::npos)
+				truncClassName = truncClassName.substr(0, truncClassName.find(":"));
+
+			ClassDefinition* classDef = ClassDefinition::GetClassDef(truncClassName);
+
+			if (classDef == nullptr)
 			{
 				return nullptr;
 			}
-		}
 
-		object->version = classVersion;
+			object = classDef->CreateInstance();
+
+			uint16_t versionSum = classDef->GetVersionSum(game);
+
+			if (versionSum == -1)
+			{
+				LOG_ERROR("Class " + classDef->GetName() + " is not supported in the specified game version!");
+				return nullptr;
+			}
+
+			if (versionSum != classVersion)
+			{
+				LOG_ERROR("Error while reading class " + classDef->GetName() + ". The version is " 
+					+ std::to_string(classVersion) + ", expected" + std::to_string(versionSum) + "!");
+				return nullptr;
+			}
+
+			object->game = game;
+		}
 
 		objectList[objectIndex] = object;
 
@@ -538,7 +548,7 @@ ZenGin::zCObject* ZenGin::zCArchiver::ReadObject(std::string name, zCObject* exi
 	return object;
 }
 
-bool ZenGin::zCArchiver::ReadChunkStart(std::string* objectName, std::string* className, uint16_t* classVersion, uint32_t* objectIndex)
+bool zCArchiver::ReadChunkStart(std::string* objectName, std::string* className, uint16_t* classVersion, uint32_t* objectIndex)
 {
 	if (type == ARCHIVER_TYPE_ASCII ||
 		type == ARCHIVER_TYPE_BIN_SAFE)
@@ -719,7 +729,7 @@ bool ZenGin::zCArchiver::ReadChunkStart(std::string* objectName, std::string* cl
 	return true;
 }
 
-bool ZenGin::zCArchiver::ReadChunkEnd()
+bool zCArchiver::ReadChunkEnd()
 {
 	if (type == ARCHIVER_TYPE_ASCII)
 	{
@@ -774,17 +784,7 @@ bool ZenGin::zCArchiver::ReadChunkEnd()
 	return true;
 }
 
-ZenGin::zCObject* ZenGin::zCArchiver::GetContainedObject()
-{
-	if (objectList.size() != 0)
-	{
-		return objectList[0];
-	}
-
-	return nullptr;
-}
-
-bool ZenGin::zCArchiver::ReadASCIIProperty(std::string name, std::string type, std::string& value)
+bool zCArchiver::ReadASCIIProperty(std::string name, std::string type, std::string& value)
 {
 	// While in ASCII mode, it is not always guaranteed
 	// that the chunks/properties will be in the correct
@@ -885,7 +885,7 @@ bool ZenGin::zCArchiver::ReadASCIIProperty(std::string name, std::string type, s
 	return false;
 }
 
-bool ZenGin::zCArchiver::ReadBinSafeProperty(BINSAFE_TYPE type, char*& data, size_t& size)
+bool zCArchiver::ReadBinSafeProperty(BINSAFE_TYPE type, char*& data, size_t& size)
 {
 	// First read the type
 	char readType;
@@ -939,6 +939,130 @@ bool ZenGin::zCArchiver::ReadBinSafeProperty(BINSAFE_TYPE type, char*& data, siz
 	default:
 		break;
 	}
+
+	return true;
+}
+
+ClassDefinition::ClassDefinition(std::string _name, std::string _base, zCObject* (*_createFunc)(),
+	CLASS_REVISION* _revisions, size_t _revisionCount)
+{
+	name			= _name;
+	base			= _base;
+	createFunc		= _createFunc;
+	revisions		= _revisions;
+	revisionCount	= _revisionCount;
+
+	if (!classList)
+	{
+		classList = new std::unordered_map<std::string, ClassDefinition*>();
+	}
+
+	(*classList)[name] = this;
+}
+
+ClassDefinition::~ClassDefinition()
+{
+}
+
+ClassDefinition* ClassDefinition::GetClassDef(std::string name)
+{
+	if (classList->find(name) != classList->end())
+	{
+		ClassDefinition* classDef = (*classList)[name];
+
+		if (classDef->revisionCount != 0 &&
+			!classDef->isRevisionsListInit)
+		{
+			ClassDefinition* currentClassDef = classDef;
+
+			while (true)
+			{
+				for (size_t i = 0; i < classDef->revisionCount; i++)
+				{
+					CLASS_REVISION& rev = classDef->revisions[i];
+
+					for (size_t j = 0; j < currentClassDef->revisionCount; j++)
+					{
+						CLASS_REVISION& currRev = currentClassDef->revisions[j];
+
+						if (currRev.game == rev.game ||
+							currRev.game == GAME_ALL)
+						{
+							rev.versionSum = CRC16((char*)&currRev.version, sizeof(currRev.version), rev.versionSum);
+							break;
+						}
+					}
+
+				}
+
+				currentClassDef = ClassDefinition::GetClassDef(currentClassDef->GetBase());
+
+				if (currentClassDef == nullptr)
+					break;
+			}
+
+			classDef->isRevisionsListInit = true;
+		}
+
+		return classDef;
+	}
+
+	return nullptr;
+}
+
+uint16_t ClassDefinition::GetVersionSum(GAME game)
+{
+	for (size_t i = 0; i < revisionCount; i++)
+	{
+		if (revisions[i].game == game ||
+			revisions[i].game == GAME_ALL)
+		{
+			return revisions[i].versionSum;
+		}
+	}
+
+	return -1;
+}
+
+//
+// bool ParseFileLine(std::string _line, std::string& key, std::string& value)
+// 
+// Parses the line of a legacy file (primarily PWF)
+// 
+//   - _file
+//         file stream to use.
+// 
+//   - key
+//         read key.
+// 
+//   - value
+//         read value.
+//
+bool zCObject::ParseFileLine(std::string _line, std::string& key, std::string& value)
+{
+	std::string line = _line;
+
+	for (size_t i = 0; i < line.size(); i++)
+	{
+		if (line[i] != ' ')
+		{
+			if (i != 0)
+				line = line.substr(i);
+			break;
+		}
+	}
+
+	size_t sPos = line.find(" (");
+	size_t ePos = line.find(")", sPos + 2);
+
+	if (sPos == std::string::npos ||
+		ePos == std::string::npos)
+	{
+		return false;
+	}
+
+	key = line.substr(0, sPos);
+	value = line.substr(sPos + 2, ePos - sPos - 2);
 
 	return true;
 }

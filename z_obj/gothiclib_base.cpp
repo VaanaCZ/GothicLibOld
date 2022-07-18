@@ -2,18 +2,39 @@
 
 using namespace GothicLib;
 
+//
+// void SetCallback(LogFunc _callback)
+// 
+// Sets up a callback which will be used for
+// error logging by the library.
+// 
+//   - _callback
+//         Pointer to function.
+//
 void Log::SetCallback(LogFunc _callback)
 {
 	callback = _callback;
 }
 
+//
+// void Message(MESSAGE_LEVEL level, std::string message)
+// 
+// Sends a message to the callback.
+// 
+//   - level
+//         The severity of the message.
+//         DEBUG/INFO/WARN/ERROR
+// 
+//   - message
+//         The message to send.
+//
 void Log::Message(MESSAGE_LEVEL level, std::string message)
 {
 	if (callback)
 		callback(level, message);
 }
 
-void GothicLib::ClassManager::AddClassDef(ClassDefinition* definition)
+/*void GothicLib::ClassManager::AddClassDef(ClassDefinition* definition)
 {
 	classes[definition->name] = definition;
 }
@@ -24,7 +45,7 @@ ClassDefinition* ClassManager::GetClassDef(std::string name)
 		return classes[name];
 
 	return nullptr;
-}
+}*/
 
 //
 // bool Open(std::string filename, char openMode)
