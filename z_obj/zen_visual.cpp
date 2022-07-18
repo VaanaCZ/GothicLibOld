@@ -37,18 +37,14 @@ bool ZenGin::zCDecal::Unarchive(zCArchiver* archiver)
 	if (!zCVisual::Unarchive(archiver))
 		return false;
 
-	ZCR_START(zCDecal);
-
-	ZCR_READSTRING(name);
-	ZCR_READRAWFLOAT(decalDim);
-	ZCR_READRAWFLOAT(decalOffset);
-	ZCR_READBOOL(decal2Sided);
-	ZCR_READENUM(decalAlphaFunc);
-	ZCR_READFLOAT(decalTexAniFPS);
+	archiver->ReadString(ARC_ARGS(name));
+	archiver->ReadRawFloat(ARC_ARGSF(decalDim));
+	archiver->ReadRawFloat(ARC_ARGSF(decalOffset));
+	archiver->ReadBool(ARC_ARGS(decal2Sided));
+	archiver->ReadEnum(ARC_ARGSE(decalAlphaFunc));
+	archiver->ReadFloat(ARC_ARGS(decalTexAniFPS));
 	// todo: decalAlphaWeight - G2
 	// todo: ignoreDayLight - G2
-
-	ZCR_END();
 
 	return true;
 }

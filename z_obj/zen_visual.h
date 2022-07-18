@@ -40,7 +40,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS_ABSTRACT(zCVisual, zCObject);
@@ -74,10 +74,10 @@ namespace GothicLib
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC1,				1 },
+				{ GAME_GOTHICSEQUEL,		1 },
 				{ GAME_GOTHIC2,				1 },
-				{ GAME_GOTHIC2NOTR,			1 },
+				{ GAME_GOTHIC2ADDON,		1 },
 			};
 
 			ZEN_DECLARE_CLASS(zCDecal, zCVisual);
@@ -118,7 +118,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				1 },
-				{ GAME_GOTHIC2NOTR,			1 },
+				{ GAME_GOTHIC2ADDON,		1 },
 			};
 
 			ZEN_DECLARE_CLASS(zCMesh, zCVisual);
@@ -142,7 +142,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCParticleFX, zCVisual);
@@ -162,10 +162,10 @@ namespace GothicLib
 			{
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC1,				1 },
+				{ GAME_GOTHICSEQUEL,		1 },
 				{ GAME_GOTHIC2,				1 },
-				{ GAME_GOTHIC2NOTR,			1 },
+				{ GAME_GOTHIC2ADDON,		1 },
 			};
 
 			ZEN_DECLARE_CLASS(zCProgMeshProto, zCVisual);
@@ -188,7 +188,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS_ABSTRACT(zCVisualAnimate, zCVisual);
@@ -212,7 +212,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCModel, zCVisualAnimate);
@@ -236,7 +236,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCMorphMesh, zCVisualAnimate);

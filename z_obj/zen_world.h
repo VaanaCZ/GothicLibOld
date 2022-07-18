@@ -29,7 +29,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				1 },
 				{ GAME_GOTHICSEQUEL,		1 },
 				{ GAME_GOTHIC2,				1 },
-				{ GAME_GOTHIC2NOTR,			1 },
+				{ GAME_GOTHIC2ADDON,		1 },
 			};
 
 			ZEN_DECLARE_CLASS(zCWorld, zCObject);
@@ -74,7 +74,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(oCWorld, zCWorld);
@@ -243,7 +243,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				4 },
 				{ GAME_GOTHICSEQUEL,		4 },
 				{ GAME_GOTHIC2,				5 },
-				{ GAME_GOTHIC2NOTR,			5 },
+				{ GAME_GOTHIC2ADDON,		5 },
 			};
 
 			ZEN_DECLARE_CLASS(zCVob, zCObject);
@@ -309,7 +309,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS_ABSTRACT(oCVob, zCVob);
@@ -365,7 +365,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS_ABSTRACT(zCEffect, zCVob);
@@ -388,7 +388,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCPFXControler, zCEffect);
@@ -422,7 +422,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCVobAnimate, zCEffect);
@@ -452,10 +452,10 @@ namespace GothicLib
 			{
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				1 },
-				{ GAME_GOTHICSEQUEL,		1 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				1 },
-				{ GAME_GOTHIC2NOTR,			1 },
+				{ GAME_GOTHIC2ADDON,		1 },
 			};
 
 			ZEN_DECLARE_CLASS(zCVobScreenFX, zCEffect);
@@ -496,7 +496,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(oCItem, oCVob);
@@ -552,13 +552,13 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_DEMO5,				0 },
+				{ GAME_DEMO5,				1 },
 				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_CHRISTMASEDITION,	2 },
 				{ GAME_GOTHIC1,				2 },
 				{ GAME_GOTHICSEQUEL,		2 },
 				{ GAME_GOTHIC2,				2 },
-				{ GAME_GOTHIC2NOTR,			2 },
+				{ GAME_GOTHIC2ADDON,		2 },
 			};
 
 			ZEN_DECLARE_CLASS(oCMOB, oCVob);
@@ -597,11 +597,11 @@ namespace GothicLib
 			{
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_CHRISTMASEDITION,	3 },
 				{ GAME_GOTHIC1,				3 },
 				{ GAME_GOTHICSEQUEL,		3 },
 				{ GAME_GOTHIC2,				3 },
-				{ GAME_GOTHIC2NOTR,			3 },
+				{ GAME_GOTHIC2ADDON,		3 },
 			};
 
 			ZEN_DECLARE_CLASS(oCMobInter, oCMOB);
@@ -634,11 +634,11 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_CHRISTMASEDITION,	2 },
 				{ GAME_GOTHIC1,				2 },
 				{ GAME_GOTHICSEQUEL,		2 },
 				{ GAME_GOTHIC2,				2 },
-				{ GAME_GOTHIC2NOTR,			2 },
+				{ GAME_GOTHIC2ADDON,		2 },
 			};
 
 			ZEN_DECLARE_CLASS(oCMobFire, oCMobInter);
@@ -672,7 +672,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(oCMobLadder, oCMobInter);
@@ -696,7 +696,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS_ABSTRACT(oCMobLockable, oCMobInter);
@@ -728,11 +728,11 @@ namespace GothicLib
 			{
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_CHRISTMASEDITION,	1 },
 				{ GAME_GOTHIC1,				1 },
 				{ GAME_GOTHICSEQUEL,		1 },
 				{ GAME_GOTHIC2,				1 },
-				{ GAME_GOTHIC2NOTR,			1 },
+				{ GAME_GOTHIC2ADDON,		1 },
 			};
 
 			ZEN_DECLARE_CLASS(oCMobContainer, oCMobLockable);
@@ -764,7 +764,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(oCMobDoor, oCMobLockable);
@@ -785,10 +785,10 @@ namespace GothicLib
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				1 },
-				{ GAME_GOTHICSEQUEL,		1 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				1 },
-				{ GAME_GOTHIC2NOTR,			1 },
+				{ GAME_GOTHIC2ADDON,		1 },
 			};
 
 			ZEN_DECLARE_CLASS(oCMobSwitch, oCMobLockable);
@@ -847,13 +847,13 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_DEMO5,				0 },
+				{ GAME_DEMO5,				1 },
 				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				7 },
-				{ GAME_GOTHICSEQUEL,		7 },
+				{ GAME_CHRISTMASEDITION,	5 },
+				{ GAME_GOTHIC1,				5 },
+				{ GAME_GOTHICSEQUEL,		5 },
 				{ GAME_GOTHIC2,				7 },
-				{ GAME_GOTHIC2NOTR,			7 },
+				{ GAME_GOTHIC2ADDON,		7 },
 			};
 
 			ZEN_DECLARE_CLASS(oCNpc, oCVob);
@@ -910,7 +910,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS_ABSTRACT(zCTriggerBase, zCVob);
@@ -939,11 +939,11 @@ namespace GothicLib
 			{
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_CHRISTMASEDITION,	2 },
 				{ GAME_GOTHIC1,				2 },
 				{ GAME_GOTHICSEQUEL,		2 },
 				{ GAME_GOTHIC2,				2 },
-				{ GAME_GOTHIC2NOTR,			2 },
+				{ GAME_GOTHIC2ADDON,		2 },
 			};
 
 			ZEN_DECLARE_CLASS(zCTrigger, zCTriggerBase);
@@ -1031,11 +1031,11 @@ namespace GothicLib
 			{
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_CHRISTMASEDITION,	1 },
 				{ GAME_GOTHIC1,				1 },
 				{ GAME_GOTHICSEQUEL,		1 },
 				{ GAME_GOTHIC2,				1 },
-				{ GAME_GOTHIC2NOTR,			1 },
+				{ GAME_GOTHIC2ADDON,		1 },
 			};
 
 			ZEN_DECLARE_CLASS(zCMover, zCTrigger);
@@ -1098,7 +1098,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(oCTriggerChangeLevel, zCTrigger);
@@ -1138,7 +1138,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCTriggerList, zCTrigger);
@@ -1179,7 +1179,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCVobLevelCompo, zCVob);
@@ -1218,11 +1218,11 @@ namespace GothicLib
 			{
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_CHRISTMASEDITION,	4 },
 				{ GAME_GOTHIC1,				4 },
 				{ GAME_GOTHICSEQUEL,		4 },
 				{ GAME_GOTHIC2,				5 },
-				{ GAME_GOTHIC2NOTR,			5 },
+				{ GAME_GOTHIC2ADDON,		5 },
 			};
 
 			ZEN_DECLARE_CLASS(zCVobLight, zCVob);
@@ -1276,7 +1276,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCVobSpot, zCVob);
@@ -1303,7 +1303,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCVobStair, zCVob);
@@ -1331,7 +1331,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCVobStartpoint, zCVob);
@@ -1374,7 +1374,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS_ABSTRACT(zCZone, zCVob);
@@ -1407,11 +1407,11 @@ namespace GothicLib
 			{
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_CHRISTMASEDITION,	4 },
+				{ GAME_GOTHIC1,				4 },
+				{ GAME_GOTHICSEQUEL,		4 },
 				{ GAME_GOTHIC2,				4 },
-				{ GAME_GOTHIC2NOTR,			4 },
+				{ GAME_GOTHIC2ADDON,		4 },
 			};
 
 			ZEN_DECLARE_CLASS(zCVobSound, zCZone);
@@ -1456,7 +1456,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCVobSoundDaytime, zCVobSound);
@@ -1490,7 +1490,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCZoneMusic, zCZone);
@@ -1513,7 +1513,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(oCZoneMusic, zCZoneMusic);
@@ -1553,7 +1553,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(oCZoneMusicDefault, oCZoneMusic);
@@ -1576,7 +1576,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCZoneVobFarPlane, zCZone);
@@ -1609,7 +1609,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCZoneVobFarPlaneDefault, zCZoneVobFarPlane);
@@ -1628,11 +1628,11 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				2 },
-				{ GAME_GOTHICSEQUEL,		2 },
+				{ GAME_CHRISTMASEDITION,	1 },
+				{ GAME_GOTHIC1,				1 },
+				{ GAME_GOTHICSEQUEL,		1 },
 				{ GAME_GOTHIC2,				2 },
-				{ GAME_GOTHIC2NOTR,			2 },
+				{ GAME_GOTHIC2ADDON,		2 },
 			};
 
 			ZEN_DECLARE_CLASS(zCZoneZFog, zCZone);
@@ -1666,7 +1666,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCZoneZFogDefault, zCZoneZFog);
@@ -1711,7 +1711,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCWaypoint, zCObject);
@@ -1766,7 +1766,7 @@ namespace GothicLib
 				{ GAME_GOTHIC1,				0 },
 				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2NOTR,			0 },
+				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
 			ZEN_DECLARE_CLASS(zCWayNet, zCObject);
