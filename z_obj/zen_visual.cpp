@@ -117,3 +117,61 @@ bool ZenGin::zCDecal::Load(FileStream* file)
 
 	return false;
 }
+
+bool GothicLib::ZenGin::zCMesh::SaveMSH(FileStream* file)
+{
+	return false;
+}
+
+bool GothicLib::ZenGin::zCMesh::LoadMSH(FileStream* file)
+{
+	bool end = false;
+
+	while (true)
+	{
+		uint16_t chunkId;
+		uint32_t chunkSize;
+
+		if (!file->Read(&chunkId, sizeof(chunkId)) ||
+			!file->Read(&chunkSize, sizeof(chunkSize)))
+		{
+			LOG_ERROR("Unexpected end of file while reading mesh chunk!");
+			return false;
+		}
+
+		uint64_t skipPos = file->Tell() + chunkSize;
+
+		// Read chunk
+		switch (chunkId)
+		{
+
+		case CHUNK_MESH:
+		{
+			uint16_t	version;
+			zDATE		date;
+			std::string	name;
+		}
+
+		case CHUNK_END:
+		{
+			end = true;
+			break;
+		}
+
+		default:
+		{
+			LOG_WARN("Unknown chunk type \"" + std::to_string(chunkId) + "\" in zCMesh, skipping!");
+			file->Seek(skipPos);
+
+			break;
+		}
+		}
+
+		if (end)
+		{
+			break;
+		}
+	}
+
+	return false;
+}

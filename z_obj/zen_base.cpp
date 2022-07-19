@@ -550,6 +550,7 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 
 			if (classDef == nullptr)
 			{
+				LOG_ERROR("Class " + className + " is not supported!");
 				return nullptr;
 			}
 
@@ -781,54 +782,69 @@ bool zCArchiver::ReadChunkEnd()
 		return false;
 	}
 
-	if (type == ARCHIVER_TYPE_ASCII)
+	if (type == ARCHIVER_TYPE_ASCII ||
+		type == ARCHIVER_TYPE_BIN_SAFE)
 	{
-		bool valid = false;
-
-		int nesting = 0;
-
 		std::string line;
 
-		while (file->ReadLine(line))
+		if (type == ARCHIVER_TYPE_BIN_SAFE)
 		{
-			//LOG_DEBUG("ReadChunkEnd      : " + line);
+			char* str;
+			size_t length;
+			if (!ReadBinSafeProperty(BINSAFE_TYPE_STRING, str, length))
+				return false;
 
-			// Figure out nesting
-			size_t tabCount = 0;
+			line = std::string(str, length);
 
-			for (size_t i = 0; i < line.size(); i++)
+			delete[] str;
+		}
+		else
+		{
+			int nesting = 0;
+
+			bool valid = false;
+
+			while (file->ReadLine(line))
 			{
-				if (line[i] != '\t')
+				//LOG_DEBUG("ReadChunkEnd      : " + line);
+
+				// Figure out nesting
+				size_t tabCount = 0;
+
+				for (size_t i = 0; i < line.size(); i++)
 				{
-					tabCount = i;
+					if (line[i] != '\t')
+					{
+						tabCount = i;
+						break;
+					}
+				}
+
+				if (line.size() >= tabCount + 2 &&
+					line[tabCount] == '[')
+				{
+					if (line[tabCount + 1] == ']')
+						nesting--;
+					else
+						nesting++;
+				}
+
+				// End reached
+				if (nesting < 0)
+				{
+					valid = true;
 					break;
 				}
 			}
 
-			if (line.size() >= tabCount + 2 &&
-				line[tabCount] == '[')
+			if (!valid)
 			{
-				if (line[tabCount + 1] == ']')
-					nesting--;
-				else
-					nesting++;
+				LOG_ERROR("End of the file reached, but the chunk remains open. This archive is invalid!");
+				return false;
 			}
 
-			// End reached
-			if (nesting < 0)
-			{
-				valid = true;
-				break;
-			}
+			asciiChunksPositions.pop_back();
 		}
-
-		if (!valid)
-		{
-			LOG_ERROR("End of the file reached, but the chunk remains open. This archive is invalid!");
-			return false;
-		}
-
-		asciiChunksPositions.pop_back();
 	}
 
 	return true;

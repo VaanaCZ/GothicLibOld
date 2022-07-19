@@ -12,6 +12,7 @@ namespace GothicLib
 		class zCVisual;
 		class zCAIBase;
 		class zCWayNet;
+		class zCEventManager;
 
 		/*
 			World classes
@@ -104,6 +105,8 @@ namespace GothicLib
 			bool LoadBIN(FileStream*);
 
 			GAME game;
+
+			zCMesh mesh;
 
 		private:
 
@@ -231,6 +234,59 @@ namespace GothicLib
 			zVOB_TYPE_NSC
 		};
 
+#pragma pack (push, 1)
+		/*struct zSVobArcRawData
+		{
+			zTBBox3D	bbox3DWS;
+			zVEC3		positionWS;
+			zMAT3		trafoRotWS;
+			struct zSBitField
+			{
+				uint8_t showVisual : 1;
+				uint8_t visualCamAlign : 2;
+				uint8_t cdStatic : 1;
+				uint8_t cdDyn : 1;
+				uint8_t staticVob : 1;
+				uint8_t dynShadow : 2;
+				uint8_t hasPresetName : 1;
+				uint8_t hasVobName : 1;
+				uint8_t hasVisualName : 1;
+				uint8_t hasRelevantVisualObject : 1;
+				uint8_t hasAIObject : 1;
+				uint8_t hasEventManObject : 1;
+				uint8_t physicsEnabled : 1;
+				uint8_t visualAniMode : 2;
+				uint8_t zbias : 5;
+				uint8_t isAmbient : 1;
+			} bitfield;
+			float		visualAniStrength;
+			float		vobFarClipZScale;
+		};*/
+
+		struct zSVobArcRawData
+		{
+			zTBBox3D	bbox3DWS;
+			zVEC3		positionWS;
+			zMAT3		trafoRotWS;
+			struct zSBitField
+			{
+				uint8_t showVisual : 1;
+				uint8_t visualCamAlign : 2;
+				uint8_t cdStatic : 1;
+				uint8_t cdDyn : 1;
+				uint8_t staticVob : 1;
+				uint8_t dynShadow : 2;
+				uint8_t hasPresetName : 1;
+				uint8_t hasVobName : 1;
+				uint8_t hasVisualName : 1;
+				uint8_t hasRelevantVisualObject : 1;
+				uint8_t hasAIObject : 1;
+				uint8_t hasEventManObject : 1;
+				uint8_t physicsEnabled : 1;
+			} bitfield;
+		};
+#pragma pack (pop)
+
 		class zCVob : public zCObject
 		{
 		public:
@@ -263,7 +319,6 @@ namespace GothicLib
 				Properties
 			*/
 
-			int					pack					= 0;
 			zTVobType			vobType					= zVOB_TYPE_NORMAL;		// Legacy
 			int					vobId;											// Legacy
 			std::string			presetName;
@@ -290,8 +345,9 @@ namespace GothicLib
 			zTVobSleepingMode	sleepMode				= zVOB_SLEEPING;		// Savegame
 			float				nextOnTimer				= 0.0f;					// Savegame
 
-			zCVisual* visualPtr	= nullptr;
-			zCAIBase* aiPtr		= nullptr;
+			zCVisual*		visualPtr		= nullptr;
+			zCAIBase*		aiPtr			= nullptr;
+			zCEventManager* eventManagerPtr	= nullptr;
 
 		private:
 
@@ -861,8 +917,8 @@ namespace GothicLib
 			oCNpc()				{ }
 			virtual ~oCNpc()	{ }
 
-			//virtual bool Archive(zCArchiver*);
-			//virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
 
 			virtual bool Save(FileStream*);
 			virtual bool Load(FileStream*);
@@ -872,6 +928,15 @@ namespace GothicLib
 			*/
 
 			std::string		npcInstance;
+			zVEC3			modelScale;		// Savegame
+			float			modelFatness;	// Savegame
+			int				flags;			// Savegame
+			int				guild;			// Savegame
+			int				guildTrue;		// Savegame
+			int				level;			// Savegame
+			int				xp;				// Savegame
+			int				xpnl;			// Savegame
+			int				lp;				// Savegame
 
 		private:
 
@@ -1685,11 +1750,165 @@ namespace GothicLib
 		class zCAIBase : public zCObject
 		{
 		public:
+			
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2ADDON,		0 },
+			};
 
-			static inline ClassDefinition* classDef = nullptr;
+			ZEN_DECLARE_CLASS(zCAIBase, zCObject);
 
 			zCAIBase()			{ }
 			virtual ~zCAIBase()	{ }
+
+		private:
+
+		};
+
+		class zCAIPlayer : public zCAIBase
+		{
+		public:
+			
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				1 },
+				{ GAME_GOTHICSEQUEL,		1 },
+				{ GAME_GOTHIC2,				1 },
+				{ GAME_GOTHIC2ADDON,		1 },
+			};
+
+			ZEN_DECLARE_CLASS(zCAIPlayer, zCAIBase);
+
+			zCAIPlayer()			{ }
+			virtual ~zCAIPlayer()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			int		waterLevel	= 0;
+			float	floorY		= 0.0f;
+			float	waterY		= 0.0f;
+			float	ceilY		= 0.0f;
+			float	feetY		= 0.0f;
+			float	headY		= 0.0f;
+			float	fallDistY	= 0.0f;
+			float	fallStartY	= 0.0f;
+
+		private:
+
+		};
+
+		class oCAniCtrl_Human : public zCAIPlayer
+		{
+		public:
+			
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2ADDON,		0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCAniCtrl_Human, zCAIPlayer);
+
+			oCAniCtrl_Human()			{ }
+			virtual ~oCAniCtrl_Human()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			oCNpc* aiNpc = nullptr;
+
+			int		walkMode		= 0;
+			int		weaponMode		= 0;
+			int		wmodeLast		= 0;
+			int		wmodeSelect		= 0;
+			bool	changeWeapon	= false;
+			int		actionMode		= 0;
+
+		private:
+
+		};
+
+		class oCAIHuman : public oCAniCtrl_Human
+		{
+		public:
+			
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2ADDON,		0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCAIHuman, oCAniCtrl_Human);
+
+			oCAIHuman()				{ }
+			virtual ~oCAIHuman()	{ }
+
+		private:
+
+		};
+
+		/*
+			Event manager
+		*/
+
+		class zCEventManager : public zCObject
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2ADDON,		0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCEventManager, zCObject);
+
+			zCEventManager()				{ }
+			virtual ~zCEventManager()		{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+			
+			bool cleared;
+			bool active;
+
+			//bool active;
 
 		private:
 

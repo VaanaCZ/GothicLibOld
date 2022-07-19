@@ -55,7 +55,7 @@ bool ZenGin::zCWorld::Unarchive(zCArchiver* archiver)
 		{
 			bsp = new zCBspTree();
 			bsp->game = game;
-
+			
 			if (!bsp->LoadBIN(archiver->GetFile()))
 			{
 				//return false;
@@ -277,6 +277,25 @@ bool ZenGin::zCBspTree::SaveBIN(FileStream* file)
 
 bool ZenGin::zCBspTree::LoadBIN(FileStream* file)
 {
+	// Read start
+	uint32_t version, length;
+
+	if (!file->Read(&version, sizeof(version)) ||
+		!file->Read(&length, sizeof(length)))
+	{
+		LOG_ERROR("Unexpected end of file when reading MeshAndBsp chunk");
+		return false;
+	}
+
+	file->Seek(file->Tell() + length); // temp
+	return true; // temp
+
+	// Mesh
+	if (!mesh.LoadMSH(file))
+	{
+		return false;
+	}
+
 	return false;
 }
 
@@ -296,40 +315,109 @@ bool ZenGin::zCVob::Archive(zCArchiver* archiver)
 
 bool ZenGin::zCVob::Unarchive(zCArchiver* archiver)
 {
+	int	pack;
+
 	archiver->ReadInt(ARC_ARGS(pack));
-	archiver->ReadString(ARC_ARGS(presetName));
-	archiver->ReadRawFloat(ARC_ARGSF(bbox3DWS));
-	archiver->ReadRaw(ARC_ARGSR(trafoOSToWSRot));
-	archiver->ReadVec3(ARC_ARGS(trafoOSToWSPos));
-	archiver->ReadString(ARC_ARGS(vobName));
-	archiver->ReadString(ARC_ARGS(visual));
-	archiver->ReadBool(ARC_ARGS(showVisual));
-	archiver->ReadEnum(ARC_ARGSE(visualCamAlign));
 
-	//if (version == 52224)
-	//{
-	//	ZCR_READENUM(visualAniMode);
-	//	archiver->ReadFloat(ARC_ARGS(visualAniModeStrength);
-	//	archiver->ReadFloat(ARC_ARGS(vobFarClipZScale);
-	//}
-
-	archiver->ReadBool(ARC_ARGS(cdStatic));
-	archiver->ReadBool(ARC_ARGS(cdDyn));
-	archiver->ReadBool(ARC_ARGS(staticVob));
-	archiver->ReadEnum(ARC_ARGSE(dynShadow));
-
-	//if (version == 52224)
-	//{
-	//	archiver->ReadInt(ARC_ARGS(zbias);
-	//	archiver->ReadBool(ARC_ARGS(isAmbient);
-	//}
-
-	visualPtr = archiver->ReadObjectAs<zCVisual*>("visual");
-	aiPtr = archiver->ReadObjectAs<zCAIBase*>("ai");
-
-	if (archiver->IsSavegame())
+	if (pack)
 	{
-		archiver->ReadBool(ARC_ARGS(physicsEnabled));
+		zSVobArcRawData dataRaw;
+		archiver->ReadRaw(ARC_ARGSR(dataRaw));
+
+		bbox3DWS		= dataRaw.bbox3DWS;
+		trafoOSToWSRot	= dataRaw.trafoRotWS;
+		trafoOSToWSPos	= dataRaw.positionWS;
+
+		showVisual				= dataRaw.bitfield.showVisual;
+		visualCamAlign			= (zTVisualCamAlign)dataRaw.bitfield.visualCamAlign;
+		//visualAniMode			= dataRaw.bitfield.visualAniMode;
+		//vobFarClipZScale		= dataRaw.bitfield.vobFarClipZScale;
+		//visualAniModeStrength	= dataRaw.bitfield.visualAniModeStrength;
+		cdStatic				= dataRaw.bitfield.cdStatic;
+		cdDyn					= dataRaw.bitfield.cdDyn;
+		staticVob				= dataRaw.bitfield.staticVob;
+		dynShadow				= (zTDynShadowType)dataRaw.bitfield.dynShadow;
+		//zbias					= dataRaw.bitfield.zbias;
+		//isAmbient				= dataRaw.bitfield.isAmbient;
+
+		if (dataRaw.bitfield.hasPresetName)
+		{
+			archiver->ReadString(ARC_ARGS(presetName));
+		}
+
+		if (dataRaw.bitfield.hasVobName)
+		{
+			archiver->ReadString(ARC_ARGS(vobName));
+		}
+
+		if (dataRaw.bitfield.hasVisualName)
+		{
+			archiver->ReadString(ARC_ARGS(visual));
+		}
+
+		if (dataRaw.bitfield.hasRelevantVisualObject)
+		{
+			visualPtr = archiver->ReadObjectAs<zCVisual*>("visual");
+		}
+
+		if (dataRaw.bitfield.hasAIObject)
+		{
+			aiPtr = archiver->ReadObjectAs<zCAIBase*>("ai");
+		}
+
+		if (archiver->IsSavegame())
+		{
+			physicsEnabled = dataRaw.bitfield.physicsEnabled;
+
+			if (dataRaw.bitfield.hasEventManObject)
+			{
+				eventManagerPtr = archiver->ReadObjectAs<zCEventManager*>("eventManager");
+			}
+		}
+
+		return true;
+	}
+	else
+	{
+		//if (game <= 0.94k)
+		//{
+		//	archiver->ReadInt(ARC_ARGS(vobID));
+		//}
+
+		archiver->ReadString(ARC_ARGS(presetName));
+		archiver->ReadRawFloat(ARC_ARGSF(bbox3DWS));
+		archiver->ReadRaw(ARC_ARGSR(trafoOSToWSRot));
+		archiver->ReadVec3(ARC_ARGS(trafoOSToWSPos));
+		archiver->ReadString(ARC_ARGS(vobName));
+		archiver->ReadString(ARC_ARGS(visual));
+		archiver->ReadBool(ARC_ARGS(showVisual));
+		archiver->ReadEnum(ARC_ARGSE(visualCamAlign));
+
+		//if (version == 52224)
+		//{
+		//	ZCR_READENUM(visualAniMode);
+		//	archiver->ReadFloat(ARC_ARGS(visualAniModeStrength);
+		//	archiver->ReadFloat(ARC_ARGS(vobFarClipZScale);
+		//}
+
+		archiver->ReadBool(ARC_ARGS(cdStatic));
+		archiver->ReadBool(ARC_ARGS(cdDyn));
+		archiver->ReadBool(ARC_ARGS(staticVob));
+		archiver->ReadEnum(ARC_ARGSE(dynShadow));
+
+		//if (version == 52224)
+		//{
+		//	archiver->ReadInt(ARC_ARGS(zbias);
+		//	archiver->ReadBool(ARC_ARGS(isAmbient);
+		//}
+
+		visualPtr = archiver->ReadObjectAs<zCVisual*>("visual");
+		aiPtr = archiver->ReadObjectAs<zCAIBase*>("ai");
+
+		if (archiver->IsSavegame())
+		{
+			archiver->ReadBool(ARC_ARGS(physicsEnabled));
+		}
 	}
 
 	if (archiver->IsSavegame())
@@ -846,6 +934,48 @@ bool ZenGin::oCMob::Load(FileStream* file)
 /*
 	oCNpc
 */
+
+bool ZenGin::oCNpc::Archive(zCArchiver* archiver)
+{
+	if (!oCVob::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCNpc::Unarchive(zCArchiver* archiver)
+{
+	if (!oCVob::Unarchive(archiver))
+		return false;
+
+	archiver->ReadString(ARC_ARGS(npcInstance));
+
+	if (archiver->IsSavegame())
+	{
+		archiver->ReadVec3(ARC_ARGS(modelScale));
+		archiver->ReadFloat(ARC_ARGS(modelFatness));
+
+		int numOverlays;
+		archiver->ReadInt(ARC_ARGS(numOverlays));
+
+		for (size_t i = 0; i < numOverlays; i++)
+		{
+			break;
+		}
+
+		archiver->ReadInt(ARC_ARGS(flags));
+		archiver->ReadInt(ARC_ARGS(guild));
+		archiver->ReadInt(ARC_ARGS(guildTrue));
+		archiver->ReadInt(ARC_ARGS(guildTrue));
+		archiver->ReadInt(ARC_ARGS(level));
+		archiver->ReadInt(ARC_ARGS(xp));
+		archiver->ReadInt(ARC_ARGS(xpnl));
+		archiver->ReadInt(ARC_ARGS(lp));
+
+	}
+
+	return true;
+}
 
 bool ZenGin::oCNpc::Save(FileStream* file)
 {
@@ -1454,6 +1584,69 @@ bool ZenGin::zCZoneZFog::Unarchive(zCArchiver* archiver)
 	AI classes
 */
 
+bool ZenGin::zCAIPlayer::Archive(zCArchiver* archiver)
+{
+	return false;
+}
+
+bool ZenGin::zCAIPlayer::Unarchive(zCArchiver* archiver)
+{
+	if (archiver->IsSavegame())
+	{
+		archiver->ReadInt(ARC_ARGS(waterLevel));
+		archiver->ReadFloat(ARC_ARGS(floorY));
+		archiver->ReadFloat(ARC_ARGS(waterY));
+		archiver->ReadFloat(ARC_ARGS(ceilY));
+		archiver->ReadFloat(ARC_ARGS(feetY));
+		archiver->ReadFloat(ARC_ARGS(headY));
+		archiver->ReadFloat(ARC_ARGS(fallDistY));
+		archiver->ReadFloat(ARC_ARGS(fallStartY));
+	}
+
+	return true;
+}
+
+bool ZenGin::oCAniCtrl_Human::Archive(zCArchiver* archiver)
+{
+	if (!zCAIPlayer::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCAniCtrl_Human::Unarchive(zCArchiver* archiver)
+{
+	if (!zCAIPlayer::Unarchive(archiver))
+		return false;
+
+	if (archiver->IsSavegame())
+	{
+		aiNpc = archiver->ReadObjectAs<oCNpc*>("aiNpc");
+
+		archiver->ReadInt(ARC_ARGS(walkMode));
+		archiver->ReadInt(ARC_ARGS(weaponMode));
+		archiver->ReadInt(ARC_ARGS(wmodeLast));
+		archiver->ReadInt(ARC_ARGS(wmodeSelect));
+		archiver->ReadBool(ARC_ARGS(changeWeapon));
+		archiver->ReadInt(ARC_ARGS(actionMode));
+	}
+
+	return true;
+}
+
+/*
+	Event manager
+*/
+
+bool ZenGin::zCEventManager::Archive(zCArchiver* archiver)
+{
+	return false;
+}
+
+bool ZenGin::zCEventManager::Unarchive(zCArchiver* archiver)
+{
+	return false;
+}
 
 /*
 	Waynet

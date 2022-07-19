@@ -106,6 +106,19 @@ namespace GothicLib
 
 		};
 
+		enum CHUNK_TYPE
+		{
+			CHUNK_MESH					= 0xB000,
+			CHUNK_BBOX3D				= 0xB010,
+			CHUNK_MATLIST				= 0xB020,
+			CHUNK_LIGHTMAPLIST			= 0xB025,
+			CHUNK_LIGHTMAPLIST_SHARED	= 0xB026,
+			CHUNK_VERTLIST				= 0xB030,
+			CHUNK_FEATLIST				= 0xB040,
+			CHUNK_POLYLIST				= 0xB050,
+			CHUNK_END					= 0xB060
+		};	
+
 		class zCMesh : public zCVisual
 		{
 		public:
@@ -125,6 +138,9 @@ namespace GothicLib
 		
 			zCMesh()			{ }
 			virtual ~zCMesh()	{ }
+
+			bool SaveMSH(FileStream*);
+			bool LoadMSH(FileStream*);
 
 		private:
 
