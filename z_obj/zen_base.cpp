@@ -566,7 +566,7 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 			if (versionSum != classVersion)
 			{
 				LOG_ERROR("Error while reading class " + classDef->GetName() + ". The version is " 
-					+ std::to_string(classVersion) + ", expected" + std::to_string(versionSum) + "!");
+					+ std::to_string(classVersion) + ", expected " + std::to_string(versionSum) + "!");
 				return nullptr;
 			}
 
@@ -1048,6 +1048,21 @@ ClassDefinition* ClassDefinition::GetClassDef(std::string name)
 						}
 					}
 
+				}
+
+				//
+				// Due to a bug in the engine, the pointer to the base class
+				// is not always initialized when the class is alphabetically
+				// later than the base class. Here we account for that bug
+				// by bailing the hiarchy crawl early if the current class
+				// is alphabetically eariler than the base class.
+				//
+
+				if (currentClassDef->GetName() != "zCVob" && 
+					// zCVob is always intialized first due to the compilation order
+					currentClassDef->GetName() > classDef->GetName())
+				{
+					break;
 				}
 
 				currentClassDef = ClassDefinition::GetClassDef(currentClassDef->GetBase());

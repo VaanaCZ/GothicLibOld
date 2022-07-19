@@ -74,8 +74,8 @@ namespace GothicLib
 				{ GAME_DEMO5,				0 },
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				1 },
-				{ GAME_GOTHICSEQUEL,		1 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				1 },
 				{ GAME_GOTHIC2ADDON,		1 },
 			};
@@ -162,8 +162,8 @@ namespace GothicLib
 			{
 				{ GAME_SEPTEMBERDEMO,		0 },
 				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				1 },
-				{ GAME_GOTHICSEQUEL,		1 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
 				{ GAME_GOTHIC2,				1 },
 				{ GAME_GOTHIC2ADDON,		1 },
 			};

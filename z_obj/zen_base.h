@@ -107,6 +107,9 @@ namespace GothicLib
 
 		inline uint16_t CRC16(char* buffer, size_t bufferSize, uint16_t _crc = 0)
 		{
+			if (!buffer)
+				return _crc;
+
 			int crc = _crc;
 
 			if (bufferSize > 0)

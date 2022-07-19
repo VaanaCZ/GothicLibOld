@@ -22,18 +22,26 @@ using namespace GothicLib;
 int main(int argc, char* argv[])
 {
 	Log::SetCallback(&logfunc);
-
-	ZenGin::FileSystem fs;
+	
+	//ZenGin::FileSystem fs;
 	//if (!fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic Original"))
 	//	return 1;
 	//FileStream* f = fs.OpenFile("WORLD.zen", true);
 	FileStream* f = new FileStream();
 	f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\SURFACE_UNCOMPILED.ZEN", 'r');
-
+	
 	ZenGin::oCWorld world;
 	world.game = ZenGin::GAME_GOTHIC1;
 	world.LoadWorld(f);
+	
 
+
+	//FileStream* f = new FileStream();
+	//f->Open("D:\\Gothic\\Gothic_demo3\\Data\\Worlds\\Surface\\surface_test.pwf", 'r');
+	//
+	//ZenGin::zCWorld world;
+	//world.game = ZenGin::GAME_DEMO3;
+	//world.LoadWorld(f);
 
 
 	/*

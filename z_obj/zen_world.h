@@ -760,11 +760,11 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
-				{ GAME_GOTHIC2,				0 },
-				{ GAME_GOTHIC2ADDON,		0 },
+				{ GAME_CHRISTMASEDITION,	1 },
+				{ GAME_GOTHIC1,				1 },
+				{ GAME_GOTHICSEQUEL,		1 },
+				{ GAME_GOTHIC2,				1 },
+				{ GAME_GOTHIC2ADDON,		1 },
 			};
 
 			ZEN_DECLARE_CLASS(oCMobDoor, oCMobLockable);
