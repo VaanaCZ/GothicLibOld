@@ -321,7 +321,7 @@ namespace GothicLib
 			*/
 
 			zTVobType			vobType					= zVOB_TYPE_NORMAL;		// Legacy
-			int					vobId;											// Legacy
+			int					vobID;											// Legacy
 			std::string			presetName;
 			bool				drawBBox3D				= false;				// Legacy
 			zTBBox3D			bbox3DWS				= {};
@@ -409,7 +409,7 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_SEPTEMBERDEMO,		7 },
 				{ GAME_CHRISTMASEDITION,	8 },
 				{ GAME_GOTHIC1,				8 },
 				{ GAME_GOTHICSEQUEL,		8 },
@@ -477,7 +477,7 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_SEPTEMBERDEMO,		6 },
 				{ GAME_CHRISTMASEDITION,	7 },
 				{ GAME_GOTHIC1,				7 },
 				{ GAME_GOTHICSEQUEL,		7 },
@@ -561,6 +561,41 @@ namespace GothicLib
 
 		};
 
+		class zCEarthquake : public zCEffect
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2ADDON,		0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCEarthquake, zCEffect);
+
+			zCEarthquake()			{ }
+			virtual ~zCEarthquake()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			float radius		= 0.0f;
+			float timeSec		= 0.0f;
+			zVEC3 amplitudeCM	= { };
+
+		private:
+
+		};
+
 		class zCPFXControler : public zCEffect
 		{
 		public:
@@ -623,6 +658,38 @@ namespace GothicLib
 
 			bool startOn	= true;
 			bool isRunning	= false; // Savegame
+
+		private:
+
+		};
+
+		class zCVobLensFlare : public zCEffect
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		1 },
+				{ GAME_CHRISTMASEDITION,	1 },
+				{ GAME_GOTHIC1,				1 },
+				{ GAME_GOTHICSEQUEL,		1 },
+				{ GAME_GOTHIC2,				1 },
+				{ GAME_GOTHIC2ADDON,		1 },
+			};
+
+			ZEN_DECLARE_CLASS(zCVobLensFlare, zCEffect);
+
+			zCVobLensFlare()			{ }
+			virtual ~zCVobLensFlare()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			std::string lensflareFX;
 
 		private:
 
@@ -737,7 +804,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				1 },
-				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_SEPTEMBERDEMO,		2 },
 				{ GAME_CHRISTMASEDITION,	2 },
 				{ GAME_GOTHIC1,				2 },
 				{ GAME_GOTHICSEQUEL,		2 },
@@ -780,7 +847,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				0 },
-				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_SEPTEMBERDEMO,		3 },
 				{ GAME_CHRISTMASEDITION,	3 },
 				{ GAME_GOTHIC1,				3 },
 				{ GAME_GOTHICSEQUEL,		3 },
@@ -813,13 +880,37 @@ namespace GothicLib
 
 		};
 
+		class oCMobBed : public oCMobInter
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2ADDON,		0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCMobBed, oCMobInter);
+
+			oCMobBed()			{ }
+			virtual ~oCMobBed()	{ }
+
+		private:
+
+		};
+
 		class oCMobFire : public oCMobInter
 		{
 		public:
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_SEPTEMBERDEMO,		2 },
 				{ GAME_CHRISTMASEDITION,	2 },
 				{ GAME_GOTHIC1,				2 },
 				{ GAME_GOTHICSEQUEL,		2 },
@@ -913,7 +1004,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				0 },
-				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_SEPTEMBERDEMO,		1 },
 				{ GAME_CHRISTMASEDITION,	1 },
 				{ GAME_GOTHIC1,				1 },
 				{ GAME_GOTHICSEQUEL,		1 },
@@ -981,6 +1072,30 @@ namespace GothicLib
 
 			oCMobSwitch()			{ }
 			virtual ~oCMobSwitch()	{ }
+
+		private:
+
+		};
+
+		class oCMobWheel : public oCMobInter
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2ADDON,		0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCMobWheel, oCMobInter);
+
+			oCMobWheel()			{ }
+			virtual ~oCMobWheel()	{ }
 
 		private:
 
@@ -1126,6 +1241,50 @@ namespace GothicLib
 
 		};
 
+		enum zTMessageType
+		{
+			MT_NONE,
+			MT_TRIGGER,
+			MT_UNTRIGGER,
+			MT_ENABLE,
+			MT_DISABLE,
+			MT_TOGGLE_ENABLED,
+			MT_RESET
+		};
+
+		class zCMessageFilter : public zCTriggerBase
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2ADDON,		0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCMessageFilter, zCTriggerBase);
+
+			zCMessageFilter() { }
+			virtual ~zCMessageFilter() { }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			zTMessageType onTrigger		= MT_NONE;
+			zTMessageType onUntrigger	= MT_NONE;
+
+		private:
+
+		};
+
 		class zCTrigger : public zCTriggerBase
 		{
 		public:
@@ -1133,7 +1292,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				0 },
-				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_SEPTEMBERDEMO,		2 },
 				{ GAME_CHRISTMASEDITION,	2 },
 				{ GAME_GOTHIC1,				2 },
 				{ GAME_GOTHICSEQUEL,		2 },
@@ -1184,6 +1343,29 @@ namespace GothicLib
 
 		};
 
+		class oCCSTrigger : public zCTrigger
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2ADDON,		0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCCSTrigger, zCTrigger);
+
+			oCCSTrigger()			{ }
+			virtual ~oCCSTrigger()	{ }
+
+		private:
+
+		};
+
 		enum zTMoverBehavior
 		{
 			MB_2STATE_TOGGLE,
@@ -1225,7 +1407,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				0 },
-				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_SEPTEMBERDEMO,		1 },
 				{ GAME_CHRISTMASEDITION,	1 },
 				{ GAME_GOTHIC1,				1 },
 				{ GAME_GOTHICSEQUEL,		1 },
@@ -1444,7 +1626,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				0 },
-				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_SEPTEMBERDEMO,		4 },
 				{ GAME_CHRISTMASEDITION,	4 },
 				{ GAME_GOTHIC1,				4 },
 				{ GAME_GOTHICSEQUEL,		4 },
@@ -1574,6 +1756,30 @@ namespace GothicLib
 			zCVobWaypoint
 		*/
 
+		class zCVobWaypoint : public zCVob
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2ADDON,		0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCVobWaypoint, zCVob);
+
+			zCVobWaypoint()				{ }
+			virtual ~zCVobWaypoint()	{ }
+
+		private:
+
+		};
+
 		/*
 			zCZone
 				zCVobSound
@@ -1633,7 +1839,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				0 },
-				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_SEPTEMBERDEMO,		4 },
 				{ GAME_CHRISTMASEDITION,	4 },
 				{ GAME_GOTHIC1,				4 },
 				{ GAME_GOTHICSEQUEL,		4 },
@@ -1854,7 +2060,7 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_SEPTEMBERDEMO,		1 },
 				{ GAME_CHRISTMASEDITION,	1 },
 				{ GAME_GOTHIC1,				1 },
 				{ GAME_GOTHICSEQUEL,		1 },
@@ -2189,6 +2395,8 @@ namespace GothicLib
 			int waynetVersion			= 0;
 			std::vector<zCWaypoint*>	waypointList;
 			std::vector<zCWay>			wayList;
+			std::vector<std::string>	oldWaypointList;	// Legacy
+			std::vector<std::string>	oldWayList;			// Legacy
 
 		private:
 

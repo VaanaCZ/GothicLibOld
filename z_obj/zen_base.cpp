@@ -1056,6 +1056,31 @@ ClassDefinition* ClassDefinition::GetClassDef(std::string name)
 					{
 						CLASS_REVISION& currRev = currentClassDef->revisions[j];
 
+						// Temp
+						if (rev.game == GAME_SEPTEMBERDEMO &&
+							(classDef->GetName() == "oCMobDoor" ||
+							classDef->GetName() == "oCMobContainer"))
+						{
+							rev.versionSum = 61440;
+							break;
+						}
+
+						if (rev.game == GAME_SEPTEMBERDEMO &&
+							classDef->GetName() == "zCTrigger")
+						{
+							rev.versionSum = 24960;
+							break;
+						}
+
+						if (rev.game == GAME_SEPTEMBERDEMO &&
+							(classDef->GetName() == "zCEarthquake" ||
+							classDef->GetName() == "zCMessageFilter"))
+						{
+							rev.versionSum = 47105;
+							break;
+						}
+
+
 						if (currRev.game == rev.game ||
 							currRev.game == GAME_ALL)
 						{

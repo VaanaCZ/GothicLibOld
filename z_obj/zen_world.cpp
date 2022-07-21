@@ -193,7 +193,7 @@ bool ZenGin::zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 			case zVOB_TYPE_SPOT:			vob = new zCVobSpot();			break;
 			//case zVOB_TYPE_CAMERA:			vob = new zCVob();				break;
 			case zVOB_TYPE_STARTPOINT:		vob = new zCVobStartpoint();	break;
-			case zVOB_TYPE_WAYPOINT:		vob = new zCVob();				break; // todo
+			case zVOB_TYPE_WAYPOINT:		vob = new zCVobWaypoint();		break;
 			case zVOB_TYPE_MARKER:			vob = new zCVob();				break; // todo
 			case zVOB_TYPE_MOB:				vob = new oCMOB();				break;
 			case zVOB_TYPE_ITEM:			vob = new oCItem();				break;
@@ -203,6 +203,8 @@ bool ZenGin::zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 			}
 
 			inVob = true;
+
+			vob->vobID = vobId;
 
 			parentVob->children.push_back(vob);
 		}
@@ -383,13 +385,26 @@ bool ZenGin::zCVob::Unarchive(zCArchiver* archiver)
 	}
 	else
 	{
-		//if (game <= 0.94k)
-		//{
-		//	archiver->ReadInt(ARC_ARGS(vobID));
-		//}
+		if (game <= GAME_SEPTEMBERDEMO)
+		{
+			archiver->ReadInt(ARC_ARGS(vobID));
+		}
 
 		archiver->ReadString(ARC_ARGS(presetName));
+
+		if (game <= GAME_SEPTEMBERDEMO)
+		{
+			archiver->ReadBool(ARC_ARGS(drawBBox3D));
+		}
+
 		archiver->ReadRawFloat(ARC_ARGSF(bbox3DWS));
+
+		if (game <= GAME_SEPTEMBERDEMO)
+		{
+			archiver->ReadRaw(ARC_ARGSR(trafoRot));
+			archiver->ReadVec3(ARC_ARGS(trafoPos));
+		}
+
 		archiver->ReadRaw(ARC_ARGSR(trafoOSToWSRot));
 		archiver->ReadVec3(ARC_ARGS(trafoOSToWSPos));
 		archiver->ReadString(ARC_ARGS(vobName));
@@ -584,7 +599,11 @@ bool ZenGin::zCCSCamera::Unarchive(zCArchiver* archiver)
 	archiver->ReadString(ARC_ARGS(autoCamFocusVobName));
 	archiver->ReadBool(ARC_ARGS(autoCamPlayerMovable));
 	archiver->ReadBool(ARC_ARGS(autoCamUntriggerOnLastKey));
-	archiver->ReadFloat(ARC_ARGS(autoCamUntriggerOnLastKeyDelay));
+	
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->ReadFloat(ARC_ARGS(autoCamUntriggerOnLastKeyDelay));
+	}
 
 	if (!archiver->IsProps())
 	{
@@ -648,11 +667,21 @@ bool ZenGin::zCCamTrj_KeyFrame::Unarchive(zCArchiver* archiver)
 	archiver->ReadEnum(ARC_ARGSE(motionType));
 	archiver->ReadEnum(ARC_ARGSE(motionTypeFOV));
 	archiver->ReadEnum(ARC_ARGSE(motionTypeRoll));
-	archiver->ReadEnum(ARC_ARGSE(motionTypeTimeScale));
+
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->ReadEnum(ARC_ARGSE(motionTypeTimeScale));
+	}
+
 	archiver->ReadFloat(ARC_ARGS(tension));
 	archiver->ReadFloat(ARC_ARGS(bias));
 	archiver->ReadFloat(ARC_ARGS(continuity));
-	archiver->ReadFloat(ARC_ARGS(timeScale));
+
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->ReadFloat(ARC_ARGS(timeScale));
+	}
+
 	archiver->ReadBool(ARC_ARGS(timeIsFixed));
 
 	if (!archiver->IsProps())
@@ -685,6 +714,26 @@ bool ZenGin::zCCamTrj_KeyFrame::Unarchive(zCArchiver* archiver)
 		zCVobLensFlare
 		zCVobScreenFX
 */
+
+bool ZenGin::zCEarthquake::Archive(zCArchiver* archiver)
+{
+	if (!zCEffect::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::zCEarthquake::Unarchive(zCArchiver* archiver)
+{
+	if (!zCEffect::Unarchive(archiver))
+		return false;
+
+	archiver->ReadFloat(ARC_ARGS(radius));
+	archiver->ReadFloat(ARC_ARGS(timeSec));
+	archiver->ReadVec3(ARC_ARGS(amplitudeCM));
+
+	return true;
+}
 
 bool ZenGin::zCPFXControler::Archive(zCArchiver* archiver)
 {
@@ -729,6 +778,24 @@ bool ZenGin::zCVobAnimate::Unarchive(zCArchiver* archiver)
 	{
 		isRunning = startOn;
 	}
+
+	return true;
+}
+
+bool ZenGin::zCVobLensFlare::Archive(zCArchiver* archiver)
+{
+	if (!zCEffect::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::zCVobLensFlare::Unarchive(zCArchiver* archiver)
+{
+	if (!zCEffect::Unarchive(archiver))
+		return false;
+
+	archiver->ReadString(ARC_ARGS(lensflareFX));
 
 	return true;
 }
@@ -866,7 +933,12 @@ bool ZenGin::oCMOB::Unarchive(zCArchiver* archiver)
 	archiver->ReadInt(ARC_ARGS(damage));
 	archiver->ReadBool(ARC_ARGS(moveable));
 	archiver->ReadBool(ARC_ARGS(takeable));
-	archiver->ReadBool(ARC_ARGS(focusOverride));
+
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->ReadBool(ARC_ARGS(focusOverride));
+	}
+
 	archiver->ReadEnum(ARC_ARGSE(soundMaterial));
 	archiver->ReadString(ARC_ARGS(visualDestroyed));
 	archiver->ReadString(ARC_ARGS(owner));
@@ -945,9 +1017,12 @@ bool ZenGin::oCMobLockable::Unarchive(zCArchiver* archiver)
 	if (!oCMobInter::Unarchive(archiver))
 		return false;
 
-	archiver->ReadBool(ARC_ARGS(locked));
-	archiver->ReadString(ARC_ARGS(keyInstance));
-	archiver->ReadString(ARC_ARGS(pickLockStr));
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->ReadBool(ARC_ARGS(locked));
+		archiver->ReadString(ARC_ARGS(keyInstance));
+		archiver->ReadString(ARC_ARGS(pickLockStr));
+	}
 
 	return true;
 }
@@ -966,6 +1041,13 @@ bool ZenGin::oCMobContainer::Unarchive(zCArchiver* archiver)
 		return false;
 
 	archiver->ReadString(ARC_ARGS(contains));
+
+	if (game <= GAME_SEPTEMBERDEMO)
+	{
+		archiver->ReadBool(ARC_ARGS(locked));
+		archiver->ReadString(ARC_ARGS(keyInstance));
+		archiver->ReadString(ARC_ARGS(pickLockStr));
+	}
 
 	return true;
 }
@@ -1169,6 +1251,25 @@ bool ZenGin::zCTriggerBase::Unarchive(zCArchiver* archiver)
 		return false;
 
 	archiver->ReadString(ARC_ARGS(triggerTarget));
+
+	return true;
+}
+
+bool ZenGin::zCMessageFilter::Archive(zCArchiver* archiver)
+{
+	if (!zCTriggerBase::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::zCMessageFilter::Unarchive(zCArchiver* archiver)
+{
+	if (!zCTriggerBase::Unarchive(archiver))
+		return false;
+
+	archiver->ReadEnum(ARC_ARGSE(onTrigger));
+	archiver->ReadEnum(ARC_ARGSE(onUntrigger));
 
 	return true;
 }
@@ -1788,7 +1889,12 @@ bool ZenGin::zCWayNet::Archive(zCArchiver* archiver)
 
 bool ZenGin::zCWayNet::Unarchive(zCArchiver* archiver)
 {
-	archiver->ReadInt(ARC_ARGS(waynetVersion));
+	waynetVersion = 0;
+
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->ReadInt(ARC_ARGS(waynetVersion));
+	}
 
 	// Waypoints
 	int numWaypoints = 0;
@@ -1796,14 +1902,31 @@ bool ZenGin::zCWayNet::Unarchive(zCArchiver* archiver)
 	
 	if (numWaypoints > 0)
 	{
-		waypointList.resize(numWaypoints);
-
-		for (size_t i = 0; i < numWaypoints; i++)
+		if (waynetVersion == 0)
 		{
-			std::string waypointKey = "waypoint" + std::to_string(i);
-			zCWaypoint* waypoint = archiver->ReadObjectAs<zCWaypoint*>(waypointKey);
+			oldWaypointList.resize(numWaypoints);
 
-			waypointList[i] = waypoint;
+			for (size_t i = 0; i < numWaypoints; i++)
+			{
+				std::string waypointKey = "waypoint" + std::to_string(i);
+				std::string waypoint;
+				archiver->ReadString(waypointKey, waypoint);
+
+				oldWaypointList[i] = waypoint;
+			}
+
+		}
+		else if (waynetVersion == 1)
+		{
+			waypointList.resize(numWaypoints);
+
+			for (size_t i = 0; i < numWaypoints; i++)
+			{
+				std::string waypointKey = "waypoint" + std::to_string(i);
+				zCWaypoint* waypoint = archiver->ReadObjectAs<zCWaypoint*>(waypointKey);
+
+				waypointList[i] = waypoint;
+			}
 		}
 	}
 
@@ -1813,20 +1936,36 @@ bool ZenGin::zCWayNet::Unarchive(zCArchiver* archiver)
 
 	if (numWays > 0)
 	{
-		wayList.resize(numWays);
-
-		for (size_t i = 0; i < numWays; i++)
+		if (waynetVersion == 0)
 		{
-			std::string waylKey = "wayl" + std::to_string(i);
-			zCWaypoint* wayl = archiver->ReadObjectAs<zCWaypoint*>(waylKey);
+			oldWayList.resize(numWays);
 
-			std::string wayrKey = "wayr" + std::to_string(i);
-			zCWaypoint* wayr = archiver->ReadObjectAs<zCWaypoint*>(wayrKey);
+			for (size_t i = 0; i < numWays; i++)
+			{
+				std::string wayKey = "way" + std::to_string(i);
+				std::string way;
+				archiver->ReadString(wayKey, way);
 
-			zCWay way;
-			way.left	= wayl;
-			way.right	= wayr;
-			wayList[i] = way;
+				oldWayList[i] = way;
+			}
+		}
+		else if (waynetVersion == 1)
+		{
+			wayList.resize(numWays);
+
+			for (size_t i = 0; i < numWays; i++)
+			{
+				std::string waylKey = "wayl" + std::to_string(i);
+				zCWaypoint* wayl = archiver->ReadObjectAs<zCWaypoint*>(waylKey);
+
+				std::string wayrKey = "wayr" + std::to_string(i);
+				zCWaypoint* wayr = archiver->ReadObjectAs<zCWaypoint*>(wayrKey);
+
+				zCWay way;
+				way.left = wayl;
+				way.right = wayr;
+				wayList[i] = way;
+			}
 		}
 	}
 
