@@ -315,9 +315,13 @@ bool ZenGin::zCVob::Archive(zCArchiver* archiver)
 
 bool ZenGin::zCVob::Unarchive(zCArchiver* archiver)
 {
-	int	pack;
+	int	pack = 0;
 
-	archiver->ReadInt(ARC_ARGS(pack));
+	// Only 1.06l and up use pack
+	if (game >= GAME_GOTHIC1)
+	{
+		archiver->ReadInt(ARC_ARGS(pack));
+	}
 
 	if (pack)
 	{
@@ -554,10 +558,110 @@ bool ZenGin::zCVob::Load(FileStream* file)
 	zCCSCamera
 */
 
+bool ZenGin::zCCSCamera::Archive(zCArchiver* archiver)
+{
+	if (!zCVob::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::zCCSCamera::Unarchive(zCArchiver* archiver)
+{
+	if (!zCVob::Unarchive(archiver))
+		return false;
+
+	archiver->ReadEnum(ARC_ARGSE(camTrjFOR));
+	archiver->ReadEnum(ARC_ARGSE(targetTrjFOR));
+	archiver->ReadEnum(ARC_ARGSE(loopMode));
+	archiver->ReadEnum(ARC_ARGSE(splLerpMode));
+	archiver->ReadBool(ARC_ARGS(ignoreFORVobRotCam));
+	archiver->ReadBool(ARC_ARGS(ignoreFORVobRotTarget));
+	archiver->ReadBool(ARC_ARGS(adaptToSurroundings));
+	archiver->ReadBool(ARC_ARGS(easeToFirstKey));
+	archiver->ReadBool(ARC_ARGS(easeFromLastKey));
+	archiver->ReadFloat(ARC_ARGS(totalTime));
+	archiver->ReadString(ARC_ARGS(autoCamFocusVobName));
+	archiver->ReadBool(ARC_ARGS(autoCamPlayerMovable));
+	archiver->ReadBool(ARC_ARGS(autoCamUntriggerOnLastKey));
+	archiver->ReadFloat(ARC_ARGS(autoCamUntriggerOnLastKeyDelay));
+
+	if (!archiver->IsProps())
+	{
+		int numPos, numTargets;
+
+		archiver->ReadInt(ARC_ARGS(numPos));
+		archiver->ReadInt(ARC_ARGS(numTargets));
+
+		if (numPos >= 0)
+		{
+			positions.resize(numPos);
+
+			for (size_t i = 0; i < numPos; i++)
+			{
+				positions[i] = archiver->ReadObjectAs<zCCamTrj_KeyFrame*>();
+			}
+		}
+
+		if (numTargets >= 0)
+		{
+			targets.resize(numTargets);
+
+			for (size_t i = 0; i < numTargets; i++)
+			{
+				targets[i] = archiver->ReadObjectAs<zCCamTrj_KeyFrame*>();
+			}
+		}
+	}
+
+	if (archiver->IsSavegame())
+	{
+		archiver->ReadBool(ARC_ARGS(paused));
+		archiver->ReadBool(ARC_ARGS(started));
+		archiver->ReadBool(ARC_ARGS(gotoTimeMode));
+		archiver->ReadFloat(ARC_ARGS(csTime));
+	}
+
+	return true;
+}
 
 /*
 	zCCamTrj_KeyFrame
 */
+
+bool ZenGin::zCCamTrj_KeyFrame::Archive(zCArchiver* archiver)
+{
+	if (!zCVob::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::zCCamTrj_KeyFrame::Unarchive(zCArchiver* archiver)
+{
+	if (!zCVob::Unarchive(archiver))
+		return false;
+
+	archiver->ReadFloat(ARC_ARGS(time));
+	archiver->ReadFloat(ARC_ARGS(angleRollDeg));
+	archiver->ReadFloat(ARC_ARGS(camFOVScale));
+	archiver->ReadEnum(ARC_ARGSE(motionType));
+	archiver->ReadEnum(ARC_ARGSE(motionTypeFOV));
+	archiver->ReadEnum(ARC_ARGSE(motionTypeRoll));
+	archiver->ReadEnum(ARC_ARGSE(motionTypeTimeScale));
+	archiver->ReadFloat(ARC_ARGS(tension));
+	archiver->ReadFloat(ARC_ARGS(bias));
+	archiver->ReadFloat(ARC_ARGS(continuity));
+	archiver->ReadFloat(ARC_ARGS(timeScale));
+	archiver->ReadBool(ARC_ARGS(timeIsFixed));
+
+	if (!archiver->IsProps())
+	{
+		archiver->ReadRaw(ARC_ARGSR(originalPose));
+	}
+
+	return true;
+}
 
 
 /*
@@ -791,6 +895,12 @@ bool ZenGin::oCMobInter::Unarchive(zCArchiver* archiver)
 
 	if (!archiver->IsProps())
 	{
+		if (game <= GAME_CHRISTMASEDITION)
+		{
+			archiver->ReadInt(ARC_ARGS(state));
+			archiver->ReadInt(ARC_ARGS(stateTarget));
+		}
+
 		archiver->ReadInt(ARC_ARGS(stateNum));
 	}
 
@@ -1268,6 +1378,25 @@ bool ZenGin::zCTriggerList::Unarchive(zCArchiver* archiver)
 		archiver->ReadByte(ARC_ARGS(actTarget));
 		archiver->ReadBool(ARC_ARGS(sendOnTrigger));
 	}
+
+	return true;
+}
+
+
+bool ZenGin::oCTriggerScript::Archive(zCArchiver* archiver)
+{
+	if (!zCTrigger::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool ZenGin::oCTriggerScript::Unarchive(zCArchiver* archiver)
+{
+	if (!zCTrigger::Unarchive(archiver))
+		return false;
+
+	archiver->ReadString(ARC_ARGS(scriptFunc));
 
 	return true;
 }

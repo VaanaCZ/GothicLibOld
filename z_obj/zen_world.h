@@ -9,6 +9,7 @@ namespace GothicLib
 	{
 		class zCBspTree;
 		class zCVob;
+		class zCCamTrj_KeyFrame;
 		class zCVisual;
 		class zCAIBase;
 		class zCWayNet;
@@ -381,11 +382,138 @@ namespace GothicLib
 			zCCSCamera
 		*/
 
+		enum zTCamTrj_FOR
+		{
+			zCAMTRJ_KEY_FOR_WORLD,
+			zCAMTRJ_KEY_FOR_OBJECT
+		};
+
+		enum zTCamTrj_LoopMode
+		{
+			zCAMTRJ_LOOPMODE_NONE,
+			zCAMTRJ_LOOPMODE_RESTART,
+			zCAMTRJ_LOOPMODE_PINGPONG
+		};
+
+		enum zTSplLerpMode
+		{
+			zTSPL_LERP_UNDEF,
+			zTSPL_LERP_PATH,
+			zTSPL_LERP_PATH_IGNOREROLL,
+			zTSPL_LERP_PATH_ROT_SAMPLES
+		};
+
+		class zCCSCamera : public zCVob
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	8 },
+				{ GAME_GOTHIC1,				8 },
+				{ GAME_GOTHICSEQUEL,		8 },
+				{ GAME_GOTHIC2,				8 },
+				{ GAME_GOTHIC2ADDON,		8 },
+			};
+
+			ZEN_DECLARE_CLASS(zCCSCamera, zCVob);
+
+			zCCSCamera()			{ }
+			virtual ~zCCSCamera()	{ }
+			
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			zTCamTrj_FOR		camTrjFOR						= zCAMTRJ_KEY_FOR_WORLD;
+			zTCamTrj_FOR		targetTrjFOR					= zCAMTRJ_KEY_FOR_WORLD;
+			zTCamTrj_LoopMode	loopMode						= zCAMTRJ_LOOPMODE_NONE;
+			zTSplLerpMode		splLerpMode						= zTSPL_LERP_PATH;
+			bool				ignoreFORVobRotCam				= false;
+			bool				ignoreFORVobRotTarget			= false;
+			bool				adaptToSurroundings				= true;
+			bool				easeToFirstKey					= false;
+			bool				easeFromLastKey					= false;
+			float				totalTime						= 10.0f;
+			std::string			autoCamFocusVobName;
+			bool				autoCamPlayerMovable			= true;
+			bool				autoCamUntriggerOnLastKey		= true;
+			float				autoCamUntriggerOnLastKeyDelay	= 0.0f;
+			bool				paused							= false;	// Savegame
+			bool				started							= false;	// Savegame
+			bool				gotoTimeMode					= false;	// Savegame
+			float				csTime							= 0.0f;		// Savegame
+
+			std::vector<zCCamTrj_KeyFrame*> positions;
+			std::vector<zCCamTrj_KeyFrame*> targets;
+
+		private:
+
+		};
+
 
 		/*
 			zCCamTrj_KeyFrame
 		*/
 
+		enum zTCamTrj_KeyMotionType
+		{
+			zCAMTRJ_KEY_MOTION_UNDEF,
+			zCAMTRJ_KEY_MOTION_SMOOTH,
+			zCAMTRJ_KEY_MOTION_LINEAR,
+			zCAMTRJ_KEY_MOTION_STEP,
+			zCAMTRJ_KEY_MOTION_SLOW,
+			zCAMTRJ_KEY_MOTION_FAST,
+			zCAMTRJ_KEY_MOTION_CUSTOM
+		};
+
+		class zCCamTrj_KeyFrame : public zCVob
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	7 },
+				{ GAME_GOTHIC1,				7 },
+				{ GAME_GOTHICSEQUEL,		7 },
+				{ GAME_GOTHIC2,				7 },
+				{ GAME_GOTHIC2ADDON,		7 },
+			};
+
+			ZEN_DECLARE_CLASS(zCCamTrj_KeyFrame, zCVob);
+
+			zCCamTrj_KeyFrame()				{ }
+			virtual ~zCCamTrj_KeyFrame()	{ }
+			
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			float					time				= -1.0f;
+			float					angleRollDeg		= 0.0f;
+			float					camFOVScale			= 1.0f;
+			zTCamTrj_KeyMotionType	motionType			= zCAMTRJ_KEY_MOTION_SMOOTH;
+			zTCamTrj_KeyMotionType	motionTypeFOV		= zCAMTRJ_KEY_MOTION_SMOOTH;
+			zTCamTrj_KeyMotionType	motionTypeRoll		= zCAMTRJ_KEY_MOTION_SMOOTH;
+			zTCamTrj_KeyMotionType	motionTypeTimeScale	= zCAMTRJ_KEY_MOTION_SMOOTH;
+			float					tension				= 0.0f;
+			float					bias				= 0.0f;
+			float					continuity			= 0.0f;
+			float					timeScale			= 1.0f;
+			bool					timeIsFixed			= false;
+			zMAT4					originalPose		= { };							// Savegame
+
+		private:
+
+		};
 
 		/*
 			oCDummyVobGenerator
@@ -672,6 +800,8 @@ namespace GothicLib
 				Properties
 			*/
 
+			int			state			= 0;	// Legacy
+			int			stateTarget		= 0;	// Legacy
 			int			stateNum		= 0;
 			std::string	triggerTarget;
 			std::string	useWithItem;
@@ -1228,6 +1358,38 @@ namespace GothicLib
 
 		};
 
+		class oCTriggerScript : public zCTrigger
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2ADDON,		0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCTriggerScript, zCTrigger);
+
+			oCTriggerScript()			{ }
+			virtual ~oCTriggerScript()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			std::string scriptFunc;
+
+		private:
+
+		};
+
 		/*
 			zCVobLevelCompo
 		*/
@@ -1766,6 +1928,30 @@ namespace GothicLib
 
 			zCAIBase()			{ }
 			virtual ~zCAIBase()	{ }
+
+		private:
+
+		};
+
+		class zCAICamera : public zCAIBase
+		{
+		public:
+			
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2ADDON,		0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCAICamera, zCAIBase);
+
+			zCAICamera()			{ }
+			virtual ~zCAICamera()	{ }
 
 		private:
 

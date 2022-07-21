@@ -23,17 +23,26 @@ int main(int argc, char* argv[])
 {
 	Log::SetCallback(&logfunc);
 	
+	//ZenGin::FileSystem fs;
+	//if (!fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic Original"))
+	//	return 1;
+	//FileStream* f = fs.OpenFile("WORLD.SAV", true);
+	////FileStream* f = new FileStream();
+	////f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\SURFACE_UNCOMPILED.ZEN", 'r');
+	//
+	//ZenGin::oCWorld world;
+	//world.game = ZenGin::GAME_GOTHIC1;
+	//world.LoadWorld(f);
+	
 	ZenGin::FileSystem fs;
-	if (!fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic Original"))
+	if (!fs.InitializeDirectory(L"D:\\Gothic\\gothic1-1.01e_demo"))
 		return 1;
-	FileStream* f = fs.OpenFile("WORLD.SAV", true);
-	//FileStream* f = new FileStream();
-	//f->Open("D:\\Users\\vaana\\source\\repos\\pConvert\\res\\SURFACE_UNCOMPILED.ZEN", 'r');
-	
+
+	FileStream* f = fs.OpenFile("OldMine_Demo_2001.zen", true);
+
 	ZenGin::oCWorld world;
-	world.game = ZenGin::GAME_GOTHIC1;
+	world.game = ZenGin::GAME_CHRISTMASEDITION;
 	world.LoadWorld(f);
-	
 
 
 	//FileStream* f = new FileStream();

@@ -279,6 +279,8 @@ namespace GothicLib
 			bool			props		= false;
 
 			std::vector<uint64_t> asciiChunksPositions;
+			std::vector<uint64_t> binaryChunksPositions;
+			std::vector<uint64_t> binaryChunksSizes;
 
 			std::vector<zCObject*>	objectList;
 

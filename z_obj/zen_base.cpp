@@ -779,7 +779,7 @@ bool zCArchiver::ReadChunkEnd()
 	if (error)
 	{
 		LOG_ERROR("An error occured while reading chunk.");
-		return false;
+		error = false;
 	}
 
 	if (type == ARCHIVER_TYPE_ASCII ||
