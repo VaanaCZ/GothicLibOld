@@ -534,6 +534,8 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 			}
 			else
 			{
+				LOG_ERROR("The read class does not match the expected class, expected " +
+					existingObject->GetClassDef()->GetName() + ", got " + name +" instead!");
 				return nullptr;
 			}
 		}
@@ -1077,6 +1079,16 @@ ClassDefinition* ClassDefinition::GetClassDef(std::string name)
 							classDef->GetName() == "zCMessageFilter"))
 						{
 							rev.versionSum = 47105;
+							break;
+						}
+
+						if (rev.game == GAME_DEMO5 &&
+							(classDef->GetName() == "oCNpc" || classDef->GetName() == "oCMobInter" ||
+							classDef->GetName() == "oCMobContainer" || classDef->GetName() == "oCMobWheel" ||
+								classDef->GetName() == "oCMobSwitch" || classDef->GetName() == "oCMOB" ||
+								classDef->GetName() == "oCMobBed"))
+						{
+							rev.versionSum = 36865;
 							break;
 						}
 

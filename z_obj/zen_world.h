@@ -867,9 +867,10 @@ namespace GothicLib
 				Properties
 			*/
 
-			int			state			= 0;	// Legacy
-			int			stateTarget		= 0;	// Legacy
+			int			state			= 0;		// Legacy
+			int			stateTarget		= 0;		// Legacy
 			int			stateNum		= 0;
+			bool		interact		= false;	// Legacy
 			std::string	triggerTarget;
 			std::string	useWithItem;
 			std::string	conditionFunc;
@@ -1285,6 +1286,13 @@ namespace GothicLib
 
 		};
 
+		enum zTRepeatTrigger
+		{
+			RT_NONE,
+			RT_REPEAT,
+			RT_REPEAT_TOUCHING
+		};
+
 		class zCTrigger : public zCTriggerBase
 		{
 		public:
@@ -1329,15 +1337,17 @@ namespace GothicLib
 				uint8_t	sendUntrigger : 1;
 			} flags;
 
-			std::string	respondToVobName;
-			int			numCanBeActivated;
-			float		retriggerWaitSec	= 0.0f;
-			float		damageThreshold		= 0.0f;
-			float		fireDelaySec		= 0.0f;
-			bool		sendUntrigger		= false;	// Props
-			float		nextTimeTriggerable = 0.0f;		// Savegame
-			zCVob*		savedOtherVobPtr	= nullptr;	// Savegame
-			int			countCanBeActivated = 0;		// Savegame	
+			std::string		respondToVobName;
+			int				numTriggerToActivate	= 0;		// Legacy
+			int				numCanBeActivated		= 0;
+			float			retriggerWaitSec		= 0.0f;
+			float			damageThreshold			= 0.0f;
+			float			fireDelaySec			= 0.0f;
+			zTRepeatTrigger	repeatTrigger			= RT_NONE;	// Legacy
+			bool			sendUntrigger			= false;	// Props
+			float			nextTimeTriggerable		= 0.0f;		// Savegame
+			zCVob*			savedOtherVobPtr		= nullptr;	// Savegame
+			int				countCanBeActivated		= 0;		// Savegame	
 
 		private:
 
@@ -1438,6 +1448,7 @@ namespace GothicLib
 			float						stayOpenTimeSec		= 2.0f;
 			bool						moverLocked			= false;
 			bool						autoLinkEnabled		= false;
+			std::string					vobChainName;								// Legacy
 			float						moveSpeed			= 0.3f;
 			zTPosLerpType				posLerpType			= PL_CURVE;
 			zTSpeedType					speedType			= ST_SLOW_START_END;
@@ -1656,6 +1667,7 @@ namespace GothicLib
 			float				spotConeAngle		= 0;
 			bool				lightStatic			= 0;
 			zTVobLightQuality	lightQuality		= zVOBLIGHT_QUAL_FASTEST;
+			int					lensflareFXNo		= -1;						// Legacy
 			std::string			lensflareFX;
 			bool				turnedOn			= true;
 			std::string			rangeAniScale;
@@ -2262,6 +2274,30 @@ namespace GothicLib
 
 			oCAIHuman()				{ }
 			virtual ~oCAIHuman()	{ }
+
+		private:
+
+		};
+
+		class oCAIHuman_Stand : public zCObject
+		{
+		public:
+			
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+				{ GAME_SEPTEMBERDEMO,		0 },
+				{ GAME_CHRISTMASEDITION,	0 },
+				{ GAME_GOTHIC1,				0 },
+				{ GAME_GOTHICSEQUEL,		0 },
+				{ GAME_GOTHIC2,				0 },
+				{ GAME_GOTHIC2ADDON,		0 },
+			};
+
+			ZEN_DECLARE_CLASS(oCAIHuman_Stand, zCObject);
+
+			oCAIHuman_Stand()			{ }
+			virtual ~oCAIHuman_Stand()	{ }
 
 		private:
 

@@ -34,17 +34,28 @@ int main(int argc, char* argv[])
 	//world.game = ZenGin::GAME_GOTHIC1;
 	//world.LoadWorld(f);
 	
+	//ZenGin::FileSystem fs;
+	//if (!fs.InitializeDirectory(L"D:\\Gothic\\gothic1-1.01e_demo"))
+	//	return 1;
+	//
+	////FileStream* f = fs.OpenFile("OldMine_Demo_2001.zen", true);
+	//FileStream* f = fs.OpenFile("WORLD.ZEN", true);
+	//
+	//
+	//ZenGin::oCWorld world;
+	////world.game = ZenGin::GAME_CHRISTMASEDITION;
+	//world.game = ZenGin::GAME_SEPTEMBERDEMO;
+	//world.LoadWorld(f);
+
+
 	ZenGin::FileSystem fs;
-	if (!fs.InitializeDirectory(L"D:\\Gothic\\gothic1-1.01e_demo"))
+	if (!fs.InitializeDirectory(L"D:\\Gothic\\Gothic_demo5"))
 		return 1;
 
-	//FileStream* f = fs.OpenFile("OldMine_Demo_2001.zen", true);
 	FileStream* f = fs.OpenFile("WORLD.ZEN", true);
 
-	
-	ZenGin::oCWorld world;
-	//world.game = ZenGin::GAME_CHRISTMASEDITION;
-	world.game = ZenGin::GAME_SEPTEMBERDEMO;
+	ZenGin::zCWorld world;
+	world.game = ZenGin::GAME_DEMO5;
 	world.LoadWorld(f);
 
 

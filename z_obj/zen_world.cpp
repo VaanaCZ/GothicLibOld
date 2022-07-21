@@ -8,14 +8,14 @@ using namespace GothicLib;
 
 bool GothicLib::ZenGin::zCWorld::LoadWorld(FileStream* file)
 {
-	if (game == GAME_G1_056C)
+	if (game == GAME_DEMO3)
 	{
 		if (!LoadWorldFile(file))
 		{
 			return false;
 		}
 	}
-	else if (game >= GAME_G1_064B)
+	else if (game >= GAME_DEMO5)
 	{
 		zCArchiver archiver;
 		archiver.game = game;
@@ -44,8 +44,9 @@ bool ZenGin::zCWorld::Archive(zCArchiver* archiver)
 bool ZenGin::zCWorld::Unarchive(zCArchiver* archiver)
 {
 	// Loop through chunks until the end
-	
-	while (true)
+	bool loop = true;
+
+	while (loop)
 	{
 		std::string objectName;
 
@@ -84,7 +85,7 @@ bool ZenGin::zCWorld::Unarchive(zCArchiver* archiver)
 		}
 		else if (objectName == "EndMarker")
 		{
-			break;
+			loop = false;
 		}
 		else
 		{
@@ -93,6 +94,17 @@ bool ZenGin::zCWorld::Unarchive(zCArchiver* archiver)
 		}
 
 		archiver->ReadChunkEnd();
+	}
+
+	if (!wayNet && game <= GAME_DEMO5)
+	{
+		wayNet = archiver->ReadObjectAs<zCWayNet*>();
+		wayNet->game = game;
+
+		if (!wayNet)
+		{
+			return false;
+		}
 	}
 
 	return true;
@@ -422,7 +434,11 @@ bool ZenGin::zCVob::Unarchive(zCArchiver* archiver)
 		archiver->ReadBool(ARC_ARGS(cdStatic));
 		archiver->ReadBool(ARC_ARGS(cdDyn));
 		archiver->ReadBool(ARC_ARGS(staticVob));
-		archiver->ReadEnum(ARC_ARGSE(dynShadow));
+
+		if (game >= GAME_SEPTEMBERDEMO)
+		{
+			archiver->ReadEnum(ARC_ARGSE(dynShadow));
+		}
 
 		//if (version == 52224)
 		//{
@@ -930,7 +946,12 @@ bool ZenGin::oCMOB::Unarchive(zCArchiver* archiver)
 
 	archiver->ReadString(ARC_ARGS(focusName));
 	archiver->ReadInt(ARC_ARGS(hitpoints));
-	archiver->ReadInt(ARC_ARGS(damage));
+
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->ReadInt(ARC_ARGS(damage));
+	}
+
 	archiver->ReadBool(ARC_ARGS(moveable));
 	archiver->ReadBool(ARC_ARGS(takeable));
 
@@ -974,13 +995,22 @@ bool ZenGin::oCMobInter::Unarchive(zCArchiver* archiver)
 		}
 
 		archiver->ReadInt(ARC_ARGS(stateNum));
+
+		if (game <= GAME_DEMO5)
+		{
+			archiver->ReadBool(ARC_ARGS(interact));
+		}
 	}
 
 	archiver->ReadString(ARC_ARGS(triggerTarget));
-	archiver->ReadString(ARC_ARGS(useWithItem));
-	archiver->ReadString(ARC_ARGS(conditionFunc));
-	archiver->ReadString(ARC_ARGS(onStateFunc));
-	archiver->ReadBool(ARC_ARGS(rewind));
+
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->ReadString(ARC_ARGS(useWithItem));
+		archiver->ReadString(ARC_ARGS(conditionFunc));
+		archiver->ReadString(ARC_ARGS(onStateFunc));
+		archiver->ReadBool(ARC_ARGS(rewind));
+	}
 
 	return true;
 }
@@ -1046,7 +1076,11 @@ bool ZenGin::oCMobContainer::Unarchive(zCArchiver* archiver)
 	{
 		archiver->ReadBool(ARC_ARGS(locked));
 		archiver->ReadString(ARC_ARGS(keyInstance));
-		archiver->ReadString(ARC_ARGS(pickLockStr));
+
+		if (game == GAME_SEPTEMBERDEMO)
+		{
+			archiver->ReadString(ARC_ARGS(pickLockStr));
+		}
 	}
 
 	return true;
@@ -1250,7 +1284,10 @@ bool ZenGin::zCTriggerBase::Unarchive(zCArchiver* archiver)
 	if (!zCVob::Unarchive(archiver))
 		return false;
 
-	archiver->ReadString(ARC_ARGS(triggerTarget));
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->ReadString(ARC_ARGS(triggerTarget));
+	}
 
 	return true;
 }
@@ -1289,7 +1326,11 @@ bool ZenGin::zCTrigger::Unarchive(zCArchiver* archiver)
 
 	if (!archiver->IsProps())
 	{
-		archiver->ReadRaw(ARC_ARGSR(flags));
+		if (game >= GAME_SEPTEMBERDEMO)
+		{
+			archiver->ReadRaw(ARC_ARGSR(flags));
+		}
+
 		archiver->ReadRaw(ARC_ARGSR(filterFlags));
 	}
 	else
@@ -1324,10 +1365,27 @@ bool ZenGin::zCTrigger::Unarchive(zCArchiver* archiver)
 	}
 
 	archiver->ReadString(ARC_ARGS(respondToVobName));
+
+	if (game <= GAME_DEMO5)
+	{
+		archiver->ReadInt(ARC_ARGS(numTriggerToActivate));
+	}
+
 	archiver->ReadInt(ARC_ARGS(numCanBeActivated));
 	archiver->ReadFloat(ARC_ARGS(retriggerWaitSec));
 	archiver->ReadFloat(ARC_ARGS(damageThreshold));
+
+	if (game <= GAME_DEMO5)
+	{
+		archiver->ReadString(ARC_ARGS(triggerTarget));
+	}
+
 	archiver->ReadFloat(ARC_ARGS(fireDelaySec));
+
+	if (game <= GAME_DEMO5)
+	{
+		archiver->ReadEnum(ARC_ARGSE(repeatTrigger));
+	}
 
 	if (archiver->IsProps())
 	{
@@ -1369,8 +1427,18 @@ bool ZenGin::zCMover::Unarchive(zCArchiver* archiver)
 	archiver->ReadFloat(ARC_ARGS(touchBlockerDamage));
 	archiver->ReadFloat(ARC_ARGS(stayOpenTimeSec));
 	archiver->ReadBool(ARC_ARGS(moverLocked));
-	archiver->ReadBool(ARC_ARGS(autoLinkEnabled));
+	
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->ReadBool(ARC_ARGS(autoLinkEnabled));
+	}
+
 	// todo: G2 - autoRotate
+
+	if (game <= GAME_DEMO5)
+	{
+		archiver->ReadString(ARC_ARGS(vobChainName));
+	}
 
 	short numKeyframes;
 	archiver->ReadWord(ARC_ARGS(numKeyframes));
@@ -1526,17 +1594,36 @@ bool ZenGin::zCVobLight::Unarchive(zCArchiver* archiver)
 	archiver->ReadString(ARC_ARGS(lightPresetInUse));
 
 	// start of zCVobLightData::Unarchive
-	archiver->ReadEnum(ARC_ARGSE(lightType));
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->ReadEnum(ARC_ARGSE(lightType));
+	}
+
 	archiver->ReadFloat(ARC_ARGS(range));
 	archiver->ReadColor(ARC_ARGS(color));
-	archiver->ReadFloat(ARC_ARGS(spotConeAngle));
+
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->ReadFloat(ARC_ARGS(spotConeAngle));
+	}
+
 	archiver->ReadBool(ARC_ARGS(lightStatic));
 
-	if (archiver->IsProps() ||  !lightStatic)
+	if (archiver->IsProps() || !lightStatic)
 	{
 		archiver->ReadEnum(ARC_ARGSE(lightQuality));
-		archiver->ReadString(ARC_ARGS(lensflareFX));
-		archiver->ReadBool(ARC_ARGS(turnedOn));
+
+		if (game <= GAME_DEMO5)
+		{
+			archiver->ReadInt(ARC_ARGS(lensflareFXNo));
+		}
+
+		if (game >= GAME_SEPTEMBERDEMO)
+		{
+			archiver->ReadString(ARC_ARGS(lensflareFX));
+			archiver->ReadBool(ARC_ARGS(turnedOn));
+		}
+
 		archiver->ReadString(ARC_ARGS(rangeAniScale));
 		archiver->ReadFloat(ARC_ARGS(rangeAniFPS));
 		archiver->ReadBool(ARC_ARGS(rangeAniSmooth));
@@ -1689,16 +1776,26 @@ bool ZenGin::zCVobSound::Unarchive(zCArchiver* archiver)
 	if (!zCVob::Unarchive(archiver))
 		return false;
 
+	if (game <= GAME_DEMO5)
+	{
+		archiver->ReadFloat(ARC_ARGS(sndRadius));
+	}
+
 	archiver->ReadFloat(ARC_ARGS(sndVolume));
 	archiver->ReadEnum(ARC_ARGSE(sndMode));
 	archiver->ReadFloat(ARC_ARGS(sndRandDelay));
 	archiver->ReadFloat(ARC_ARGS(sndRandDelayVar));
 	archiver->ReadBool(ARC_ARGS(sndStartOn));
-	archiver->ReadBool(ARC_ARGS(sndAmbient3D));
-	archiver->ReadBool(ARC_ARGS(sndObstruction));
-	archiver->ReadFloat(ARC_ARGS(sndConeAngle));
-	archiver->ReadEnum(ARC_ARGSE(sndVolType));
-	archiver->ReadFloat(ARC_ARGS(sndRadius));
+
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->ReadBool(ARC_ARGS(sndAmbient3D));
+		archiver->ReadBool(ARC_ARGS(sndObstruction));
+		archiver->ReadFloat(ARC_ARGS(sndConeAngle));
+		archiver->ReadEnum(ARC_ARGSE(sndVolType));
+		archiver->ReadFloat(ARC_ARGS(sndRadius));
+	}
+
 	archiver->ReadString(ARC_ARGS(sndName));
 
 	if (archiver->IsSavegame())
@@ -1900,7 +1997,7 @@ bool ZenGin::zCWayNet::Unarchive(zCArchiver* archiver)
 	int numWaypoints = 0;
 	archiver->ReadInt(ARC_ARGS(numWaypoints));
 	
-	if (numWaypoints > 0)
+	if (numWaypoints > 0 && game >= GAME_SEPTEMBERDEMO)
 	{
 		if (waynetVersion == 0)
 		{
