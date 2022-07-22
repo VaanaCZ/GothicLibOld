@@ -4,14 +4,14 @@
 A set of libraries intended for reading and writing data in the native formats of Piranha Bytes games.
 
 **Table of contents** 
-1. [ZenGin](#zengin)
-1.1. [Description](#zen_desc)
-1.2. [Status](#zen_desc)
-1.3. [Usage](#zen_usage)
-1.4. [File structure](#zen_structure)
-2. [Genome Engine](#genome)
-3. [CodeCreatures](#codecreatures)
-4. [Space&Time](#space)
+1. [ZenGin](#zengin)  
+1.1. [Description](#zen_desc)  
+1.2. [Status](#zen_desc)  
+1.3. [Usage](#zen_usage)  
+1.4. [File structure](#zen_structure)  
+2. [Genome Engine](#genome)  
+3. [CodeCreatures](#codecreatures)  
+4. [Space&Time](#space)  
 
 <a name="zengin"></a>
 ## 1.ZenGin (Gothic + Gothic II) | 1996-2003
