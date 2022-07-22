@@ -43,4 +43,12 @@
 
 #endif // GOTHICLIB_ZENGIN
 
+// Include Genome
+#ifdef GOTHICLIB_GENOME
+
+#include "ge_base.h"
+#include "ge_world.h"
+
+#endif // GOTHICLIB_GENOME
+
 #endif // !GOTHICLIB_DISABLE

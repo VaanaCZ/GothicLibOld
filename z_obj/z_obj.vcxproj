@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ge_world.cpp" />
     <ClCompile Include="ge_base.cpp" />
     <ClCompile Include="ge_filesystem.cpp" />
     <ClCompile Include="gothiclib_base.cpp" />
@@ -153,6 +154,7 @@
     <ClCompile Include="zen_world.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ge_world.h" />
     <ClInclude Include="ge_base.h" />
     <ClInclude Include="ge_filesystem.h" />
     <ClInclude Include="gothiclib.h" />

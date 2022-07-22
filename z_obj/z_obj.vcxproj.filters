@@ -39,6 +39,9 @@
     <ClCompile Include="zen_visual.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ge_world.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="zen_vdfs.h">
@@ -66,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="zen_visual.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ge_world.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

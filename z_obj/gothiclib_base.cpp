@@ -34,19 +34,6 @@ void Log::Message(MESSAGE_LEVEL level, std::string message)
 		callback(level, message);
 }
 
-/*void GothicLib::ClassManager::AddClassDef(ClassDefinition* definition)
-{
-	classes[definition->name] = definition;
-}
-
-ClassDefinition* ClassManager::GetClassDef(std::string name)
-{
-	if (classes.find(name) != classes.end())
-		return classes[name];
-
-	return nullptr;
-}*/
-
 //
 // bool Open(std::string filename, char openMode)
 // 
@@ -90,7 +77,10 @@ bool FileStream::Open(std::wstring filename, char openMode)
 		iFile.open(iPath, std::ios::binary);
 
 		if (!iFile.is_open())
+		{
+			error = true;
 			return false;
+		}
 
 		iFile.seekg(0, std::ios::end);
 		iTotalSize = iFile.tellg();
@@ -111,13 +101,18 @@ bool FileStream::Open(std::wstring filename, char openMode)
 		}
 
 		if (!oFile.is_open())
+		{
+			error = true;
 			return false;
-
+		}
 	}
 	else
 	{
+		error = true;
 		return false;
 	}
+
+	return OnOpen();
 }
 
 //
@@ -167,9 +162,9 @@ bool FileStream::Open(char* buffer, size_t size, char openMode, bool realloc)
 		}
 
 		iTotalSize = size;
-
-		return true;
 	}
+
+	return OnOpen();
 }
 
 //
@@ -201,7 +196,7 @@ bool FileStream::Open(FileStream* stream, uint64_t offset, uint64_t size)
 	iSubOffset = offset;
 	iTotalSize = size;
 
-	return true;
+	return OnOpen();
 }
 
 //
@@ -246,10 +241,16 @@ void FileStream::Close()
 //
 bool FileStream::Read(void* readBuffer, uint64_t readSize)
 {
+	if (error)
+	{
+		return false;
+	}
+
 	if (mode == STREAM_MODE_READ)
 	{
 		if (iPosition + readSize > iTotalSize)
 		{
+			error = true;
 			return false;
 		}
 
@@ -280,7 +281,10 @@ bool FileStream::Read(void* readBuffer, uint64_t readSize)
 			iSubStream->Seek(iSubOffset + iPosition);
 
 			if (!iSubStream->Read(readBuffer, readSize))
+			{
+				error = true;
 				return false;
+			}
 		}
 
 		iPosition += readSize;
@@ -289,8 +293,36 @@ bool FileStream::Read(void* readBuffer, uint64_t readSize)
 	return true;
 }
 
+bool GothicLib::FileStream::ReadString(std::string& str)
+{
+	if (error)
+	{
+		return false;
+	}
+
+	uint16_t length;
+	if (!Read(&length, sizeof(length)))
+		return false;
+
+	if (length > 0)
+	{
+		char* buff = new char[length];
+		if (!Read(&buff, length))
+			return false;
+
+		str = std::string(buff, length);
+	}
+
+	return true;
+}
+
 bool FileStream::ReadNullString(std::string& str)
 {
+	if (error)
+	{
+		return false;
+	}
+
 	// Slow, but good enough.
 	char c;
 	bool result = false;
@@ -326,6 +358,11 @@ bool FileStream::ReadNullString(std::string& str)
 //
 bool FileStream::ReadLine(std::string& line)
 {
+	if (error)
+	{
+		return false;
+	}
+
 	// Slow, but good enough.
 	// Doesn't read the last line if it's empty
 	// (because I cannot be bothered ¯\_(ツ)_/¯)

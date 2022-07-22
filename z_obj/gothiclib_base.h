@@ -46,115 +46,20 @@ namespace GothicLib
 		static inline LogFunc callback = nullptr;
 
 	};
-
-//	//
-//	// Object reflection
-//	//
-//	
-//	class ClassDefinition;
-//
-//	/*
-//		Manager
-//	*/
-//
-//	class ClassManager
-//	{
-//	public:
-//
-//		ClassManager()
-//		{
-//			size_t a = 0;
-//		}
-//		~ClassManager() {}
-//
-//		ClassManager(const ClassManager&) = delete;
-//		ClassManager& operator=(const ClassManager&) = delete;
-//
-//		void AddClassDef(ClassDefinition*);
-//		ClassDefinition* GetClassDef(std::string);
-//
-//	private:
-//
-//		std::unordered_map<std::string, ClassDefinition*> classes;
-//
-//	};
-//
-//	/*
-//		Macros and templates
-//	*/
-//
-//#define DEFINE_CLASS(C, B)													\
-//	static C* CreateInstance() { return new C(); }							\
-//	inline static ClassDefinition* classDef =								\
-//		new ClassDefinition(classManager, #C, #B, &C::CreateInstance);		\
-//	inline static ClassDefinition* GetStaticClassDef() { return classDef; }	\
-//	virtual ClassDefinition* GetClassDef() { return classDef; }
-//
-//
-//#define DEFINE_PROPERTY(T, N)												\
-//	T N;																	\
-//	inline static PropertyDefinition* classDef ##N = 						\
-//		new PropertyDefinition(classDef, #N, #T, ((T*)nullptr)->N &C::CreateInstance);
-//
-//
-//	class ClassDefinition;
-//
-//	class PropertyDefinition
-//	{
-//	public:
-//
-//		PropertyDefinition(ClassDefinition* classDefinition, std::string _name, std::string _type, size_t _offset, size_t _size)
-//		{
-//			name	= _name;
-//			type	= _type;
-//			offset	= _offset;
-//			size	= _size;
-//
-//			//classDefinition->AddClassDef(this);
-//		}
-//
-//		std::string	name;
-//		std::string	type;
-//		size_t		offset;
-//		size_t		size;
-//
-//	};
-//
-//	class ClassDefinition
-//	{
-//	public:
-//
-//		ClassDefinition(ClassManager*& classManager, std::string _name, std::string _baseName, void* _createFunc)
-//		{
-//			name		= _name;
-//			baseName	= _baseName;
-//			createFunc	= _createFunc;
-//
-//			if (!classManager)
-//				classManager = new ClassManager();
-//
-//			classManager->AddClassDef(this);
-//		}
-//
-//		std::string	name;
-//		std::string	baseName;
-//		void*		createFunc;
-//
-//		std::vector<PropertyDefinition*> properties;
-//
-//	};	
 	
 	//
 	// File stream abstraction which allows reading
 	// both from a file and a memory buffer.
 	//
 
+#define FILE_ARGS(V)		&(V), sizeof(V)
+
 	class FileStream
 	{
 	public:
 
-		FileStream()	{ iSubThreadId = std::this_thread::get_id(); }
-		~FileStream()	{ Close(); }
+		FileStream()			{ iSubThreadId = std::this_thread::get_id(); }
+		virtual ~FileStream()	{ Close(); }
 
 		FileStream(const FileStream&) = delete;
 		FileStream& operator=(const FileStream&) = delete;
@@ -163,28 +68,37 @@ namespace GothicLib
 			Stream creation / destruction
 		*/
 
-		bool		Open(std::string, char);				// File
-		bool		Open(std::wstring, char);				// File
-		bool		Open(char*, size_t, char, bool = true);	// Buffer
-		bool		Open(FileStream*, uint64_t, uint64_t);	// Substream
+		bool			Open(std::string, char);				// File
+		bool			Open(std::wstring, char);				// File
+		bool			Open(char*, size_t, char, bool = true);	// Buffer
+		bool			Open(FileStream*, uint64_t, uint64_t);	// Substream
 
-		void		Close();
+		void			Close();
 
 		/*
 			Basic stream operations	
 		*/
 
-		bool		Read(void*, uint64_t);
-		bool		ReadNullString(std::string&);
-		bool		ReadLine(std::string&);
+		bool			Read(void*, uint64_t);
+		virtual bool	ReadString(std::string&);
+		bool			ReadNullString(std::string&);
+		bool			ReadLine(std::string&);
 
-		void		Seek(uint64_t pos);
-		uint64_t	Tell();
-		uint64_t	TotalSize();
+		void			Seek(uint64_t pos);
+		uint64_t		Tell();
+		uint64_t		TotalSize();
+
+		inline bool		Error()		{ return error; }
+
+	protected:
+
+		virtual bool	OnOpen()	{ return true; }
+
+		bool			error = false;
 
 	private:
 
-		void		ForkSubStream(FileStream*, uint64_t);
+		void			ForkSubStream(FileStream*, uint64_t);
 
 		enum STREAM_MODE
 		{

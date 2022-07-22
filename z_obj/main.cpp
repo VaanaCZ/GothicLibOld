@@ -22,6 +22,17 @@ using namespace GothicLib;
 int main(int argc, char* argv[])
 {
 	Log::SetCallback(&logfunc);
+
+
+	Genome::eCArchiveFile* f = new Genome::eCArchiveFile();
+	f->Open("D:\\Temp\\R1_DATA\\projects\\Projects.prj", 'r');
+
+	Genome::gCProject project;
+	project.Load(f);
+
+
+	return 0;
+
 	
 	//ZenGin::FileSystem fs;
 	//if (!fs.InitializeDirectory(L"D:\\SteamLibrary\\steamapps\\common\\Gothic Original"))
@@ -59,15 +70,15 @@ int main(int argc, char* argv[])
 	//world.LoadWorld(f);
 
 
-	ZenGin::FileSystem fs;
-	if (!fs.InitializeDirectory(L"D:\\Gothic\\Gothic_demo3"))
-		return 1;
-	
-	FileStream* f = fs.OpenFile("surface_test.pwf", true);
-	
-	ZenGin::zCWorld world;
-	world.game = ZenGin::GAME_DEMO3;
-	world.LoadWorld(f);
+	//ZenGin::FileSystem fs;
+	//if (!fs.InitializeDirectory(L"D:\\Gothic\\Gothic_demo3"))
+	//	return 1;
+	//
+	//FileStream* f = fs.OpenFile("surface_test.pwf", true);
+	//
+	//ZenGin::zCWorld world;
+	//world.game = ZenGin::GAME_DEMO3;
+	//world.LoadWorld(f);
 
 
 	//FileStream* f = new FileStream();

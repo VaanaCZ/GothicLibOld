@@ -534,8 +534,8 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 			}
 			else
 			{
-				LOG_ERROR("The read class does not match the expected class, expected " +
-					existingObject->GetClassDef()->GetName() + ", got " + name +" instead!");
+				LOG_ERROR("Read class does not match existing object. Expected \"" +
+					existingObject->GetClassDef()->GetName() + "\", found \"" + name + "\" instead!");
 				return nullptr;
 			}
 		}
@@ -550,9 +550,9 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 
 			ClassDefinition* classDef = ClassDefinition::GetClassDef(truncClassName);
 
-			if (classDef == nullptr)
+			if (!classDef)
 			{
-				LOG_ERROR("Class " + className + " is not supported!");
+				LOG_ERROR("Class \"" + className + "\" is not supported!");
 				return nullptr;
 			}
 
@@ -1042,6 +1042,23 @@ ClassDefinition* ClassDefinition::GetClassDef(std::string name)
 	if (classList->find(name) != classList->end())
 	{
 		ClassDefinition* classDef = (*classList)[name];
+
+		if (!classDef->baseDef)
+		{
+			ClassDefinition* currClassDef = classDef;
+
+			while (true)
+			{
+				if (currClassDef->GetBase().empty() ||
+					currClassDef->GetBaseDef())
+				{
+					break;
+				}
+
+				currClassDef->baseDef = (*classList)[currClassDef->base];
+				currClassDef = currClassDef->baseDef;
+			}
+		}
 
 		if (classDef->revisionCount != 0 &&
 			!classDef->isRevisionsListInit)

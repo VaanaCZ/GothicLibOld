@@ -327,21 +327,23 @@ namespace GothicLib
 			ClassDefinition(std::string, std::string, zCObject*(*)(), CLASS_REVISION*, size_t);
 			~ClassDefinition();
 
-			inline std::string	GetName()			{ return name; };
-			inline std::string	GetBase()			{ return base; };
-			inline bool			IsAbstract()		{ return createFunc == nullptr; };
-			inline zCObject*	CreateInstance()	{ return createFunc(); };
-			uint16_t			GetVersionSum(GAME);
+			inline std::string		GetName()			{ return name; };
+			inline std::string		GetBase()			{ return base; };
+			inline ClassDefinition*	GetBaseDef()		{ return baseDef; };
+			inline bool				IsAbstract()		{ return createFunc == nullptr; };
+			inline zCObject*		CreateInstance()	{ return createFunc(); };
+			uint16_t				GetVersionSum(GAME);
 
 			static ClassDefinition* GetClassDef(std::string);
 
 		private:
 
-			std::string		name;
-			std::string		base;
-			zCObject*		(*createFunc)();
-			CLASS_REVISION*	revisions;
-			size_t			revisionCount;
+			std::string			name;
+			std::string			base;
+			ClassDefinition*	baseDef = nullptr;
+			zCObject*			(*createFunc)();
+			CLASS_REVISION*		revisions;
+			size_t				revisionCount;
 
 			bool isRevisionsListInit = false;
 
