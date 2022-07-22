@@ -34,18 +34,21 @@ A set of libraries intended for reading and writing data in the native formats o
 <table>
 	<tr>
 		<th></th>
-		<th colspan=2>Loading</th>
-		<th colspan=2>Saving</th>
+		<th colspan=3>Loading</th>
+		<th colspan=3>Saving</th>
 	</tr>
 	<tr>
 		<th></th>
 		<th>Uncompiled</th>
 		<th>Compiled</th>
+		<th>Savegame</th>
 		<th>Uncompiled</th>
 		<th>Compiled</th>
+		<th>Savegame</th>
 	</tr>
 	<tr>
 		<th>Gothic II: NotR</th>
+		<th></th>
 		<th></th>
 		<th></th>
 		<th></th>
@@ -57,9 +60,11 @@ A set of libraries intended for reading and writing data in the native formats o
 		<td>✖</td>
 		<td>✖</td>
 		<td>✖</td>
+		<td>✖</td>
 	</tr>
 	<tr>
 		<th>Gothic II</th>
+		<th></th>
 		<th></th>
 		<th></th>
 		<th></th>
@@ -71,9 +76,11 @@ A set of libraries intended for reading and writing data in the native formats o
 		<td>✖</td>
 		<td>✖</td>
 		<td>✖</td>
+		<td>✖</td>
 	</tr>
 	<tr>
 		<th>Gothic Sequel</th>
+		<th></th>
 		<th></th>
 		<th></th>
 		<th></th>
@@ -85,9 +92,11 @@ A set of libraries intended for reading and writing data in the native formats o
 		<td>✖</td>
 		<td>✖</td>
 		<td>✖</td>
+		<td>✖</td>
 	</tr>
 	<tr>
 		<th>Gothic</th>
+		<th></th>
 		<th></th>
 		<th></th>
 		<th></th>
@@ -99,6 +108,7 @@ A set of libraries intended for reading and writing data in the native formats o
 		<td>✖</td>
 		<td>✖</td>
 		<td>✖</td>
+		<td>✖</td>
 	</tr>
 	<tr>
 		<td>1.01e_christmas_edition</td>
@@ -106,9 +116,11 @@ A set of libraries intended for reading and writing data in the native formats o
 		<td>✖</td>
 		<td>✖</td>
 		<td>✖</td>
+		<td>✖</td>
 	</tr>
 	<tr>
 		<td>1.00b</td>
+		<td>✖</td>
 		<td>✖</td>
 		<td>✖</td>
 		<td>✖</td>
@@ -120,6 +132,7 @@ A set of libraries intended for reading and writing data in the native formats o
 		<td>✖</td>
 		<td>✖</td>
 		<td>✖</td>
+		<td>✖</td>
 	</tr>
 	<tr>
 		<td>0.64b</td>
@@ -127,6 +140,7 @@ A set of libraries intended for reading and writing data in the native formats o
 		<td>✖</td>
 		<td>✖</td>
 		<td>✖</td>
+		<td>-</td>
 	</tr>
 	<tr>
 		<td>0.56c</td>
@@ -134,6 +148,7 @@ A set of libraries intended for reading and writing data in the native formats o
 		<td>✖</td>
 		<td>✖</td>
 		<td>✖</td>
+		<td>-</td>
 	</tr>
 </table>
 
