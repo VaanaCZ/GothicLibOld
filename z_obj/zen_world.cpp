@@ -157,12 +157,22 @@ bool ZenGin::zCWorld::LoadWorldFile(FileStream* file)
 	while (file->ReadLine(line))
 	{
 		// Check if we entered the right chunk
-		if (line.find("VobHierarchy") != std::string::npos)
+		if (line.find("VobHierarchy") == 0)
 		{
 			vobTree = new zCVob();
 			vobTree->game = game;
 
 			if (!LoadVobTree(file, vobTree))
+			{
+				return false;
+			}
+		}
+		else if (line.find("Waynet") == 0)
+		{
+			wayNet = new zCWayNet();
+			wayNet->game = game;
+
+			if (!wayNet->LoadWaynet(file))
 			{
 				return false;
 			}
@@ -206,8 +216,8 @@ bool ZenGin::zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 			//case zVOB_TYPE_CAMERA:			vob = new zCVob();				break;
 			case zVOB_TYPE_STARTPOINT:		vob = new zCVobStartpoint();	break;
 			case zVOB_TYPE_WAYPOINT:		vob = new zCVobWaypoint();		break;
-			case zVOB_TYPE_MARKER:			vob = new zCVob();				break; // todo
-			case zVOB_TYPE_MOB:				vob = new oCMOB();				break;
+			case zVOB_TYPE_MARKER:			vob = new zCVobMarker();		break;
+			case zVOB_TYPE_MOB:				vob = new oCMob();				break;
 			case zVOB_TYPE_ITEM:			vob = new oCItem();				break;
 			case zVOB_TYPE_NSC:				vob = new oCNpc();				break;
 			default:
@@ -232,7 +242,6 @@ bool ZenGin::zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 			else if (line == "}")
 			{
 				inVob = false;
-				return false;
 			}
 			else if (ParseFileLine(line, key, value))
 			{
@@ -254,8 +263,13 @@ bool ZenGin::zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 
 			for (size_t i = 0; i < childCount; i++)
 			{
-				LoadVobTree(file, vob);
+				if (!LoadVobTree(file, vob))
+				{
+					return false;
+				}
 			}
+
+			return true;
 		}
 	}
 }
@@ -2063,6 +2077,44 @@ bool ZenGin::zCWayNet::Unarchive(zCArchiver* archiver)
 				way.right = wayr;
 				wayList[i] = way;
 			}
+		}
+	}
+
+	return true;
+}
+
+bool GothicLib::ZenGin::zCWayNet::SaveWaynet(FileStream* file)
+{
+	return false;
+}
+
+bool GothicLib::ZenGin::zCWayNet::LoadWaynet(FileStream* file)
+{
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		std::string key;
+		std::string value;
+	
+		bool chunkStart = ParseFileLine(line, key, value);
+	
+		if (chunkStart)
+		{
+			// todo: ways
+			// todo: wayProps
+			if (key == "Waypoint")
+			{
+				oldWaypointList.push_back(value);
+			}
+			else if (key == "Way")
+			{
+				oldWayList.push_back(value);
+			}
+		}
+		else
+		{
+			break;
 		}
 	}
 

@@ -48,14 +48,25 @@ int main(int argc, char* argv[])
 	//world.LoadWorld(f);
 
 
+	//ZenGin::FileSystem fs;
+	//if (!fs.InitializeDirectory(L"D:\\Gothic\\Gothic_demo5"))
+	//	return 1;
+	//
+	//FileStream* f = fs.OpenFile("WORLD.ZEN", true);
+	//
+	//ZenGin::zCWorld world;
+	//world.game = ZenGin::GAME_DEMO5;
+	//world.LoadWorld(f);
+
+
 	ZenGin::FileSystem fs;
-	if (!fs.InitializeDirectory(L"D:\\Gothic\\Gothic_demo5"))
+	if (!fs.InitializeDirectory(L"D:\\Gothic\\Gothic_demo3"))
 		return 1;
-
-	FileStream* f = fs.OpenFile("WORLD.ZEN", true);
-
+	
+	FileStream* f = fs.OpenFile("surface_test.pwf", true);
+	
 	ZenGin::zCWorld world;
-	world.game = ZenGin::GAME_DEMO5;
+	world.game = ZenGin::GAME_DEMO3;
 	world.LoadWorld(f);
 
 

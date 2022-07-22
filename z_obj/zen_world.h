@@ -305,7 +305,7 @@ namespace GothicLib
 
 			ZEN_DECLARE_CLASS(zCVob, zCObject);
 
-			zCVob()				{ }
+			zCVob()				{ vobType = zVOB_TYPE_NORMAL; }
 			virtual ~zCVob()	{ }
 
 			virtual bool Archive(zCArchiver*);
@@ -752,7 +752,7 @@ namespace GothicLib
 
 			ZEN_DECLARE_CLASS(oCItem, oCVob);
 
-			oCItem()				{ }
+			oCItem()				{ vobType = zVOB_TYPE_ITEM; }
 			virtual ~oCItem()		{ }
 
 			virtual bool Archive(zCArchiver*);
@@ -814,7 +814,7 @@ namespace GothicLib
 
 			ZEN_DECLARE_CLASS(oCMOB, oCVob);
 
-			oCMOB()				{ }
+			oCMOB()				{ vobType = zVOB_TYPE_MOB; }
 			virtual ~oCMOB()	{ }
 
 			virtual bool Archive(zCArchiver*);
@@ -1120,7 +1120,7 @@ namespace GothicLib
 
 			ZEN_DECLARE_CLASS(oCMob, oCVob);
 
-			oCMob()				{ }
+			oCMob()				{ vobType = zVOB_TYPE_MOB; }
 			virtual ~oCMob()	{ }
 
 			virtual bool Archive(zCArchiver*);
@@ -1160,7 +1160,7 @@ namespace GothicLib
 
 			ZEN_DECLARE_CLASS(oCNpc, oCVob);
 
-			oCNpc()				{ }
+			oCNpc()				{ vobType = zVOB_TYPE_NSC; }
 			virtual ~oCNpc()	{ }
 
 			virtual bool Archive(zCArchiver*);
@@ -1604,8 +1604,8 @@ namespace GothicLib
 
 			ZEN_DECLARE_CLASS(zCVobLevelCompo, zCVob);
 
-			zCVobLevelCompo() { }
-			virtual ~zCVobLevelCompo() { }
+			zCVobLevelCompo()			{ vobType = zVOB_TYPE_LEVEL_COMPONENT; }
+			virtual ~zCVobLevelCompo()	{ }
 
 		private:
 
@@ -1647,7 +1647,7 @@ namespace GothicLib
 
 			ZEN_DECLARE_CLASS(zCVobLight, zCVob);
 
-			zCVobLight()			{ }
+			zCVobLight()			{ vobType = zVOB_TYPE_LIGHT; }
 			virtual ~zCVobLight()	{ }
 
 			virtual bool Archive(zCArchiver*);
@@ -1682,6 +1682,30 @@ namespace GothicLib
 		};
 
 		/*
+			zCVobMarker
+
+			Legacy class. Only included to support demo5 loading.
+		*/
+
+		class zCVobMarker : public zCVob
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0 },
+			};
+
+			ZEN_DECLARE_CLASS(zCVobMarker, zCVob);
+
+			zCVobMarker()			{ vobType = zVOB_TYPE_MARKER; }
+			virtual ~zCVobMarker()	{ }
+
+		private:
+
+		};
+
+		/*
 			zCVobSpot
 		*/
 
@@ -1702,7 +1726,7 @@ namespace GothicLib
 
 			ZEN_DECLARE_CLASS(zCVobSpot, zCVob);
 
-			zCVobSpot()				{ }
+			zCVobSpot()				{ vobType = zVOB_TYPE_SPOT; }
 			virtual ~zCVobSpot()	{ }
 
 		private:
@@ -1757,7 +1781,7 @@ namespace GothicLib
 
 			ZEN_DECLARE_CLASS(zCVobStartpoint, zCVob);
 
-			zCVobStartpoint()			{ }
+			zCVobStartpoint()			{ vobType = zVOB_TYPE_STARTPOINT; }
 			virtual ~zCVobStartpoint()	{ }
 
 		private:
@@ -1785,7 +1809,7 @@ namespace GothicLib
 
 			ZEN_DECLARE_CLASS(zCVobWaypoint, zCVob);
 
-			zCVobWaypoint()				{ }
+			zCVobWaypoint()				{ vobType = zVOB_TYPE_WAYPOINT; }
 			virtual ~zCVobWaypoint()	{ }
 
 		private:
@@ -1861,7 +1885,7 @@ namespace GothicLib
 
 			ZEN_DECLARE_CLASS(zCVobSound, zCZone);
 		
-			zCVobSound()			{ }
+			zCVobSound()			{ vobType = zVOB_TYPE_SOUND; }
 			virtual ~zCVobSound()	{ }
 
 			virtual bool Archive(zCArchiver*);
@@ -2423,6 +2447,9 @@ namespace GothicLib
 
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
+
+			bool SaveWaynet(FileStream*);
+			bool LoadWaynet(FileStream*);
 
 			/*
 				Properties
