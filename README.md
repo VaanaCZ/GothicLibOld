@@ -71,7 +71,7 @@ This section includes the current progress on loading and saving the engine's fi
 	</tr>
 	<tr>
 		<td>2.6</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
 		<td>✖</td>
@@ -89,7 +89,7 @@ This section includes the current progress on loading and saving the engine's fi
 	</tr>
 	<tr>
 		<td>1.30</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
 		<td>✖</td>
@@ -107,7 +107,7 @@ This section includes the current progress on loading and saving the engine's fi
 	</tr>
 	<tr>
 		<td>1.12f</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
 		<td>✖</td>

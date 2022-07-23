@@ -43,8 +43,12 @@ bool zCDecal::Unarchive(zCArchiver* archiver)
 	archiver->ReadBool(ARC_ARGS(decal2Sided));
 	archiver->ReadEnum(ARC_ARGSE(decalAlphaFunc));
 	archiver->ReadFloat(ARC_ARGS(decalTexAniFPS));
-	// todo: decalAlphaWeight - G2
-	// todo: ignoreDayLight - G2
+
+	if (game >= GAME_GOTHIC2)
+	{
+		archiver->ReadByte(ARC_ARGS(decalAlphaWeight));
+		archiver->ReadBool(ARC_ARGS(ignoreDayLight));
+	}
 
 	return true;
 }

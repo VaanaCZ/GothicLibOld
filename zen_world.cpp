@@ -443,12 +443,12 @@ bool zCVob::Unarchive(zCArchiver* archiver)
 		archiver->ReadBool(ARC_ARGS(showVisual));
 		archiver->ReadEnum(ARC_ARGSE(visualCamAlign));
 
-		//if (version == 52224)
-		//{
-		//	ZCR_READENUM(visualAniMode);
-		//	archiver->ReadFloat(ARC_ARGS(visualAniModeStrength);
-		//	archiver->ReadFloat(ARC_ARGS(vobFarClipZScale);
-		//}
+		if (game >= GAME_GOTHIC2)
+		{
+			archiver->ReadEnum(ARC_ARGSE(visualAniMode));
+			archiver->ReadFloat(ARC_ARGS(visualAniModeStrength));
+			archiver->ReadFloat(ARC_ARGS(vobFarClipZScale));
+		}
 
 		archiver->ReadBool(ARC_ARGS(cdStatic));
 		archiver->ReadBool(ARC_ARGS(cdDyn));
@@ -459,11 +459,11 @@ bool zCVob::Unarchive(zCArchiver* archiver)
 			archiver->ReadEnum(ARC_ARGSE(dynShadow));
 		}
 
-		//if (version == 52224)
-		//{
-		//	archiver->ReadInt(ARC_ARGS(zbias);
-		//	archiver->ReadBool(ARC_ARGS(isAmbient);
-		//}
+		if (game >= GAME_GOTHIC2)
+		{
+			archiver->ReadInt(ARC_ARGS(zbias));
+			archiver->ReadBool(ARC_ARGS(isAmbient));
+		}
 
 		visualPtr = archiver->ReadObjectAs<zCVisual*>("visual");
 		aiPtr = archiver->ReadObjectAs<zCAIBase*>("ai");
@@ -476,7 +476,7 @@ bool zCVob::Unarchive(zCArchiver* archiver)
 
 	if (archiver->IsSavegame())
 	{
-		char sleepMode;
+		unsigned char sleepMode;
 		archiver->ReadByte(ARC_ARGS(sleepMode));
 		this->sleepMode = (zTVobSleepingMode)sleepMode;
 		archiver->ReadFloat(ARC_ARGS(nextOnTimer));
@@ -1360,7 +1360,7 @@ bool zCCodeMaster::Unarchive(zCArchiver* archiver)
 
 	if (!archiver->IsProps())
 	{
-		char numSlaves = 6;
+		unsigned char numSlaves = 6;
 		archiver->ReadByte(ARC_ARGS(numSlaves));
 
 		slaveVobNameList.resize(numSlaves);
@@ -1377,7 +1377,7 @@ bool zCCodeMaster::Unarchive(zCArchiver* archiver)
 
 	if (archiver->IsSavegame())
 	{
-		char numSlavesTriggered = 0;
+		unsigned char numSlavesTriggered = 0;
 		archiver->ReadByte(ARC_ARGS(numSlavesTriggered));
 
 		slaveTriggeredList.resize(numSlavesTriggered);
@@ -1552,14 +1552,17 @@ bool zCMover::Unarchive(zCArchiver* archiver)
 		archiver->ReadBool(ARC_ARGS(autoLinkEnabled));
 	}
 
-	// todo: G2 - autoRotate
+	if (game >= GAME_GOTHIC2)
+	{
+		archiver->ReadBool(ARC_ARGS(autoRotate));
+	}
 
 	if (game <= GAME_DEMO5)
 	{
 		archiver->ReadString(ARC_ARGS(vobChainName));
 	}
 
-	short numKeyframes = 0;
+	unsigned short numKeyframes = 0;
 	archiver->ReadWord(ARC_ARGS(numKeyframes));
 
 	if (numKeyframes > 0)
@@ -1636,7 +1639,7 @@ bool zCTriggerList::Unarchive(zCArchiver* archiver)
 
 	archiver->ReadEnum(ARC_ARGSE(listProcess));
 
-	char numTarget = 6;
+	unsigned char numTarget = 6;
 
 	if (!archiver->IsProps())
 	{
@@ -1670,7 +1673,6 @@ bool zCTriggerList::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-
 bool oCTriggerScript::Archive(zCArchiver* archiver)
 {
 	if (!zCTrigger::Archive(archiver))
@@ -1685,6 +1687,29 @@ bool oCTriggerScript::Unarchive(zCArchiver* archiver)
 		return false;
 
 	archiver->ReadString(ARC_ARGS(scriptFunc));
+
+	return true;
+}
+
+bool zCTriggerWorldStart::Archive(zCArchiver* archiver)
+{
+	if (!zCTriggerBase::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool zCTriggerWorldStart::Unarchive(zCArchiver* archiver)
+{
+	if (!zCTriggerBase::Unarchive(archiver))
+		return false;
+
+	archiver->ReadBool(ARC_ARGS(fireOnlyFirstTime));
+
+	if (archiver->IsSavegame())
+	{
+		archiver->ReadBool(ARC_ARGS(hasFired));
+	}
 
 	return true;
 }
@@ -1727,19 +1752,22 @@ bool zCVobLight::Unarchive(zCArchiver* archiver)
 	}
 
 	archiver->ReadBool(ARC_ARGS(lightStatic));
+	archiver->ReadEnum(ARC_ARGSE(lightQuality));
+
+	if (game <= GAME_DEMO5)
+	{
+		archiver->ReadInt(ARC_ARGS(lensflareFXNo));
+	}
+
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->ReadString(ARC_ARGS(lensflareFX));
+	}
 
 	if (archiver->IsProps() || !lightStatic)
 	{
-		archiver->ReadEnum(ARC_ARGSE(lightQuality));
-
-		if (game <= GAME_DEMO5)
-		{
-			archiver->ReadInt(ARC_ARGS(lensflareFXNo));
-		}
-
 		if (game >= GAME_SEPTEMBERDEMO)
 		{
-			archiver->ReadString(ARC_ARGS(lensflareFX));
 			archiver->ReadBool(ARC_ARGS(turnedOn));
 		}
 
@@ -1749,7 +1777,11 @@ bool zCVobLight::Unarchive(zCArchiver* archiver)
 		archiver->ReadString(ARC_ARGS(colorAniList));
 		archiver->ReadFloat(ARC_ARGS(colorAniFPS));
 		archiver->ReadBool(ARC_ARGS(colorAniSmooth));
-		// todo: G2 - bool canMove
+
+		if (game >= GAME_GOTHIC2)
+		{
+			archiver->ReadBool(ARC_ARGS(canMove));
+		}
 	}
 
 	return true;
@@ -2020,8 +2052,12 @@ bool zCZoneZFog::Unarchive(zCArchiver* archiver)
 	archiver->ReadFloat(ARC_ARGS(fogRangeCenter));
 	archiver->ReadFloat(ARC_ARGS(innerRangePerc));
 	archiver->ReadColor(ARC_ARGS(fogColor));
-	// todo: G2 - fadeOutSky
-	// todo: G2 - overrideColor
+
+	if (game >= GAME_GOTHIC2)
+	{
+		archiver->ReadBool(ARC_ARGS(fadeOutSky));
+		archiver->ReadBool(ARC_ARGS(overrideColor));
+	}
 
 	return true;
 }

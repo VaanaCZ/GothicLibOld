@@ -201,7 +201,7 @@ bool zCArchiver::ReadInt(std::string name, int& intVal)
 	return false;
 }
 
-bool zCArchiver::ReadByte(std::string name, char& byteVal)
+bool zCArchiver::ReadByte(std::string name, unsigned char& byteVal)
 {
 	if (error)
 		return false;
@@ -224,7 +224,7 @@ bool zCArchiver::ReadByte(std::string name, char& byteVal)
 	return false;
 }
 
-bool zCArchiver::ReadWord(std::string name, short& wordVal)
+bool zCArchiver::ReadWord(std::string name, unsigned short& wordVal)
 {
 	if (error)
 		return false;
@@ -519,6 +519,40 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 	}
 	else
 	{
+		std::string truncClassName = className;
+
+		if (truncClassName.find(":") != std::string::npos)
+			truncClassName = truncClassName.substr(0, truncClassName.find(":"));
+
+		ClassDefinition* classDef = ClassDefinition::GetClassDef(truncClassName);
+
+		if (!classDef)
+		{
+			LOG_ERROR("Class \"" + className + "\" is not supported!");
+
+			ReadChunkEnd();
+			return nullptr;
+		}
+
+		// Figure out if the class is supported			
+		if (!classDef->IsVersionSumSupported(game, classVersion))
+		{
+			uint16_t versionSum = classDef->GetVersionSum(game);
+
+			if (versionSum == VERSION_NONE)
+			{
+				LOG_ERROR("Class " + classDef->GetName() + " is not supported in the specified game version!");
+			}
+			else
+			{
+				LOG_ERROR("Error while reading class " + classDef->GetName() + ". The version is "
+					+ std::to_string(classVersion) + ", expected " + std::to_string(versionSum) + "!");
+			}
+
+			ReadChunkEnd();
+			return nullptr;
+		}
+
 		if (existingObject)
 		{
 			// Use the specified object if it is the 
@@ -536,45 +570,15 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 			{
 				LOG_ERROR("Read class does not match existing object. Expected \"" +
 					existingObject->GetClassDef()->GetName() + "\", found \"" + name + "\" instead!");
+
+				ReadChunkEnd();
 				return nullptr;
 			}
 		}
 		else
 		{
 			// Create object based on read type
-
-			std::string truncClassName = className;
-
-			if (truncClassName.find(":") != std::string::npos)
-				truncClassName = truncClassName.substr(0, truncClassName.find(":"));
-
-			ClassDefinition* classDef = ClassDefinition::GetClassDef(truncClassName);
-
-			if (!classDef)
-			{
-				LOG_ERROR("Class \"" + className + "\" is not supported!");
-				return nullptr;
-			}
-
 			object = classDef->CreateInstance();
-
-			// Figure out if the class is supported			
-			if (!classDef->IsVersionSumSupported(game, classVersion))
-			{
-				uint16_t versionSum = classDef->GetVersionSum(game);
-
-				if (versionSum == VERSION_NONE)
-				{
-					LOG_ERROR("Class " + classDef->GetName() + " is not supported in the specified game version!");
-					return nullptr;
-				}
-				else
-				{
-					LOG_ERROR("Error while reading class " + classDef->GetName() + ". The version is "
-						+ std::to_string(classVersion) + ", expected " + std::to_string(versionSum) + "!");
-					return nullptr;
-				}
-			}
 
 			object->game = game;
 		}
@@ -808,6 +812,7 @@ bool zCArchiver::ReadChunkEnd()
 			int nesting = 0;
 
 			bool valid = false;
+			bool first = true;
 
 			while (file->ReadLine(line))
 			{
@@ -840,6 +845,14 @@ bool zCArchiver::ReadChunkEnd()
 					valid = true;
 					break;
 				}
+
+				if (first)
+				{
+					first = false;
+					LOG_WARN("Chunk end expected, but data found. The following properties will be skipped:");
+				}
+
+				LOG_WARN(line.substr(tabCount));
 			}
 
 			if (!valid)

@@ -142,8 +142,8 @@ namespace GothicLib
 			bool Read(FileStream*);
 
 			bool ReadInt		(std::string, int&);
-			bool ReadByte		(std::string, char&);
-			bool ReadWord		(std::string, short&);
+			bool ReadByte		(std::string, unsigned char&);
+			bool ReadWord		(std::string, unsigned short&);
 			bool ReadFloat		(std::string, float&);
 			bool ReadBool		(std::string, bool&);
 			bool ReadString		(std::string, std::string&);

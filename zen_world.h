@@ -77,6 +77,7 @@ namespace GothicLib
 				{ GAME_GOTHICSEQUEL,		64513	},
 				{ GAME_GOTHIC2,				64513	},
 				{ GAME_GOTHIC2ADDON,		64513	},
+				{ GAME_GOTHIC2ADDON,		36865	}, // Spacer 2.6
 			};
 
 			ZEN_DECLARE_CLASS(oCWorld, zCWorld);
@@ -416,6 +417,7 @@ namespace GothicLib
 				{ GAME_GOTHICSEQUEL,		30720	},
 				{ GAME_GOTHIC2,				12289	},
 				{ GAME_GOTHIC2ADDON,		12289	},
+				{ GAME_GOTHIC2ADDON,		33793	}, // Spacer 2.6
 			};
 
 			ZEN_DECLARE_CLASS(zCCSCamera, zCVob);
@@ -484,6 +486,7 @@ namespace GothicLib
 				{ GAME_GOTHICSEQUEL,		34560	},
 				{ GAME_GOTHIC2,				9218	},
 				{ GAME_GOTHIC2ADDON,		9218	},
+				{ GAME_GOTHIC2ADDON,		31489	}, // Spacer 2.6
 			};
 
 			ZEN_DECLARE_CLASS(zCCamTrj_KeyFrame, zCVob);
@@ -575,6 +578,7 @@ namespace GothicLib
 				{ GAME_GOTHICSEQUEL,		0		},
 				{ GAME_GOTHIC2,				20483	},
 				{ GAME_GOTHIC2ADDON,		20483	},
+				{ GAME_GOTHIC2ADDON,		0		}, // Spacer 2.6
 			};
 
 			ZEN_DECLARE_CLASS(zCEarthquake, zCEffect);
@@ -609,6 +613,7 @@ namespace GothicLib
 				{ GAME_GOTHICSEQUEL,		12289	},
 				{ GAME_GOTHIC2,				20483	},
 				{ GAME_GOTHIC2ADDON,		20483	},
+				{ GAME_GOTHIC2ADDON,		52224	}, // Spacer 2.6
 			};
 
 			ZEN_DECLARE_CLASS(zCPFXControler, zCEffect);
@@ -1603,6 +1608,7 @@ namespace GothicLib
 			float						stayOpenTimeSec		= 2.0f;
 			bool						moverLocked			= false;
 			bool						autoLinkEnabled		= false;
+			bool						autoRotate			= false;				// Gothic 2
 			std::string					vobChainName;								// Legacy
 			float						moveSpeed			= 0.3f;
 			zTPosLerpType				posLerpType			= PL_CURVE;
@@ -1682,6 +1688,7 @@ namespace GothicLib
 				{ GAME_GOTHICSEQUEL,		59776	},
 				{ GAME_GOTHIC2,				45570	},
 				{ GAME_GOTHIC2ADDON,		45570	},
+				{ GAME_GOTHIC2ADDON,		5505	}, // Spacer 2.6
 			};
 
 			ZEN_DECLARE_CLASS(zCTriggerList, zCTrigger);
@@ -1699,7 +1706,7 @@ namespace GothicLib
 			zTListProcess				listProcess		= LP_ALL;
 			std::vector<std::string>	triggerTargetList;
 			std::vector<float>			fireDelayList;
-			char						actTarget		= 0;	// Savegame
+			unsigned char				actTarget		= 0;	// Savegame
 			bool						sendOnTrigger	= true;	// Savegame
 
 		private:
@@ -1733,6 +1740,64 @@ namespace GothicLib
 			*/
 
 			std::string scriptFunc;
+
+		private:
+
+		};
+
+		class zCTriggerUntouch : public zCTriggerBase
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_CHRISTMASEDITION,	35009			},
+				{ GAME_GOTHIC1,				64704			},
+				{ GAME_GOTHICSEQUEL,		64704			},
+				{ GAME_GOTHIC2,				33026			},
+				{ GAME_GOTHIC2ADDON,		33026			},
+				{ GAME_GOTHIC2ADDON,		193				}, // Spacer 2.6
+			};
+
+			ZEN_DECLARE_CLASS(zCTriggerUntouch, zCTriggerBase);
+
+			zCTriggerUntouch()			{ }
+			virtual ~zCTriggerUntouch()	{ }
+
+		private:
+
+		};
+
+		class zCTriggerWorldStart : public zCTriggerBase
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_CHRISTMASEDITION,	17408			},
+				{ GAME_GOTHIC1,				12289			},
+				{ GAME_GOTHICSEQUEL,		12289			},
+				{ GAME_GOTHIC2,				20483			},
+				{ GAME_GOTHIC2ADDON,		20483			},
+				{ GAME_GOTHIC2ADDON,		52224			}, // Spacer 2.6
+			};
+
+			ZEN_DECLARE_CLASS(zCTriggerWorldStart, zCTriggerBase);
+
+			zCTriggerWorldStart()			{ }
+			virtual ~zCTriggerWorldStart()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			bool fireOnlyFirstTime	= false;
+			bool hasFired			= false; // Savegame
 
 		private:
 
@@ -1833,6 +1898,7 @@ namespace GothicLib
 			std::string			colorAniList;
 			float				colorAniFPS			= 0;
 			bool				colorAniSmooth		= 0;
+			bool				canMove				= 0;						// Gothic 2
 
 		private:
 
@@ -2280,6 +2346,8 @@ namespace GothicLib
 			float	fogRangeCenter	= 3000.0f;
 			float	innerRangePerc	= 0.7f;
 			zCOLOR	fogColor		= { };
+			bool	fadeOutSky		= false;	// Gothic 2
+			bool	overrideColor	= false;	// Gothic 2
 
 		private:
 
