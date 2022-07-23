@@ -197,7 +197,9 @@ bool zCArchiver::ReadInt(std::string name, int& intVal)
 		return file->Read(&intVal, sizeof(intVal));
 	}
 
-	error = true;
+	if (type != ARCHIVER_TYPE_ASCII)
+		error = true;
+
 	return false;
 }
 
@@ -220,7 +222,9 @@ bool zCArchiver::ReadByte(std::string name, unsigned char& byteVal)
 		return file->Read(&byteVal, sizeof(byteVal));
 	}
 
-	error = true;
+	if (type != ARCHIVER_TYPE_ASCII)
+		error = true;
+
 	return false;
 }
 
@@ -243,7 +247,9 @@ bool zCArchiver::ReadWord(std::string name, unsigned short& wordVal)
 		return file->Read(&wordVal, sizeof(wordVal));
 	}
 
-	error = true;
+	if (type != ARCHIVER_TYPE_ASCII)
+		error = true;
+
 	return false;
 }
 
@@ -266,7 +272,9 @@ bool zCArchiver::ReadFloat(std::string name, float& floatVal)
 		return file->Read(&floatVal, sizeof(floatVal));
 	}
 
-	error = true;
+	if (type != ARCHIVER_TYPE_ASCII)
+		error = true;
+
 	return false;
 }
 
@@ -289,7 +297,9 @@ bool zCArchiver::ReadBool(std::string name, bool& boolVal)
 		return file->Read(&boolVal, sizeof(boolVal));
 	}
 
-	error = true;
+	if (type != ARCHIVER_TYPE_ASCII)
+		error = true;
+
 	return false;
 }
 
@@ -312,7 +322,9 @@ bool zCArchiver::ReadString(std::string name, std::string& strVal)
 		return file->ReadNullString(strVal);
 	}
 
-	error = true;
+	if (type != ARCHIVER_TYPE_ASCII)
+		error = true;
+
 	return false;
 }
 
@@ -336,7 +348,9 @@ bool zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
 		return file->Read(&vecVal, sizeof(vecVal));
 	}
 
-	error = true;
+	if (type != ARCHIVER_TYPE_ASCII)
+		error = true;
+
 	return false;
 }
 
@@ -366,7 +380,9 @@ bool zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
 		return file->Read(&colorVal, sizeof(colorVal));
 	}
 
-	error = true;
+	if (type != ARCHIVER_TYPE_ASCII)
+		error = true;
+
 	return false;
 }
 
@@ -403,7 +419,9 @@ bool zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSize)
 		return file->Read(buffer, bufferSize);
 	}
 
-	error = true;
+	if (type != ARCHIVER_TYPE_ASCII)
+		error = true;
+
 	return false;
 }
 
@@ -450,7 +468,9 @@ bool zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t floatCo
 		return file->Read(floatVals, floatCount * sizeof(float));
 	}
 
-	error = true;
+	if (type != ARCHIVER_TYPE_ASCII)
+		error = true;
+
 	return false;
 }
 
@@ -473,7 +493,9 @@ bool zCArchiver::ReadEnum(std::string name, int& enumVal)
 		return file->Read(&enumVal, sizeof(enumVal));
 	}
 
-	error = true;
+	if (type != ARCHIVER_TYPE_ASCII)
+		error = true;
+
 	return false;
 }
 
@@ -491,6 +513,7 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 
 	if (!ReadChunkStart(&name, &className, &classVersion, &objectIndex))
 	{
+		error = true;
 		return nullptr;
 	}
 
@@ -498,6 +521,8 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 	if (objectIndex < 0 || objectIndex >= objectList.size())
 	{
 		LOG_ERROR("The specified object index is not within an accepted range! Archive must be invalid!");
+
+		error = true;
 		return nullptr;
 	}
 
@@ -530,6 +555,7 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 		{
 			LOG_ERROR("Class \"" + className + "\" is not supported!");
 
+			error = true;
 			ReadChunkEnd();
 			return nullptr;
 		}
@@ -549,6 +575,7 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 					+ std::to_string(classVersion) + ", expected " + std::to_string(versionSum) + "!");
 			}
 
+			error = true;
 			ReadChunkEnd();
 			return nullptr;
 		}
@@ -571,6 +598,7 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 				LOG_ERROR("Read class does not match existing object. Expected \"" +
 					existingObject->GetClassDef()->GetName() + "\", found \"" + name + "\" instead!");
 
+				error = true;
 				ReadChunkEnd();
 				return nullptr;
 			}
@@ -587,12 +615,14 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 
 		if (!object->Unarchive(this))
 		{
+			error = true;
 			return nullptr;
 		}
 	}
 
 	if (!ReadChunkEnd())
 	{
+		error = true;
 		return nullptr;
 	}
 
@@ -785,12 +815,6 @@ bool zCArchiver::ReadChunkStart(std::string* objectName, std::string* className,
 
 bool zCArchiver::ReadChunkEnd()
 {
-	if (error)
-	{
-		LOG_ERROR("An error occured while reading chunk.");
-		error = false;
-	}
-
 	if (type == ARCHIVER_TYPE_ASCII ||
 		type == ARCHIVER_TYPE_BIN_SAFE)
 	{
@@ -846,13 +870,16 @@ bool zCArchiver::ReadChunkEnd()
 					break;
 				}
 
-				if (first)
+				if (!error)
 				{
-					first = false;
-					LOG_WARN("Chunk end expected, but data found. The following properties will be skipped:");
-				}
+					if (first)
+					{
+						first = false;
+						LOG_WARN("Chunk end expected, but data found. The following properties will be skipped:");
+					}
 
-				LOG_WARN(line.substr(tabCount));
+					LOG_WARN(line.substr(tabCount));
+				}
 			}
 
 			if (!valid)
@@ -863,6 +890,12 @@ bool zCArchiver::ReadChunkEnd()
 
 			asciiChunksPositions.pop_back();
 		}
+	}
+
+	if (error)
+	{
+		LOG_ERROR("An error occured while reading chunk.");
+		error = false;
 	}
 
 	return true;
@@ -965,13 +998,21 @@ bool zCArchiver::ReadASCIIProperty(std::string name, std::string type, std::stri
 			{
 				first = false;
 
-				LOG_WARN("Incorrect property order. Expected \"" + name + "\" of type \"" +
-					type + "\", found \"" + readName + "\" of type \"" + readType + "\" instead!");
+				if (looping)
+				{
+					LOG_WARN("Incorrect property order. Expected \"" + name + "\" of type \"" +
+						type + "\", but the end of chunk was reached!");
+				}
+				else
+				{
+					LOG_WARN("Incorrect property order. Expected \"" + name + "\" of type \"" +
+						type + "\", found \"" + readName + "\" of type \"" + readType + "\" instead!");
+				}
 			}
 		}
 	}
 
-	LOG_ERROR("Specified property not found in chunk!");
+	LOG_WARN("Specified property not found in chunk!");
 	return false;
 }
 

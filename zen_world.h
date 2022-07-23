@@ -136,6 +136,7 @@ namespace GothicLib
 					zCVobLensFlare
 					zCVobScreenFX
 				oCObjectGenerator
+				spcCDragVob [PRE-DEMO5]
 				zCTriggerBase
 					zCCodeMaster
 					zCMessageFilter
@@ -523,6 +524,29 @@ namespace GothicLib
 			oCDummyVobGenerator
 		*/
 
+		class oCDummyVobGenerator : public zCVob
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0				},
+				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_CHRISTMASEDITION,	17408			},
+				{ GAME_GOTHIC1,				12289			},
+				{ GAME_GOTHICSEQUEL,		12289			},
+				{ GAME_GOTHIC2,				20483			},
+				{ GAME_GOTHIC2ADDON,		20483			},
+			};
+
+			ZEN_DECLARE_CLASS(oCDummyVobGenerator, zCVob);
+
+			oCDummyVobGenerator()			{ }
+			virtual ~oCDummyVobGenerator()	{ }
+
+		private:
+
+		};
 
 		/*
 			zCEffect
@@ -884,6 +908,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				36865	},
+				{ GAME_DEMO5,				0		}, // TESTLEVEL_EVENT.ZEN
 				{ GAME_SEPTEMBERDEMO,		47105	},
 				{ GAME_CHRISTMASEDITION,	47105	},
 				{ GAME_GOTHIC1,				47105	},
@@ -927,6 +952,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				36865	},
+				{ GAME_DEMO5,				0		}, // TESTLEVEL_EVENT.ZEN
 				{ GAME_SEPTEMBERDEMO,		35585	},
 				{ GAME_CHRISTMASEDITION,	35585	},
 				{ GAME_GOTHIC1,				35585	},
@@ -1084,6 +1110,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				36865	},
+				{ GAME_DEMO5,				0		}, // TESTLEVEL_EVENT.ZEN
 				{ GAME_SEPTEMBERDEMO,		61440	},
 				{ GAME_CHRISTMASEDITION,	64513	},
 				{ GAME_GOTHIC1,				64513	},
@@ -1140,6 +1167,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				36865	},
+				{ GAME_DEMO5,				0		}, // TESTLEVEL_EVENT.ZEN
 				{ GAME_SEPTEMBERDEMO,		35585	},
 				{ GAME_CHRISTMASEDITION,	35585	},
 				{ GAME_GOTHIC1,				35585	},
@@ -1231,6 +1259,7 @@ namespace GothicLib
 			{
 				{ GAME_DEMO3,				0				},
 				{ GAME_DEMO5,				36865			},
+				{ GAME_DEMO5,				0				}, // TESTLEVEL.ZEN
 				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
 				{ GAME_CHRISTMASEDITION,	52224			},
 				{ GAME_GOTHIC1,				52224			},
@@ -1272,6 +1301,31 @@ namespace GothicLib
 		/*
 			oCObjectGenerator
 		*/
+
+		/*
+			spcCDragVob
+
+			Legacy class.
+			Only included to support demo5 loading.
+		*/
+
+		class spcCDragVob : public zCVob
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,	0	},
+			};
+
+			ZEN_DECLARE_CLASS(spcCDragVob, zCVob);
+
+			spcCDragVob()			{ }
+			virtual ~spcCDragVob()	{ }
+
+		private:
+
+		};
 
 		/*
 			zCTriggerBase
@@ -1740,6 +1794,39 @@ namespace GothicLib
 			*/
 
 			std::string scriptFunc;
+
+		private:
+
+		};
+
+		class zCTriggerTeleport : public zCTrigger
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0				},
+				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_CHRISTMASEDITION,	40321			},
+				{ GAME_GOTHIC1,				59776			},
+				{ GAME_GOTHICSEQUEL,		59776			},
+				{ GAME_GOTHIC2,				45570			},
+				{ GAME_GOTHIC2ADDON,		45570			},
+			};
+
+			ZEN_DECLARE_CLASS(zCTriggerTeleport, zCTrigger);
+
+			zCTriggerTeleport()				{ }
+			virtual ~zCTriggerTeleport()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			std::string sfxTeleport;
 
 		private:
 

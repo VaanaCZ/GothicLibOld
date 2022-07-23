@@ -1691,6 +1691,24 @@ bool oCTriggerScript::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
+bool zCTriggerTeleport::Archive(zCArchiver* archiver)
+{
+	if (!zCTrigger::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool zCTriggerTeleport::Unarchive(zCArchiver* archiver)
+{
+	if (!zCTrigger::Unarchive(archiver))
+		return false;
+
+	archiver->ReadString(ARC_ARGS(sfxTeleport));
+
+	return true;
+}
+
 bool zCTriggerWorldStart::Archive(zCArchiver* archiver)
 {
 	if (!zCTriggerBase::Archive(archiver))
@@ -1764,7 +1782,7 @@ bool zCVobLight::Unarchive(zCArchiver* archiver)
 		archiver->ReadString(ARC_ARGS(lensflareFX));
 	}
 
-	if (archiver->IsProps() || !lightStatic)
+	if (archiver->IsProps() || !lightStatic || game <= GAME_DEMO5)
 	{
 		if (game >= GAME_SEPTEMBERDEMO)
 		{
