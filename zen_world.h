@@ -664,6 +664,79 @@ namespace GothicLib
 
 		};
 
+		class zCTouchDamage : public zCEffect
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_CHRISTMASEDITION,	17408			},
+				{ GAME_GOTHIC1,				64704			},
+				{ GAME_GOTHICSEQUEL,		64704			},
+				{ GAME_GOTHIC2,				33026			},
+				{ GAME_GOTHIC2ADDON,		33026			},
+			};
+
+			ZEN_DECLARE_CLASS(zCTouchDamage, zCEffect);
+
+			zCTouchDamage()				{ }
+			virtual ~zCTouchDamage()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			enum zTDamageCollType
+			{
+				CT_NONE,
+				CT_BOX,
+				CT_POINT,
+			};
+
+			float				damage					= 0.0f;
+			bool				Barrier					= false;
+			bool				Blunt					= false;
+			bool				Edge					= false;
+			bool				Fire					= false;
+			bool				Fly						= false;
+			bool				Magic					= false;
+			bool				Point					= false;
+			bool				Fall					= false;
+			float				damageRepeatDelaySec	= 0.0f;
+			float				damageVolDownScale		= 1.0f;
+			zTDamageCollType	damageCollType			= CT_BOX;
+
+		private:
+
+		};
+
+		class oCTouchDamage : public zCTouchDamage
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_CHRISTMASEDITION,	0				},
+				{ GAME_GOTHIC1,				36865			},
+				{ GAME_GOTHICSEQUEL,		36865			},
+				{ GAME_GOTHIC2,				36865			},
+				{ GAME_GOTHIC2ADDON,		36865			},
+			};
+
+			ZEN_DECLARE_CLASS(oCTouchDamage, zCTouchDamage);
+
+			oCTouchDamage()				{ }
+			virtual ~oCTouchDamage()	{ }
+
+		private:
+
+		};
+
 		class zCVobLensFlare : public zCEffect
 		{
 		public:
@@ -1244,6 +1317,44 @@ namespace GothicLib
 
 		};
 
+		class zCCodeMaster : public zCTriggerBase
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_CHRISTMASEDITION,	0				},
+				{ GAME_GOTHIC1,				0				},
+				{ GAME_GOTHICSEQUEL,		0				},
+				{ GAME_GOTHIC2,				0				},
+				{ GAME_GOTHIC2ADDON,		0				},
+			};
+
+			ZEN_DECLARE_CLASS(zCCodeMaster, zCTriggerBase);
+
+			zCCodeMaster()			{ }
+			virtual ~zCCodeMaster()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			bool		orderRelevant			= false;
+			bool		firstFalseIsFailure		= false;
+			std::string	triggerTargetFailure;
+			bool		untriggerCancels		= false;
+
+			std::vector<std::string>	slaveVobNameList;
+			std::vector<zCVob*>			slaveTriggeredList;
+
+		private:
+
+		};
+
 		enum zTMessageType
 		{
 			MT_NONE,
@@ -1283,6 +1394,48 @@ namespace GothicLib
 
 			zTMessageType onTrigger		= MT_NONE;
 			zTMessageType onUntrigger	= MT_NONE;
+
+		private:
+
+		};
+
+		enum zTEventMoverSubType
+		{
+			zEVENT_GOTO_KEY_FIXED_DIRECTLY,
+			zEVENT_GOTO_KEY_FIXED_ORDER,
+			zEVENT_GOTO_KEY_NEXT,
+			zEVENT_GOTO_KEY_PREV,
+			zEVENT_MISC_NUM_SUBTYPES
+		};
+
+		class zCMoverControler : public zCTriggerBase
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_CHRISTMASEDITION,	0				},
+				{ GAME_GOTHIC1,				0				},
+				{ GAME_GOTHICSEQUEL,		0				},
+				{ GAME_GOTHIC2,				0				},
+				{ GAME_GOTHIC2ADDON,		0				},
+			};
+
+			ZEN_DECLARE_CLASS(zCMoverControler, zCTriggerBase);
+
+			zCMoverControler()			{ }
+			virtual ~zCMoverControler()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			zTEventMoverSubType	moverMessage = zEVENT_GOTO_KEY_FIXED_DIRECTLY;
+			int					gotoFixedKey = 0;
 
 		private:
 

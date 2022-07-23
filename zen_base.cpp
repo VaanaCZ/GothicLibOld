@@ -952,7 +952,8 @@ bool zCArchiver::ReadASCIIProperty(std::string name, std::string type, std::stri
 			{
 				first = false;
 
-				LOG_WARN("Incorrect property order, expected \"" + name + "\", found \"" + readName + "\"!");
+				LOG_WARN("Incorrect property order. Expected \"" + name + "\" of type \"" +
+					type + "\", found \"" + readName + "\" of type \"" + readType + "\" instead!");
 			}
 		}
 	}

@@ -642,7 +642,7 @@ bool zCCSCamera::Unarchive(zCArchiver* archiver)
 
 	if (!archiver->IsProps())
 	{
-		int numPos, numTargets;
+		int numPos, numTargets = 0;
 
 		archiver->ReadInt(ARC_ARGS(numPos));
 		archiver->ReadInt(ARC_ARGS(numTargets));
@@ -813,6 +813,35 @@ bool zCVobAnimate::Unarchive(zCArchiver* archiver)
 	{
 		isRunning = startOn;
 	}
+
+	return true;
+}
+
+bool zCTouchDamage::Archive(zCArchiver* archiver)
+{
+	if (!zCEffect::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool zCTouchDamage::Unarchive(zCArchiver* archiver)
+{
+	if (!zCEffect::Unarchive(archiver))
+		return false;
+
+	archiver->ReadFloat(ARC_ARGS(damage));
+	archiver->ReadBool(ARC_ARGS(Barrier));
+	archiver->ReadBool(ARC_ARGS(Blunt));
+	archiver->ReadBool(ARC_ARGS(Edge));
+	archiver->ReadBool(ARC_ARGS(Fire));
+	archiver->ReadBool(ARC_ARGS(Fly));
+	archiver->ReadBool(ARC_ARGS(Magic));
+	archiver->ReadBool(ARC_ARGS(Point));
+	archiver->ReadBool(ARC_ARGS(Fall));
+	archiver->ReadFloat(ARC_ARGS(damageRepeatDelaySec));
+	archiver->ReadFloat(ARC_ARGS(damageVolDownScale));
+	archiver->ReadEnum(ARC_ARGSE(damageCollType));
 
 	return true;
 }
@@ -1200,7 +1229,7 @@ bool oCNpc::Unarchive(zCArchiver* archiver)
 		archiver->ReadVec3(ARC_ARGS(modelScale));
 		archiver->ReadFloat(ARC_ARGS(modelFatness));
 
-		int numOverlays;
+		int numOverlays = 0;
 		archiver->ReadInt(ARC_ARGS(numOverlays));
 
 		for (size_t i = 0; i < numOverlays; i++)
@@ -1311,6 +1340,58 @@ bool zCTriggerBase::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
+bool zCCodeMaster::Archive(zCArchiver* archiver)
+{
+	if (!zCTriggerBase::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool zCCodeMaster::Unarchive(zCArchiver* archiver)
+{
+	if (!zCTriggerBase::Unarchive(archiver))
+		return false;
+
+	archiver->ReadBool(ARC_ARGS(orderRelevant));
+	archiver->ReadBool(ARC_ARGS(firstFalseIsFailure));
+	archiver->ReadString(ARC_ARGS(triggerTargetFailure));
+	archiver->ReadBool(ARC_ARGS(untriggerCancels));
+
+	if (!archiver->IsProps())
+	{
+		char numSlaves = 6;
+		archiver->ReadByte(ARC_ARGS(numSlaves));
+
+		slaveVobNameList.resize(numSlaves);
+
+		for (size_t i = 0; i < numSlaves; i++)
+		{
+			std::string slaveVobNameKey = "slaveVobName" + std::to_string(i);
+			std::string slaveVobName;
+			archiver->ReadString(slaveVobNameKey, slaveVobName);
+
+			slaveVobNameList[i] = slaveVobName;
+		}
+	}
+
+	if (archiver->IsSavegame())
+	{
+		char numSlavesTriggered = 0;
+		archiver->ReadByte(ARC_ARGS(numSlavesTriggered));
+
+		slaveTriggeredList.resize(numSlavesTriggered);
+
+		for (size_t i = 0; i < numSlavesTriggered; i++)
+		{
+			std::string slaveTriggeredKey = "slaveTriggered" + std::to_string(i);
+			slaveTriggeredList[i] = archiver->ReadObjectAs<zCVob*>(slaveTriggeredKey);
+		}
+	}
+
+	return true;
+}
+
 bool zCMessageFilter::Archive(zCArchiver* archiver)
 {
 	if (!zCTriggerBase::Archive(archiver))
@@ -1326,6 +1407,25 @@ bool zCMessageFilter::Unarchive(zCArchiver* archiver)
 
 	archiver->ReadEnum(ARC_ARGSE(onTrigger));
 	archiver->ReadEnum(ARC_ARGSE(onUntrigger));
+
+	return true;
+}
+
+bool zCMoverControler::Archive(zCArchiver* archiver)
+{
+	if (!zCTriggerBase::Archive(archiver))
+		return false;
+
+	return false;
+}
+
+bool zCMoverControler::Unarchive(zCArchiver* archiver)
+{
+	if (!zCTriggerBase::Unarchive(archiver))
+		return false;
+
+	archiver->ReadEnum(ARC_ARGSE(moverMessage));
+	archiver->ReadInt(ARC_ARGS(gotoFixedKey));
 
 	return true;
 }
@@ -1459,7 +1559,7 @@ bool zCMover::Unarchive(zCArchiver* archiver)
 		archiver->ReadString(ARC_ARGS(vobChainName));
 	}
 
-	short numKeyframes;
+	short numKeyframes = 0;
 	archiver->ReadWord(ARC_ARGS(numKeyframes));
 
 	if (numKeyframes > 0)
