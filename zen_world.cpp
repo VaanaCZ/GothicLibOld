@@ -1,12 +1,12 @@
 #include "zen_world.h"
 
-using namespace GothicLib;
+using namespace GothicLib::ZenGin;
 
 /*
 	World classes
 */
 
-bool GothicLib::ZenGin::zCWorld::LoadWorld(FileStream* file)
+bool zCWorld::LoadWorld(FileStream* file)
 {
 	if (game == GAME_DEMO3)
 	{
@@ -29,19 +29,24 @@ bool GothicLib::ZenGin::zCWorld::LoadWorld(FileStream* file)
 			return false;
 		}
 	}
+	else
+	{
+		LOG_ERROR("Game not specified. Please specify a game to use before loading a world!");
+		return false;
+	}
 }
 
-bool GothicLib::ZenGin::zCWorld::SaveWorld(FileStream* file)
+bool zCWorld::SaveWorld(FileStream* file)
 {
 	return false;
 }
 
-bool ZenGin::zCWorld::Archive(zCArchiver* archiver)
+bool zCWorld::Archive(zCArchiver* archiver)
 {
 	return false;
 }
 
-bool ZenGin::zCWorld::Unarchive(zCArchiver* archiver)
+bool zCWorld::Unarchive(zCArchiver* archiver)
 {
 	// Loop through chunks until the end
 	bool loop = true;
@@ -110,12 +115,12 @@ bool ZenGin::zCWorld::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCWorld::ArcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vobCount)
+bool zCWorld::ArcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vobCount)
 {
 	return true;
 }
 
-bool ZenGin::zCWorld::UnarcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vobCount)
+bool zCWorld::UnarcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vobCount)
 {
 	// Read vob
 	zCVob* nextVob;
@@ -150,7 +155,7 @@ bool ZenGin::zCWorld::UnarcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vob
 	return true;
 }
 
-bool ZenGin::zCWorld::LoadWorldFile(FileStream* file)
+bool zCWorld::LoadWorldFile(FileStream* file)
 {
 	std::string line;
 
@@ -182,12 +187,12 @@ bool ZenGin::zCWorld::LoadWorldFile(FileStream* file)
 	return true;
 }
 
-bool ZenGin::zCWorld::SaveWorldFile(FileStream* file)
+bool zCWorld::SaveWorldFile(FileStream* file)
 {
 	return false;
 }
 
-bool ZenGin::zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
+bool zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 {	
 	bool inVob = false;
 	zCVob* vob = parentVob;
@@ -274,17 +279,17 @@ bool ZenGin::zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 	}
 }
 
-bool ZenGin::zCWorld::SaveVobTree(FileStream* file, zCVob* parentVob)
+bool zCWorld::SaveVobTree(FileStream* file, zCVob* parentVob)
 {
 	return false;
 }
 
-bool ZenGin::oCWorld::Archive(zCArchiver* archiver)
+bool oCWorld::Archive(zCArchiver* archiver)
 {
 	return false;
 }
 
-bool ZenGin::oCWorld::Unarchive(zCArchiver* archiver)
+bool oCWorld::Unarchive(zCArchiver* archiver)
 {
 	if (!zCWorld::Unarchive(archiver))
 		return false;
@@ -298,12 +303,12 @@ bool ZenGin::oCWorld::Unarchive(zCArchiver* archiver)
 	BSP
 */
 
-bool ZenGin::zCBspTree::SaveBIN(FileStream* file)
+bool zCBspTree::SaveBIN(FileStream* file)
 {
 	return false;
 }
 
-bool ZenGin::zCBspTree::LoadBIN(FileStream* file)
+bool zCBspTree::LoadBIN(FileStream* file)
 {
 	// Read start
 	uint32_t version, length;
@@ -336,12 +341,12 @@ bool ZenGin::zCBspTree::LoadBIN(FileStream* file)
 		oCVob
 */
 
-bool ZenGin::zCVob::Archive(zCArchiver* archiver)
+bool zCVob::Archive(zCArchiver* archiver)
 {
 	return false;
 }
 
-bool ZenGin::zCVob::Unarchive(zCArchiver* archiver)
+bool zCVob::Unarchive(zCArchiver* archiver)
 {
 	int	pack = 0;
 
@@ -480,12 +485,12 @@ bool ZenGin::zCVob::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCVob::Save(FileStream* file)
+bool zCVob::Save(FileStream* file)
 {
 	return false;
 }
 
-bool ZenGin::zCVob::Load(FileStream* file)
+bool zCVob::Load(FileStream* file)
 {
 	bool inVob = false;
 
@@ -603,7 +608,7 @@ bool ZenGin::zCVob::Load(FileStream* file)
 	zCCSCamera
 */
 
-bool ZenGin::zCCSCamera::Archive(zCArchiver* archiver)
+bool zCCSCamera::Archive(zCArchiver* archiver)
 {
 	if (!zCVob::Archive(archiver))
 		return false;
@@ -611,7 +616,7 @@ bool ZenGin::zCCSCamera::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCCSCamera::Unarchive(zCArchiver* archiver)
+bool zCCSCamera::Unarchive(zCArchiver* archiver)
 {
 	if (!zCVob::Unarchive(archiver))
 		return false;
@@ -678,7 +683,7 @@ bool ZenGin::zCCSCamera::Unarchive(zCArchiver* archiver)
 	zCCamTrj_KeyFrame
 */
 
-bool ZenGin::zCCamTrj_KeyFrame::Archive(zCArchiver* archiver)
+bool zCCamTrj_KeyFrame::Archive(zCArchiver* archiver)
 {
 	if (!zCVob::Archive(archiver))
 		return false;
@@ -686,7 +691,7 @@ bool ZenGin::zCCamTrj_KeyFrame::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCCamTrj_KeyFrame::Unarchive(zCArchiver* archiver)
+bool zCCamTrj_KeyFrame::Unarchive(zCArchiver* archiver)
 {
 	if (!zCVob::Unarchive(archiver))
 		return false;
@@ -745,7 +750,7 @@ bool ZenGin::zCCamTrj_KeyFrame::Unarchive(zCArchiver* archiver)
 		zCVobScreenFX
 */
 
-bool ZenGin::zCEarthquake::Archive(zCArchiver* archiver)
+bool zCEarthquake::Archive(zCArchiver* archiver)
 {
 	if (!zCEffect::Archive(archiver))
 		return false;
@@ -753,7 +758,7 @@ bool ZenGin::zCEarthquake::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCEarthquake::Unarchive(zCArchiver* archiver)
+bool zCEarthquake::Unarchive(zCArchiver* archiver)
 {
 	if (!zCEffect::Unarchive(archiver))
 		return false;
@@ -765,7 +770,7 @@ bool ZenGin::zCEarthquake::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCPFXControler::Archive(zCArchiver* archiver)
+bool zCPFXControler::Archive(zCArchiver* archiver)
 {
 	if (!zCEffect::Archive(archiver))
 		return false;
@@ -773,7 +778,7 @@ bool ZenGin::zCPFXControler::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCPFXControler::Unarchive(zCArchiver* archiver)
+bool zCPFXControler::Unarchive(zCArchiver* archiver)
 {
 	if (!zCEffect::Unarchive(archiver))
 		return false;
@@ -785,7 +790,7 @@ bool ZenGin::zCPFXControler::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCVobAnimate::Archive(zCArchiver* archiver)
+bool zCVobAnimate::Archive(zCArchiver* archiver)
 {
 	if (!zCEffect::Archive(archiver))
 		return false;
@@ -793,7 +798,7 @@ bool ZenGin::zCVobAnimate::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCVobAnimate::Unarchive(zCArchiver* archiver)
+bool zCVobAnimate::Unarchive(zCArchiver* archiver)
 {
 	if (!zCEffect::Unarchive(archiver))
 		return false;
@@ -812,7 +817,7 @@ bool ZenGin::zCVobAnimate::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCVobLensFlare::Archive(zCArchiver* archiver)
+bool zCVobLensFlare::Archive(zCArchiver* archiver)
 {
 	if (!zCEffect::Archive(archiver))
 		return false;
@@ -820,7 +825,7 @@ bool ZenGin::zCVobLensFlare::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCVobLensFlare::Unarchive(zCArchiver* archiver)
+bool zCVobLensFlare::Unarchive(zCArchiver* archiver)
 {
 	if (!zCEffect::Unarchive(archiver))
 		return false;
@@ -830,7 +835,7 @@ bool ZenGin::zCVobLensFlare::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCVobScreenFX::Archive(zCArchiver* archiver)
+bool zCVobScreenFX::Archive(zCArchiver* archiver)
 {
 	if (!zCEffect::Archive(archiver))
 		return false;
@@ -838,7 +843,7 @@ bool ZenGin::zCVobScreenFX::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCVobScreenFX::Unarchive(zCArchiver* archiver)
+bool zCVobScreenFX::Unarchive(zCArchiver* archiver)
 {
 	if (!zCEffect::Unarchive(archiver))
 		return false;
@@ -860,7 +865,7 @@ bool ZenGin::zCVobScreenFX::Unarchive(zCArchiver* archiver)
 	oCItem
 */
 
-bool ZenGin::oCItem::Archive(zCArchiver* archiver)
+bool oCItem::Archive(zCArchiver* archiver)
 {
 	if (!oCVob::Archive(archiver))
 		return false;
@@ -868,7 +873,7 @@ bool ZenGin::oCItem::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::oCItem::Unarchive(zCArchiver* archiver)
+bool oCItem::Unarchive(zCArchiver* archiver)
 {
 	if (!oCVob::Unarchive(archiver))
 		return false;
@@ -884,7 +889,7 @@ bool ZenGin::oCItem::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::oCItem::Save(FileStream* file)
+bool oCItem::Save(FileStream* file)
 {
 	if (!zCVob::Save(file))
 		return false;
@@ -892,7 +897,7 @@ bool ZenGin::oCItem::Save(FileStream* file)
 	return false;
 }
 
-bool ZenGin::oCItem::Load(FileStream* file)
+bool oCItem::Load(FileStream* file)
 {
 	if (!zCVob::Load(file))
 		return false;
@@ -945,7 +950,7 @@ bool ZenGin::oCItem::Load(FileStream* file)
 */
 
 
-bool ZenGin::oCMOB::Archive(zCArchiver* archiver)
+bool oCMOB::Archive(zCArchiver* archiver)
 {
 	if (!oCVob::Archive(archiver))
 		return false;
@@ -953,7 +958,7 @@ bool ZenGin::oCMOB::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::oCMOB::Unarchive(zCArchiver* archiver)
+bool oCMOB::Unarchive(zCArchiver* archiver)
 {
 	if (!oCVob::Unarchive(archiver))
 		return false;
@@ -987,7 +992,7 @@ bool ZenGin::oCMOB::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::oCMobInter::Archive(zCArchiver* archiver)
+bool oCMobInter::Archive(zCArchiver* archiver)
 {
 	if (!oCMOB::Archive(archiver))
 		return false;
@@ -995,7 +1000,7 @@ bool ZenGin::oCMobInter::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::oCMobInter::Unarchive(zCArchiver* archiver)
+bool oCMobInter::Unarchive(zCArchiver* archiver)
 {
 	if (!oCMOB::Unarchive(archiver))
 		return false;
@@ -1029,7 +1034,7 @@ bool ZenGin::oCMobInter::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::oCMobFire::Archive(zCArchiver* archiver)
+bool oCMobFire::Archive(zCArchiver* archiver)
 {
 	if (!oCMobInter::Archive(archiver))
 		return false;
@@ -1037,7 +1042,7 @@ bool ZenGin::oCMobFire::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::oCMobFire::Unarchive(zCArchiver* archiver)
+bool oCMobFire::Unarchive(zCArchiver* archiver)
 {
 	if (!oCMobInter::Unarchive(archiver))
 		return false;
@@ -1048,7 +1053,7 @@ bool ZenGin::oCMobFire::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::oCMobLockable::Archive(zCArchiver* archiver)
+bool oCMobLockable::Archive(zCArchiver* archiver)
 {
 	if (!oCMobInter::Archive(archiver))
 		return false;
@@ -1056,7 +1061,7 @@ bool ZenGin::oCMobLockable::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::oCMobLockable::Unarchive(zCArchiver* archiver)
+bool oCMobLockable::Unarchive(zCArchiver* archiver)
 {
 	if (!oCMobInter::Unarchive(archiver))
 		return false;
@@ -1071,7 +1076,7 @@ bool ZenGin::oCMobLockable::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::oCMobContainer::Archive(zCArchiver* archiver)
+bool oCMobContainer::Archive(zCArchiver* archiver)
 {
 	if (!oCMobLockable::Archive(archiver))
 		return false;
@@ -1079,7 +1084,7 @@ bool ZenGin::oCMobContainer::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::oCMobContainer::Unarchive(zCArchiver* archiver)
+bool oCMobContainer::Unarchive(zCArchiver* archiver)
 {
 	if (!oCMobLockable::Unarchive(archiver))
 		return false;
@@ -1107,7 +1112,7 @@ bool ZenGin::oCMobContainer::Unarchive(zCArchiver* archiver)
 	Only included to support demo5 loading.
 */
 
-bool ZenGin::oCMob::Archive(zCArchiver* archiver)
+bool oCMob::Archive(zCArchiver* archiver)
 {
 	if (!oCVob::Archive(archiver))
 		return false;
@@ -1115,7 +1120,7 @@ bool ZenGin::oCMob::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::oCMob::Unarchive(zCArchiver* archiver)
+bool oCMob::Unarchive(zCArchiver* archiver)
 {
 	if (!oCVob::Unarchive(archiver))
 		return false;
@@ -1125,7 +1130,7 @@ bool ZenGin::oCMob::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::oCMob::Save(FileStream* file)
+bool oCMob::Save(FileStream* file)
 {
 	if (!zCVob::Save(file))
 		return false;
@@ -1133,7 +1138,7 @@ bool ZenGin::oCMob::Save(FileStream* file)
 	return false;
 }
 
-bool ZenGin::oCMob::Load(FileStream* file)
+bool oCMob::Load(FileStream* file)
 {
 	if (!zCVob::Load(file))
 		return false;
@@ -1175,7 +1180,7 @@ bool ZenGin::oCMob::Load(FileStream* file)
 	oCNpc
 */
 
-bool ZenGin::oCNpc::Archive(zCArchiver* archiver)
+bool oCNpc::Archive(zCArchiver* archiver)
 {
 	if (!oCVob::Archive(archiver))
 		return false;
@@ -1183,7 +1188,7 @@ bool ZenGin::oCNpc::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::oCNpc::Unarchive(zCArchiver* archiver)
+bool oCNpc::Unarchive(zCArchiver* archiver)
 {
 	if (!oCVob::Unarchive(archiver))
 		return false;
@@ -1217,7 +1222,7 @@ bool ZenGin::oCNpc::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::oCNpc::Save(FileStream* file)
+bool oCNpc::Save(FileStream* file)
 {
 	if (!zCVob::Save(file))
 		return false;
@@ -1225,7 +1230,7 @@ bool ZenGin::oCNpc::Save(FileStream* file)
 	return false;
 }
 
-bool ZenGin::oCNpc::Load(FileStream* file)
+bool oCNpc::Load(FileStream* file)
 {
 	if (!zCVob::Load(file))
 		return false;
@@ -1285,7 +1290,7 @@ bool ZenGin::oCNpc::Load(FileStream* file)
 */
 
 
-bool ZenGin::zCTriggerBase::Archive(zCArchiver* archiver)
+bool zCTriggerBase::Archive(zCArchiver* archiver)
 {
 	if (!zCVob::Archive(archiver))
 		return false;
@@ -1293,7 +1298,7 @@ bool ZenGin::zCTriggerBase::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCTriggerBase::Unarchive(zCArchiver* archiver)
+bool zCTriggerBase::Unarchive(zCArchiver* archiver)
 {
 	if (!zCVob::Unarchive(archiver))
 		return false;
@@ -1306,7 +1311,7 @@ bool ZenGin::zCTriggerBase::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCMessageFilter::Archive(zCArchiver* archiver)
+bool zCMessageFilter::Archive(zCArchiver* archiver)
 {
 	if (!zCTriggerBase::Archive(archiver))
 		return false;
@@ -1314,7 +1319,7 @@ bool ZenGin::zCMessageFilter::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCMessageFilter::Unarchive(zCArchiver* archiver)
+bool zCMessageFilter::Unarchive(zCArchiver* archiver)
 {
 	if (!zCTriggerBase::Unarchive(archiver))
 		return false;
@@ -1325,7 +1330,7 @@ bool ZenGin::zCMessageFilter::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCTrigger::Archive(zCArchiver* archiver)
+bool zCTrigger::Archive(zCArchiver* archiver)
 {
 	if (!zCTriggerBase::Archive(archiver))
 		return false;
@@ -1333,7 +1338,7 @@ bool ZenGin::zCTrigger::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCTrigger::Unarchive(zCArchiver* archiver)
+bool zCTrigger::Unarchive(zCArchiver* archiver)
 {
 	if (!zCTriggerBase::Unarchive(archiver))
 		return false;
@@ -1424,7 +1429,7 @@ bool ZenGin::zCTrigger::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCMover::Archive(zCArchiver* archiver)
+bool zCMover::Archive(zCArchiver* archiver)
 {
 	if (!zCTrigger::Archive(archiver))
 		return false;
@@ -1432,7 +1437,7 @@ bool ZenGin::zCMover::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCMover::Unarchive(zCArchiver* archiver)
+bool zCMover::Unarchive(zCArchiver* archiver)
 {
 	if (!zCTrigger::Unarchive(archiver))
 		return false;
@@ -1497,7 +1502,7 @@ bool ZenGin::zCMover::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::oCTriggerChangeLevel::Archive(zCArchiver* archiver)
+bool oCTriggerChangeLevel::Archive(zCArchiver* archiver)
 {
 	if (!zCTrigger::Archive(archiver))
 		return false;
@@ -1505,7 +1510,7 @@ bool ZenGin::oCTriggerChangeLevel::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::oCTriggerChangeLevel::Unarchive(zCArchiver* archiver)
+bool oCTriggerChangeLevel::Unarchive(zCArchiver* archiver)
 {
 	if (!zCTrigger::Unarchive(archiver))
 		return false;
@@ -1516,7 +1521,7 @@ bool ZenGin::oCTriggerChangeLevel::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCTriggerList::Archive(zCArchiver* archiver)
+bool zCTriggerList::Archive(zCArchiver* archiver)
 {
 	if (!zCTrigger::Archive(archiver))
 		return false;
@@ -1524,7 +1529,7 @@ bool ZenGin::zCTriggerList::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCTriggerList::Unarchive(zCArchiver* archiver)
+bool zCTriggerList::Unarchive(zCArchiver* archiver)
 {
 	if (!zCTrigger::Unarchive(archiver))
 		return false;
@@ -1566,7 +1571,7 @@ bool ZenGin::zCTriggerList::Unarchive(zCArchiver* archiver)
 }
 
 
-bool ZenGin::oCTriggerScript::Archive(zCArchiver* archiver)
+bool oCTriggerScript::Archive(zCArchiver* archiver)
 {
 	if (!zCTrigger::Archive(archiver))
 		return false;
@@ -1574,7 +1579,7 @@ bool ZenGin::oCTriggerScript::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::oCTriggerScript::Unarchive(zCArchiver* archiver)
+bool oCTriggerScript::Unarchive(zCArchiver* archiver)
 {
 	if (!zCTrigger::Unarchive(archiver))
 		return false;
@@ -1592,7 +1597,7 @@ bool ZenGin::oCTriggerScript::Unarchive(zCArchiver* archiver)
 	zCVobLight
 */
 
-bool ZenGin::zCVobLight::Archive(zCArchiver* archiver)
+bool zCVobLight::Archive(zCArchiver* archiver)
 {
 	if (!zCVob::Archive(archiver))
 		return false;
@@ -1600,7 +1605,7 @@ bool ZenGin::zCVobLight::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCVobLight::Unarchive(zCArchiver* archiver)
+bool zCVobLight::Unarchive(zCArchiver* archiver)
 {
 	if (!zCVob::Unarchive(archiver))
 		return false;
@@ -1650,7 +1655,7 @@ bool ZenGin::zCVobLight::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCVobLight::Save(FileStream* file)
+bool zCVobLight::Save(FileStream* file)
 {
 	if (!zCVob::Save(file))
 		return false;
@@ -1658,7 +1663,7 @@ bool ZenGin::zCVobLight::Save(FileStream* file)
 	return false;
 }
 
-bool ZenGin::zCVobLight::Load(FileStream* file)
+bool zCVobLight::Load(FileStream* file)
 {
 	if (!zCVob::Load(file))
 		return false;
@@ -1777,7 +1782,7 @@ bool ZenGin::zCVobLight::Load(FileStream* file)
 			zCZoneZFogDefault
 */
 
-bool ZenGin::zCVobSound::Archive(zCArchiver* archiver)
+bool zCVobSound::Archive(zCArchiver* archiver)
 {
 	if (!zCVob::Archive(archiver))
 		return false;
@@ -1785,7 +1790,7 @@ bool ZenGin::zCVobSound::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCVobSound::Unarchive(zCArchiver* archiver)
+bool zCVobSound::Unarchive(zCArchiver* archiver)
 {
 	if (!zCVob::Unarchive(archiver))
 		return false;
@@ -1826,7 +1831,7 @@ bool ZenGin::zCVobSound::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCVobSoundDaytime::Archive(zCArchiver* archiver)
+bool zCVobSoundDaytime::Archive(zCArchiver* archiver)
 {
 	if (!zCVobSound::Archive(archiver))
 		return false;
@@ -1834,7 +1839,7 @@ bool ZenGin::zCVobSoundDaytime::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCVobSoundDaytime::Unarchive(zCArchiver* archiver)
+bool zCVobSoundDaytime::Unarchive(zCArchiver* archiver)
 {
 	if (!zCVobSound::Unarchive(archiver))
 		return false;
@@ -1846,7 +1851,7 @@ bool ZenGin::zCVobSoundDaytime::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::oCZoneMusic::Archive(zCArchiver* archiver)
+bool oCZoneMusic::Archive(zCArchiver* archiver)
 {
 	if (!zCZone::Archive(archiver))
 		return false;
@@ -1854,7 +1859,7 @@ bool ZenGin::oCZoneMusic::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::oCZoneMusic::Unarchive(zCArchiver* archiver)
+bool oCZoneMusic::Unarchive(zCArchiver* archiver)
 {
 	if (!zCZone::Unarchive(archiver))
 		return false;
@@ -1880,7 +1885,7 @@ bool ZenGin::oCZoneMusic::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCZoneVobFarPlane::Archive(zCArchiver* archiver)
+bool zCZoneVobFarPlane::Archive(zCArchiver* archiver)
 {
 	if (!zCZone::Archive(archiver))
 		return false;
@@ -1888,7 +1893,7 @@ bool ZenGin::zCZoneVobFarPlane::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCZoneVobFarPlane::Unarchive(zCArchiver* archiver)
+bool zCZoneVobFarPlane::Unarchive(zCArchiver* archiver)
 {
 	if (!zCZone::Unarchive(archiver))
 		return false;
@@ -1899,7 +1904,7 @@ bool ZenGin::zCZoneVobFarPlane::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCZoneZFog::Archive(zCArchiver* archiver)
+bool zCZoneZFog::Archive(zCArchiver* archiver)
 {
 	if (!zCZone::Archive(archiver))
 		return false;
@@ -1907,7 +1912,7 @@ bool ZenGin::zCZoneZFog::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCZoneZFog::Unarchive(zCArchiver* archiver)
+bool zCZoneZFog::Unarchive(zCArchiver* archiver)
 {
 	if (!zCZone::Unarchive(archiver))
 		return false;
@@ -1925,12 +1930,12 @@ bool ZenGin::zCZoneZFog::Unarchive(zCArchiver* archiver)
 	AI classes
 */
 
-bool ZenGin::zCAIPlayer::Archive(zCArchiver* archiver)
+bool zCAIPlayer::Archive(zCArchiver* archiver)
 {
 	return false;
 }
 
-bool ZenGin::zCAIPlayer::Unarchive(zCArchiver* archiver)
+bool zCAIPlayer::Unarchive(zCArchiver* archiver)
 {
 	if (archiver->IsSavegame())
 	{
@@ -1947,7 +1952,7 @@ bool ZenGin::zCAIPlayer::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::oCAniCtrl_Human::Archive(zCArchiver* archiver)
+bool oCAniCtrl_Human::Archive(zCArchiver* archiver)
 {
 	if (!zCAIPlayer::Archive(archiver))
 		return false;
@@ -1955,7 +1960,7 @@ bool ZenGin::oCAniCtrl_Human::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::oCAniCtrl_Human::Unarchive(zCArchiver* archiver)
+bool oCAniCtrl_Human::Unarchive(zCArchiver* archiver)
 {
 	if (!zCAIPlayer::Unarchive(archiver))
 		return false;
@@ -1979,12 +1984,12 @@ bool ZenGin::oCAniCtrl_Human::Unarchive(zCArchiver* archiver)
 	Event manager
 */
 
-bool ZenGin::zCEventManager::Archive(zCArchiver* archiver)
+bool zCEventManager::Archive(zCArchiver* archiver)
 {
 	return false;
 }
 
-bool ZenGin::zCEventManager::Unarchive(zCArchiver* archiver)
+bool zCEventManager::Unarchive(zCArchiver* archiver)
 {
 	return false;
 }
@@ -1993,12 +1998,12 @@ bool ZenGin::zCEventManager::Unarchive(zCArchiver* archiver)
 	Waynet
 */
 
-bool ZenGin::zCWayNet::Archive(zCArchiver* archiver)
+bool zCWayNet::Archive(zCArchiver* archiver)
 {
 	return false;
 }
 
-bool ZenGin::zCWayNet::Unarchive(zCArchiver* archiver)
+bool zCWayNet::Unarchive(zCArchiver* archiver)
 {
 	waynetVersion = 0;
 
@@ -2083,12 +2088,12 @@ bool ZenGin::zCWayNet::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool GothicLib::ZenGin::zCWayNet::SaveWaynet(FileStream* file)
+bool zCWayNet::SaveWaynet(FileStream* file)
 {
 	return false;
 }
 
-bool GothicLib::ZenGin::zCWayNet::LoadWaynet(FileStream* file)
+bool zCWayNet::LoadWaynet(FileStream* file)
 {
 	std::string line;
 
@@ -2121,12 +2126,12 @@ bool GothicLib::ZenGin::zCWayNet::LoadWaynet(FileStream* file)
 	return true;
 }
 
-bool ZenGin::zCWaypoint::Archive(zCArchiver* archiver)
+bool zCWaypoint::Archive(zCArchiver* archiver)
 {
 	return false;
 }
 
-bool ZenGin::zCWaypoint::Unarchive(zCArchiver* archiver)
+bool zCWaypoint::Unarchive(zCArchiver* archiver)
 {
 	archiver->ReadString(ARC_ARGS(wpName));
 	archiver->ReadInt(ARC_ARGS(waterDepth));

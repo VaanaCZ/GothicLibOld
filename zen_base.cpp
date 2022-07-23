@@ -558,19 +558,22 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 
 			object = classDef->CreateInstance();
 
-			uint16_t versionSum = classDef->GetVersionSum(game);
-
-			if (versionSum == -1)
+			// Figure out if the class is supported			
+			if (!classDef->IsVersionSumSupported(game, classVersion))
 			{
-				LOG_ERROR("Class " + classDef->GetName() + " is not supported in the specified game version!");
-				return nullptr;
-			}
+				uint16_t versionSum = classDef->GetVersionSum(game);
 
-			if (versionSum != classVersion)
-			{
-				LOG_ERROR("Error while reading class " + classDef->GetName() + ". The version is " 
-					+ std::to_string(classVersion) + ", expected " + std::to_string(versionSum) + "!");
-				return nullptr;
+				if (versionSum == VERSION_NONE)
+				{
+					LOG_ERROR("Class " + classDef->GetName() + " is not supported in the specified game version!");
+					return nullptr;
+				}
+				else
+				{
+					LOG_ERROR("Error while reading class " + classDef->GetName() + ". The version is "
+						+ std::to_string(classVersion) + ", expected " + std::to_string(versionSum) + "!");
+					return nullptr;
+				}
 			}
 
 			object->game = game;
@@ -1060,90 +1063,6 @@ ClassDefinition* ClassDefinition::GetClassDef(std::string name)
 			}
 		}
 
-		if (classDef->revisionCount != 0 &&
-			!classDef->isRevisionsListInit)
-		{
-			ClassDefinition* currentClassDef = classDef;
-
-			while (true)
-			{
-				for (size_t i = 0; i < classDef->revisionCount; i++)
-				{
-					CLASS_REVISION& rev = classDef->revisions[i];
-
-					for (size_t j = 0; j < currentClassDef->revisionCount; j++)
-					{
-						CLASS_REVISION& currRev = currentClassDef->revisions[j];
-
-						// Temp
-						if (rev.game == GAME_SEPTEMBERDEMO &&
-							(classDef->GetName() == "oCMobDoor" ||
-							classDef->GetName() == "oCMobContainer"))
-						{
-							rev.versionSum = 61440;
-							break;
-						}
-
-						if (rev.game == GAME_SEPTEMBERDEMO &&
-							classDef->GetName() == "zCTrigger")
-						{
-							rev.versionSum = 24960;
-							break;
-						}
-
-						if (rev.game == GAME_SEPTEMBERDEMO &&
-							(classDef->GetName() == "zCEarthquake" ||
-							classDef->GetName() == "zCMessageFilter"))
-						{
-							rev.versionSum = 47105;
-							break;
-						}
-
-						if (rev.game == GAME_DEMO5 &&
-							(classDef->GetName() == "oCNpc" || classDef->GetName() == "oCMobInter" ||
-							classDef->GetName() == "oCMobContainer" || classDef->GetName() == "oCMobWheel" ||
-								classDef->GetName() == "oCMobSwitch" || classDef->GetName() == "oCMOB" ||
-								classDef->GetName() == "oCMobBed"))
-						{
-							rev.versionSum = 36865;
-							break;
-						}
-
-
-						if (currRev.game == rev.game ||
-							currRev.game == GAME_ALL)
-						{
-							rev.versionSum = CRC16((char*)&currRev.version, sizeof(currRev.version), rev.versionSum);
-							break;
-						}
-					}
-
-				}
-
-				//
-				// Due to a bug in the engine, the pointer to the base class
-				// is not always initialized when the class is alphabetically
-				// later than the base class. Here we account for that bug
-				// by bailing the hiarchy crawl early if the current class
-				// is alphabetically eariler than the base class.
-				//
-
-				if (currentClassDef->GetName() != "zCVob" && 
-					// zCVob is always intialized first due to the compilation order
-					currentClassDef->GetName() > classDef->GetName())
-				{
-					break;
-				}
-
-				currentClassDef = ClassDefinition::GetClassDef(currentClassDef->GetBase());
-
-				if (currentClassDef == nullptr)
-					break;
-			}
-
-			classDef->isRevisionsListInit = true;
-		}
-
 		return classDef;
 	}
 
@@ -1161,7 +1080,21 @@ uint16_t ClassDefinition::GetVersionSum(GAME game)
 		}
 	}
 
-	return -1;
+	return VERSION_NONE;
+}
+
+bool ClassDefinition::IsVersionSumSupported(GAME game, uint16_t versionSum)
+{
+	for (size_t i = 0; i < revisionCount; i++)
+	{
+		if (revisions[i].game == game &&
+			revisions[i].versionSum == versionSum)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 //

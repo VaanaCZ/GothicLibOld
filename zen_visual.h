@@ -71,13 +71,13 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_DEMO5,				0 },
-				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
-				{ GAME_GOTHIC2,				1 },
-				{ GAME_GOTHIC2ADDON,		1 },
+				{ GAME_DEMO5,				0		},
+				{ GAME_SEPTEMBERDEMO,		0		},
+				{ GAME_CHRISTMASEDITION,	0		},
+				{ GAME_GOTHIC1,				0		},
+				{ GAME_GOTHICSEQUEL,		0		},
+				{ GAME_GOTHIC2,				53505	},
+				{ GAME_GOTHIC2ADDON,		53505	},
 			};
 
 			ZEN_DECLARE_CLASS(zCDecal, zCVisual);
@@ -125,13 +125,13 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_DEMO5,				0 },
-				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
-				{ GAME_GOTHIC2,				1 },
-				{ GAME_GOTHIC2ADDON,		1 },
+				{ GAME_DEMO5,				0		},
+				{ GAME_SEPTEMBERDEMO,		0		},
+				{ GAME_CHRISTMASEDITION,	0		},
+				{ GAME_GOTHIC1,				0		},
+				{ GAME_GOTHICSEQUEL,		0		},
+				{ GAME_GOTHIC2,				53505	},
+				{ GAME_GOTHIC2ADDON,		53505	},
 			};
 
 			ZEN_DECLARE_CLASS(zCMesh, zCVisual);
@@ -176,12 +176,12 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		0 },
-				{ GAME_CHRISTMASEDITION,	0 },
-				{ GAME_GOTHIC1,				0 },
-				{ GAME_GOTHICSEQUEL,		0 },
-				{ GAME_GOTHIC2,				1 },
-				{ GAME_GOTHIC2ADDON,		1 },
+				{ GAME_SEPTEMBERDEMO,		0		},
+				{ GAME_CHRISTMASEDITION,	0		},
+				{ GAME_GOTHIC1,				0		},
+				{ GAME_GOTHICSEQUEL,		0		},
+				{ GAME_GOTHIC2,				53505	},
+				{ GAME_GOTHIC2ADDON,		53505	},
 			};
 
 			ZEN_DECLARE_CLASS(zCProgMeshProto, zCVisual);

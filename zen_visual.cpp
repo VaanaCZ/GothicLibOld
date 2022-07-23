@@ -1,6 +1,6 @@
 #include "zen_visual.h"
 
-using namespace GothicLib;
+using namespace GothicLib::ZenGin;
 
 /*
 	Visual classes
@@ -24,7 +24,7 @@ using namespace GothicLib;
 			zCMorphMesh
 */
 
-bool ZenGin::zCDecal::Archive(zCArchiver* archiver)
+bool zCDecal::Archive(zCArchiver* archiver)
 {
 	if (!zCVisual::Archive(archiver))
 		return false;
@@ -32,7 +32,7 @@ bool ZenGin::zCDecal::Archive(zCArchiver* archiver)
 	return false;
 }
 
-bool ZenGin::zCDecal::Unarchive(zCArchiver* archiver)
+bool zCDecal::Unarchive(zCArchiver* archiver)
 {
 	if (!zCVisual::Unarchive(archiver))
 		return false;
@@ -49,12 +49,12 @@ bool ZenGin::zCDecal::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool ZenGin::zCDecal::Save(FileStream* file)
+bool zCDecal::Save(FileStream* file)
 {
 	return true;
 }
 
-bool ZenGin::zCDecal::Load(FileStream* file)
+bool zCDecal::Load(FileStream* file)
 {
 	bool inVob = false;
 
@@ -118,12 +118,12 @@ bool ZenGin::zCDecal::Load(FileStream* file)
 	return false;
 }
 
-bool GothicLib::ZenGin::zCMesh::SaveMSH(FileStream* file)
+bool zCMesh::SaveMSH(FileStream* file)
 {
 	return false;
 }
 
-bool GothicLib::ZenGin::zCMesh::LoadMSH(FileStream* file)
+bool zCMesh::LoadMSH(FileStream* file)
 {
 	bool end = false;
 
