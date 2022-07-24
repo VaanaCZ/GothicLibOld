@@ -176,15 +176,15 @@ namespace GothicLib
 		}
 
 #define GE_DECLARE_CLASS(C, B)													\
-		inline static C* _nullInstance = nullptr;								\
-																				\
 		static bCObjectBase* CreateInstance() { return new C(); }				\
 																				\
 		inline static ClassDefinition* classDef =								\
 			new ClassDefinition(#C, #B, &C::CreateInstance);					\
 																				\
 		inline static ClassDefinition* GetStaticClassDef() { return classDef; }	\
-		virtual ClassDefinition* GetClassDef() { return classDef; }
+		virtual ClassDefinition* GetClassDef() { return classDef; }				\
+																				\
+		DECLARE_MEMORY_POOL(C)
 
 
 #define GE_DECLARE_PROPERTY(C, T, N)											\

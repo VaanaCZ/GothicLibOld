@@ -310,7 +310,9 @@ namespace GothicLib
 								sizeof(revisions) / sizeof(revisions[0]));		\
 																				\
 		inline static ClassDefinition* GetStaticClassDef() { return classDef; }	\
-		virtual ClassDefinition* GetClassDef() { return classDef; }
+		virtual ClassDefinition* GetClassDef() { return classDef; }				\
+																				\
+		DECLARE_MEMORY_POOL(C)
 
 #define ZEN_DECLARE_CLASS_ABSTRACT(C, B)										\
 		inline static ClassDefinition* classDef =								\
