@@ -24,15 +24,16 @@ namespace GothicLib
 			virtual ~eCArchiveFile()	{ }
 
 			virtual bool ReadString(std::string&);
+			virtual bool WriteString(std::string);
 
 		private:
 
 			virtual bool OnOpen();
+			virtual void OnClose();
 
 			bool isLegacyFile = false;
 
-			char** stringPool = nullptr;
-			size_t stringCount = 0;
+			std::vector<std::string> stringPool;
 
 #pragma pack (push, 1)
 			struct ArchiveFileHeader

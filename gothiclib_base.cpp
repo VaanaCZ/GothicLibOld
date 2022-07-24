@@ -67,10 +67,10 @@ bool FileStream::Open(std::string filename, char openMode)
 //
 bool FileStream::Open(std::wstring filename, char openMode)
 {
-	iPath = filename;
-
 	if (openMode == 'r')
 	{
+		iPath = filename;
+
 		mode	= STREAM_MODE_READ;
 		iSource	= STREAM_SOURCE_RAWFILE;
 
@@ -89,15 +89,18 @@ bool FileStream::Open(std::wstring filename, char openMode)
 	}
 	else if (openMode == 'w' or openMode == 'a')
 	{
-		mode = STREAM_MODE_WRITE;
+		oPath = filename;
+
+		mode	= STREAM_MODE_WRITE;
+		oSource	= STREAM_SOURCE_RAWFILE;
 
 		if (openMode == 'a')
 		{
-			oFile.open(iPath, std::ios::binary | std::ios::app);
+			oFile.open(oPath, std::ios::binary | std::ios::app);
 		}
 		else
 		{
-			oFile.open(iPath, std::ios::binary);
+			oFile.open(oPath, std::ios::binary);
 		}
 
 		if (!oFile.is_open())
@@ -207,6 +210,8 @@ bool FileStream::Open(FileStream* stream, uint64_t offset, uint64_t size)
 //
 void FileStream::Close()
 {
+	OnClose();
+
 	if (mode == STREAM_MODE_READ)
 	{
 		if (iSource == STREAM_SOURCE_RAWFILE)
@@ -221,6 +226,16 @@ void FileStream::Close()
 		iBuffer			= nullptr;
 		iTotalSize		= 0;
 		iPosition		= 0;
+	}
+	else if(mode == STREAM_MODE_WRITE)
+	{
+		if (iSource == STREAM_SOURCE_RAWFILE)
+		{
+			oFile.close();
+		}
+
+		oTotalSize		= 0;
+		oPosition		= 0;
 	}
 }
 
@@ -401,6 +416,75 @@ bool FileStream::ReadLine(std::string& line)
 	return result;
 }
 
+bool FileStream::Write(void* writeBuffer, uint64_t writeSize)
+{
+	if (error)
+	{
+		return false;
+	}
+
+	if (mode == STREAM_MODE_WRITE)
+	{	
+		// Read data depending on the source
+		if (oSource == STREAM_SOURCE_RAWFILE)
+		{
+			oFile.write((char*)writeBuffer, writeSize);
+		}
+		else if (oSource == STREAM_SOURCE_BUFFER)
+		{
+			//memcpy(readBuffer, &iBuffer[iSubOffset + iPosition], readSize);
+		}
+
+		oPosition += writeSize;
+	}
+	
+	return true;
+}
+
+bool FileStream::WriteString(std::string str)
+{
+	if (error)
+	{
+		return false;
+	}
+
+	uint16_t length = str.size();
+	Write(&length, sizeof(length));
+
+	const char* cStr = str.c_str();
+	Write((void*)cStr, str.size());
+
+	return true;
+}
+
+bool FileStream::WriteNullString(std::string str)
+{
+	if (error)
+	{
+		return false;
+	}
+
+	const char* cStr = str.c_str();
+	Write((void*)cStr, str.size() + 1);
+
+	return true;
+}
+
+bool FileStream::WriteLine(std::string line, std::string newLine)
+{
+	if (error)
+	{
+		return false;
+	}
+
+	std::string combStr = (line + newLine);
+
+	const char* cStr = combStr.c_str();
+	Write((void*)cStr, combStr.size());
+
+	return true;
+}
+
 //
 // void Seek(uint64_t pos)
 //
@@ -418,6 +502,13 @@ void FileStream::Seek(uint64_t pos)
 		if (iSource == STREAM_SOURCE_RAWFILE)
 			iFile.seekg(iSubOffset + iPosition);
 	}
+	if (mode == STREAM_MODE_WRITE)
+	{
+		oPosition = pos;
+
+		if (oSource == STREAM_SOURCE_RAWFILE)
+			oFile.seekp(oPosition);
+	}
 }
 
 //
@@ -431,6 +522,10 @@ uint64_t FileStream::Tell()
 	{
 		return iPosition;
 	}
+	else if (mode == STREAM_MODE_WRITE)
+	{
+		return oPosition;
+	}
 }
 
 //
@@ -443,6 +538,10 @@ uint64_t FileStream::TotalSize()
 	if (mode == STREAM_MODE_READ)
 	{
 		return iTotalSize;
+	}
+	else if (mode == STREAM_MODE_WRITE)
+	{
+		return oTotalSize;
 	}
 }
 

@@ -267,6 +267,11 @@ namespace GothicLib
 		bool			ReadNullString(std::string&);
 		bool			ReadLine(std::string&);
 
+		bool			Write(void*, uint64_t);
+		virtual bool	WriteString(std::string);
+		bool			WriteNullString(std::string);
+		bool			WriteLine(std::string, std::string = "\r\n");
+
 		void			Seek(uint64_t pos);
 		uint64_t		Tell();
 		uint64_t		TotalSize();
@@ -276,10 +281,9 @@ namespace GothicLib
 	protected:
 
 		virtual bool	OnOpen()	{ return true; }
+		virtual void	OnClose()	{ }
 
 		bool			error = false;
-
-	private:
 
 		void			ForkSubStream(FileStream*, uint64_t);
 
@@ -319,7 +323,13 @@ namespace GothicLib
 		std::thread::id	iSubThreadId;
 
 		// Out
+		STREAM_SOURCE	oSource = STREAM_SOURCE_NONE;
+		
 		std::ofstream	oFile;
+		std::wstring	oPath;
+
+		uint64_t		oTotalSize; // todo
+		uint64_t		oPosition;
 
 	};
 };

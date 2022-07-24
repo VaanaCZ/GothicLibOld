@@ -20,7 +20,7 @@ bool eCArchiveFile::ReadString(std::string& str)
 		return false;
 	}
 
-	if (index >= stringCount)
+	if (index >= stringPool.size())
 	{
 		return false;
 	}
@@ -30,78 +30,149 @@ bool eCArchiveFile::ReadString(std::string& str)
 	return true;
 }
 
+bool eCArchiveFile::WriteString(std::string str)
+{
+	if (error)
+	{
+		return false;
+	}
+
+	if (isLegacyFile)
+	{
+		return FileStream::WriteString(str);
+	}
+
+	uint16_t index = stringPool.size();
+	if (!Write(&index, sizeof(index)))
+	{
+		return false;
+	}
+
+	stringPool.push_back(str);
+
+	return true;
+}
+
 bool eCArchiveFile::OnOpen()
 {
-	uint64_t startPos = Tell();
-
-	// Attempt to open read file beginning
-	ArchiveFileHeader header;
-	if (!Read(&header, sizeof(header)))
+	if (mode == STREAM_MODE_READ)
 	{
-		isLegacyFile = true;
-		Seek(startPos);
+		uint64_t startPos = Tell();
 
-		return true;
-	}
-
-	if (header.magic != 0x454C464D4F4E4547 ||
-		header.version != 1 ||
-		header.offset < sizeof(header))
-	{
-		isLegacyFile = true;
-		Seek(startPos);
-
-		return true;
-	}
-
-	// If checks were sucessul, this is a valid eCArchiveFile
-	startPos = Tell();
-
-	Seek(header.offset);
-
-	ArchiveFileStringPoolHeader stringPoolHeader;
-	if (!Read(&stringPoolHeader, sizeof(stringPoolHeader)))
-	{
-		LOG_ERROR("Unexpected end of file, expected a eCArchiveFile string pool!");
-		return false;
-	}
-
-	if (stringPoolHeader.magic != 0xDEADBEEF ||
-		stringPoolHeader.version != 1)
-	{
-		LOG_ERROR("Control bytes of eCArchiveFile string pool do not match!");
-		return false;
-	}
-
-	// Read strings
-	if (stringPoolHeader.count != 0)
-	{
-		stringCount	= stringPoolHeader.count;
-		stringPool	= new char*[stringCount];
-
-		for (size_t i = 0; i < stringCount; i++)
+		// Attempt to open read file beginning
+		ArchiveFileHeader header;
+		if (!Read(&header, sizeof(header)))
 		{
-			uint16_t length;
-			if (!Read(&length, sizeof(length)))
-			{
-				LOG_ERROR("Unexpected end of file while reading string pool, expected length!");
-				return false;
-			}
+			isLegacyFile = true;
+			Seek(startPos);
 
-			stringPool[i]			= new char[length + 1];
-			stringPool[i][length]	= NULL;
+			return true;
+		}
 
-			if (!Read(stringPool[i], length))
+		if (header.magic != 0x454C464D4F4E4547 ||
+			header.version != 1 ||
+			header.offset < sizeof(header))
+		{
+			isLegacyFile = true;
+			Seek(startPos);
+
+			return true;
+		}
+
+		// If checks were sucessul, this is a valid eCArchiveFile
+		startPos = Tell();
+
+		Seek(header.offset);
+
+		ArchiveFileStringPoolHeader stringPoolHeader;
+		if (!Read(&stringPoolHeader, sizeof(stringPoolHeader)))
+		{
+			LOG_ERROR("Unexpected end of file, expected a eCArchiveFile string pool!");
+			return false;
+		}
+
+		if (stringPoolHeader.magic != 0xDEADBEEF ||
+			stringPoolHeader.version != 1)
+		{
+			LOG_ERROR("Control bytes of eCArchiveFile string pool do not match!");
+			return false;
+		}
+
+		// Read strings
+		if (stringPoolHeader.count != 0)
+		{
+			stringPool.resize(stringPoolHeader.count);
+
+			for (size_t i = 0; i < stringPoolHeader.count; i++)
 			{
-				LOG_ERROR("Unexpected end of file while reading string pool, expected a string!");
-				return false;
+				//uint16_t length;
+				//if (!Read(&length, sizeof(length)))
+				//{
+				//	LOG_ERROR("Unexpected end of file while reading string pool, expected length!");
+				//	return false;
+				//}
+				//
+				//stringPool[i]			= new char[length + 1];
+				//stringPool[i][length]	= NULL;
+				//
+				//if (!Read(stringPool[i], length))
+				if (!FileStream::ReadString(stringPool[i]))
+				{
+					LOG_ERROR("Unexpected end of file while reading string pool, expected a string!");
+					return false;
+				}
 			}
+		}
+
+		Seek(startPos);
+	}
+	else if (mode == STREAM_MODE_WRITE &&
+		!isLegacyFile)
+	{
+		// Attempt to write file beginning
+		ArchiveFileHeader header;
+		memset(&header, 0, sizeof(header));
+
+		if (!Write(&header, sizeof(header)))
+		{
+			LOG_ERROR("Failed to write eCArchiveFile header");
+			return false;
 		}
 	}
 
-	Seek(startPos);
-
 	return true;
+}
+
+void eCArchiveFile::OnClose()
+{
+	if (mode == STREAM_MODE_WRITE &&
+		!isLegacyFile)
+	{
+		uint64_t offset = Tell();
+
+		// Attempt to write string pool
+		ArchiveFileStringPoolHeader stringPoolHeader;
+		stringPoolHeader.magic		= 0xDEADBEEF;
+		stringPoolHeader.version	= 1;
+		stringPoolHeader.count		= stringPool.size();
+
+		Write(&stringPoolHeader, sizeof(stringPoolHeader));
+
+		for (size_t i = 0; i < stringPool.size(); i++)
+		{
+			FileStream::WriteString(stringPool[i]);
+		}
+
+		// Write the actual header now
+		Seek(0);
+
+		ArchiveFileHeader header;
+		header.magic	= 0x454C464D4F4E4547;
+		header.version	= 1;
+		header.offset	= offset;
+
+		Write(&header, sizeof(header));
+	}
 }
 
 bool bCAccessorPropertyObject::Write(FileStream* file)
