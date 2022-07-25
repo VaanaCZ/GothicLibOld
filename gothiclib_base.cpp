@@ -322,7 +322,7 @@ bool GothicLib::FileStream::ReadString(std::string& str)
 	if (length > 0)
 	{
 		char* buff = new char[length];
-		if (!Read(&buff, length))
+		if (!Read(buff, length))
 			return false;
 
 		str = std::string(buff, length);

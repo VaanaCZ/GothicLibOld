@@ -105,17 +105,6 @@ bool eCArchiveFile::OnOpen()
 
 			for (size_t i = 0; i < stringPoolHeader.count; i++)
 			{
-				//uint16_t length;
-				//if (!Read(&length, sizeof(length)))
-				//{
-				//	LOG_ERROR("Unexpected end of file while reading string pool, expected length!");
-				//	return false;
-				//}
-				//
-				//stringPool[i]			= new char[length + 1];
-				//stringPool[i][length]	= NULL;
-				//
-				//if (!Read(stringPool[i], length))
 				if (!FileStream::ReadString(stringPool[i]))
 				{
 					LOG_ERROR("Unexpected end of file while reading string pool, expected a string!");
@@ -177,7 +166,216 @@ void eCArchiveFile::OnClose()
 
 bool bCAccessorPropertyObject::Write(FileStream* file)
 {
-	return false;
+	// Write beginning
+	AccessorWritten written;
+	written.version				= 1;
+	written.hasPropertyObject	= !(!nativeObject);
+
+	if (!file->Write(&written, sizeof(written)))
+	{
+		LOG_ERROR("Failed to write beginning of bCAccessorPropertyObject!");
+		return false;
+	}
+
+	if (!nativeObject)
+	{
+		return true;
+	}
+
+	// Write singleton
+	ClassDefinition* classDef = nativeObject->GetClassDef();
+
+	AccessorPropertyObjectWritten propertyObjectWritten;
+	propertyObjectWritten.singletonVersion = 1;
+	propertyObjectWritten.isPersistable = true;
+
+	if (!file->Write(&propertyObjectWritten, sizeof(propertyObjectWritten)))
+	{
+		LOG_ERROR("Failed to write contents of bCAccessorPropertyObject!");
+		return false;
+	}
+
+	if (!file->WriteString(classDef->GetName()))
+	{
+		LOG_ERROR("Failed to write bCAccessorPropertyObject, could not write name of class!");
+		return false;
+	}
+
+	// Write rest of class
+	uint64_t propObjPos = file->Tell();
+
+	AccessorPropertyObjectWritten2 propertyObjectWritten2;
+	memset(&propertyObjectWritten2, 0, sizeof(propertyObjectWritten2));
+
+	if (!file->Write(&propertyObjectWritten2, sizeof(propertyObjectWritten2)))
+	{
+		LOG_ERROR("Falied to write contents of bCAccessorPropertyObject!");
+		return false;
+	}
+
+
+	AccessorPropertyObjectWritten3 propertyObjectWritten3;
+	memset(&propertyObjectWritten2, 0, sizeof(propertyObjectWritten2));
+
+	if (!file->Write(&propertyObjectWritten3, sizeof(propertyObjectWritten3)))
+	{
+		LOG_ERROR("Falied to write contents of bCAccessorPropertyObject!");
+		return false;
+	}
+
+	// Write properties
+	ClassDefinition* currClassDef = nativeObject->GetClassDef();
+	std::vector<PropertyDefinition*>& properties = classDef->GetProperties();
+
+	size_t propCount = 0;
+
+	while (true)
+	{
+		for (size_t i = 0; i < properties.size(); i++)
+		{
+			PropertyDefinition* property = properties[i];
+
+			if (property->GetGame() != GAME_ALL &&
+				property->GetGame() != game)
+			{
+				continue;
+			}
+
+			std::string type = property->GetType();
+
+			// Gothic 3 exceptions
+			if (game <= GAME_GOTHIC3 &&
+				type == "bTRefPtrArray<class gCWorld *>")
+			{
+				type = "bTRefPtrArray<class bCPropertyObjectBase *>";
+			}
+
+			if (!file->WriteString(property->GetName()) ||
+				!file->WriteString(type))
+			{
+				LOG_ERROR("Failed to write property name or type!");
+				return false;
+			}
+
+			uint64_t propPos = file->Tell();
+
+			AccessorPropertyWritten propertyWritten;
+			memset(&propertyWritten, 0, sizeof(propertyWritten));
+
+			if (!file->Write(&propertyWritten, sizeof(propertyWritten)))
+			{
+				LOG_ERROR("Failed to write a bCAccessorPropertyObject property!");
+				return false;
+			}
+
+			// Special cases
+			if (type == "bCString")
+			{
+				std::string* str = (std::string*)((size_t)nativeObject + property->GetOffset());
+
+				if (!file->WriteString(*str))
+				{
+					LOG_ERROR("Failed to write string \"" + property->GetName() + "\"");
+					return false;
+				}
+			}
+			else if (type.find("bTRefPtrArray") == 0 ||
+				type.find("bTPOSmartPtr") == 0)
+			{
+				// Don't write anything
+			}
+			else
+			{
+				void* dest = (void*)((size_t)nativeObject + property->GetOffset());
+				if (!file->Write(dest, property->GetSize()))
+				{
+					LOG_ERROR("Failed to write bCAccessorPropertyObject property value!");
+					return false;
+				}
+			}
+
+			// Write data from before
+			uint64_t currPos = file->Tell();
+
+			file->Seek(propPos);
+
+			propertyWritten.version	= 1;
+
+			if (game <= GAME_GOTHIC3)
+			{
+				propertyWritten.version = 30;
+			}
+
+			propertyWritten.size	= currPos - propPos - sizeof(propertyWritten);
+
+			if (!file->Write(&propertyWritten, sizeof(propertyWritten)))
+			{
+				LOG_ERROR("Failed to write a bCAccessorPropertyObject property!");
+				return false;
+			}
+
+			file->Seek(currPos);
+
+			propCount++;
+		}
+
+		currClassDef = currClassDef->GetBaseDef();
+
+		if (currClassDef == nullptr)
+			break;
+
+		properties = currClassDef->GetProperties();
+	}
+
+	// Write class data
+	if (!nativeObject->OnWrite(file))
+	{
+		return false;
+	}
+
+	// Write data from before
+	uint64_t currPos = file->Tell();
+
+	file->Seek(propObjPos);
+
+	propertyObjectWritten2.factoryVersion				= 1;
+	propertyObjectWritten2.isRoot						= false;
+
+	propertyObjectWritten2.classVersion					= 83;
+	propertyObjectWritten2.propertyObjectBaseVersion	= 83;
+
+	if (game >= GAME_RISEN1)
+	{
+		propertyObjectWritten2.classVersion					= 200;
+		propertyObjectWritten2.propertyObjectBaseVersion	= 201;
+	}
+
+	propertyObjectWritten2.propertySize					= currPos - propObjPos - sizeof(propertyObjectWritten2);
+
+	if (!file->Write(&propertyObjectWritten2, sizeof(propertyObjectWritten2)))
+	{
+		LOG_ERROR("Falied to write contents of bCAccessorPropertyObject!");
+		return false;
+	}
+
+	propertyObjectWritten3.propertyObjectBaseVersion = 30;
+
+	if (game >= GAME_RISEN1)
+	{
+		propertyObjectWritten3.propertyObjectBaseVersion = 201;
+	}
+
+	propertyObjectWritten3.propertyCount				= propCount;
+
+	if (!file->Write(&propertyObjectWritten3, sizeof(propertyObjectWritten3)))
+	{
+		LOG_ERROR("Falied to write contents of bCAccessorPropertyObject!");
+		return false;
+	}
+
+	file->Seek(currPos);
+
+	return true;
 }
 
 bool bCAccessorPropertyObject::Read(FileStream* file)
@@ -218,7 +416,9 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 
 	// Read rest of class
 	AccessorPropertyObjectWritten2 propertyObjectWritten2;
-	if (!file->Read(&propertyObjectWritten2, sizeof(propertyObjectWritten2)))
+	AccessorPropertyObjectWritten3 propertyObjectWritten3;
+	if (!file->Read(&propertyObjectWritten2, sizeof(propertyObjectWritten2)) ||
+		!file->Read(&propertyObjectWritten3, sizeof(propertyObjectWritten3)))
 	{
 		LOG_ERROR("Unexpected end of file, expected contents of bCAccessorPropertyObject!");
 		return false;
@@ -245,10 +445,11 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 	else
 	{
 		nativeObject = classDef->CreateInstance();
+		nativeObject->game = game;
 	}
 
 	// Read properties
-	for (size_t i = 0; i < propertyObjectWritten2.propertyCount; i++)
+	for (size_t i = 0; i < propertyObjectWritten3.propertyCount; i++)
 	{
 		std::string propertyName, propertyType;
 		if (!file->ReadString(propertyName) ||
@@ -265,7 +466,8 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 			return false;
 		}
 
-		if (propertyWritten.size == 0) continue; // temp
+		if (propertyWritten.size == 0)
+			continue;
 
 		// Check if the native object contains this property
 		ClassDefinition* currClassDef = classDef;
@@ -400,9 +602,10 @@ ClassDefinition* ClassDefinition::GetClassDef(std::string name)
 	return nullptr;
 }
 
-PropertyDefinition::PropertyDefinition(ClassDefinition* classDef, std::string _name,
-	std::string _type, size_t _size, size_t _offset)
+PropertyDefinition::PropertyDefinition(ClassDefinition* classDef, GAME _game,
+	std::string _name, std::string _type, size_t _size, size_t _offset)
 {
+	game	= _game;
 	name	= _name;
 	type	= _type;
 	size	= _size;
@@ -423,7 +626,16 @@ PropertyDefinition::~PropertyDefinition()
 
 bool bCObjectBase::OnWrite(FileStream* file)
 {
-	return false;
+	uint16_t version = 1;
+
+	if (game >= GAME_RISEN1)
+	{
+		version = 201;
+	}
+
+	file->Write(&version, sizeof(version));
+
+	return true;
 }
 
 bool bCObjectBase::OnRead(FileStream* file)
@@ -436,7 +648,10 @@ bool bCObjectBase::OnRead(FileStream* file)
 
 bool bCObjectRefBase::OnWrite(FileStream* file)
 {
-	return false;
+	uint16_t version = 1;
+	file->Write(&version, sizeof(version));
+
+	return true;
 }
 
 bool bCObjectRefBase::OnRead(FileStream* file)
@@ -447,26 +662,71 @@ bool bCObjectRefBase::OnRead(FileStream* file)
 	return true;
 }
 
-bool eCProcessibleElement::Save(FileStream* file)
+bool eCProcessibleElement::Save(FileStream* file, FileStream* datFile)
 {
-	return false;
-}
-
-bool eCProcessibleElement::Load(FileStream* file)
-{
-	uint32_t magic;
-	if (!file->Read(&magic, sizeof(magic)))
+	if (game >= GAME_RISEN1)
 	{
-		LOG_ERROR("Unexpected end of file, expected eCProcessibleElement magic!");
-		return false;
+		uint32_t magic = 0xD0DEFADE;
+		if (!file->Write(&magic, sizeof(magic)))
+		{
+			LOG_ERROR("Failed to write eCProcessibleElement magic!");
+			return false;
+		}
 	}
 
 	// Read contained object
 	bCAccessorPropertyObject accessor(this);
+	accessor.game = game;
+
+	if (!accessor.Write(file))
+	{
+		return false;
+	}
+
+	if (game <= GAME_GOTHIC3 && datFile)
+	{
+		if (!DoSaveData(datFile))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool eCProcessibleElement::Load(FileStream* file, FileStream* datFile)
+{
+	if (game >= GAME_RISEN1)
+	{
+		uint32_t magic;
+		if (!file->Read(&magic, sizeof(magic)))
+		{
+			LOG_ERROR("Unexpected end of file, expected eCProcessibleElement magic!");
+			return false;
+		}
+
+		if (magic != 0xD0DEFADE)
+		{
+			LOG_ERROR("Magic bytes do not match when reading eCProcessibleElement!");
+			return false;
+		}
+	}
+
+	// Read contained object
+	bCAccessorPropertyObject accessor(this);
+	accessor.game = game;
 
 	if (!accessor.Read(file))
 	{
 		return false;
+	}
+
+	if (game <= GAME_GOTHIC3 && datFile)
+	{
+		if (!DoLoadData(datFile))
+		{
+			return false;
+		}
 	}
 
 	return true;

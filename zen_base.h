@@ -296,8 +296,6 @@ namespace GothicLib
 			CLASS_REVISION*		revisions;
 			size_t				revisionCount;
 
-			bool isRevisionsListInit = false;
-
 			inline static std::unordered_map<std::string, ClassDefinition*>* classList = nullptr;
 
 		};
