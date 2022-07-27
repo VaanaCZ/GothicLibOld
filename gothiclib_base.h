@@ -141,32 +141,35 @@ namespace GothicLib
 				}
 				else
 				{
-					// Attempt expansion
-					// todo: see if this slows things down
-					const size_t oldSize = allocation.size;
+					// This actually makes things slower by
+					// a factor of about 50%. (4s -> 6s)
 
-					size_t newAllocSize = allocSize;
-
-					if (newAllocSize < blockSize)
-						newAllocSize = blockSize;
-
-					T* expandedAlloc = (T*)_expand(allocation.block, sizeof(T) * (oldSize + newAllocSize));
-
-					if (expandedAlloc == allocation.block)
-					{
-						allocation.size += newAllocSize;
-						allocation.used += newAllocSize;
-					
-						bool* newSlots = new bool[oldSize + newAllocSize];
-					
-						memcpy(newSlots, allocation.slots, oldSize);
-						memset(&newSlots[oldSize], 1, newAllocSize);
-					
-						delete[] allocation.slots;
-						allocation.slots = newSlots;
-										
-						return &allocation.block[oldSize];
-					}
+					//// Attempt expansion
+					//// todo: see if this slows things down
+					//const size_t oldSize = allocation.size;
+					//
+					//size_t newAllocSize = allocSize;
+					//
+					//if (newAllocSize < blockSize)
+					//	newAllocSize = blockSize;
+					//
+					//T* expandedAlloc = (T*)_expand(allocation.block, sizeof(T) * (oldSize + newAllocSize));
+					//
+					//if (expandedAlloc == allocation.block)
+					//{
+					//	allocation.size += newAllocSize;
+					//	allocation.used += newAllocSize;
+					//
+					//	bool* newSlots = new bool[oldSize + newAllocSize];
+					//
+					//	memcpy(newSlots, allocation.slots, oldSize);
+					//	memset(&newSlots[oldSize], 1, newAllocSize);
+					//
+					//	delete[] allocation.slots;
+					//	allocation.slots = newSlots;
+					//					
+					//	return &allocation.block[oldSize];
+					//}
 				}
 			}
 
@@ -236,6 +239,9 @@ namespace GothicLib
 	//
 
 #define FILE_ARGS(V)		&(V), sizeof(V)
+
+#define FILE_CACHE_SIZE		8192
+#define LINE_CACHE_SIZE		64
 
 	class FileStream
 	{
@@ -310,9 +316,11 @@ namespace GothicLib
 		STREAM_SOURCE	iSource = STREAM_SOURCE_NONE;
 
 		std::ifstream	iFile;
+		char*			iFileCache = nullptr;
+		uint64_t		iFileCacheBlock = -1;
 		std::wstring	iPath;
 
-		char*			iBuffer;
+		char*			iBuffer = nullptr;
 		bool			iDisposeBuffer;
 
 		uint64_t		iTotalSize;

@@ -51,13 +51,13 @@ bool zCArchiver::Read(FileStream* _file)
 		/*
 			ASCII / BINARY / BIN_SAFE
 		*/
-		if (line == "BINARY")			type = ARCHIVER_TYPE_BINARY;
-		else if (line == "ASCII")		type = ARCHIVER_TYPE_ASCII;
-		else if (line == "BIN_SAFE")	type = ARCHIVER_TYPE_BIN_SAFE;
+		if (line == "BINARY")			mode = ARCHIVER_MODE_BINARY;
+		else if (line == "ASCII")		mode = ARCHIVER_MODE_ASCII;
+		else if (line == "BIN_SAFE")	mode = ARCHIVER_MODE_BIN_SAFE;
 		else if (line == "ASCII_PROPS")
 		{
-			type = ARCHIVER_TYPE_ASCII;
-			props = true;
+			mode = ARCHIVER_MODE_ASCII;
+			properties = true;
 		}
 
 		/*
@@ -69,9 +69,9 @@ bool zCArchiver::Read(FileStream* _file)
 		/*
 			objects n
 		*/
-		if (line.substr(0, 8) == "objects ")
+		if (line.find("objects ") == 0)
 		{
-			objectCount = std::stoul(line.substr(8));
+			size_t objectCount = std::stoul(line.substr(8));
 
 			if (objectCount == 0)
 			{
@@ -88,8 +88,7 @@ bool zCArchiver::Read(FileStream* _file)
 		if (line == "END")
 		{
 			if (first &&
-				type != ARCHIVER_TYPE_BIN_SAFE &&
-				objectCount == -1)
+				mode != ARCHIVER_MODE_BIN_SAFE)
 			{
 				first = false;
 			}
@@ -103,18 +102,13 @@ bool zCArchiver::Read(FileStream* _file)
 	/*
 		*empty line*
 	*/
-	if (type != ARCHIVER_TYPE_BIN_SAFE)
+	if (mode != ARCHIVER_MODE_BIN_SAFE)
 	{
 		file->ReadLine(line);
 
 		if (!line.empty())
 		{
 			LOG_WARN("Expected an empy line after ZenGin archive header, got \"" + line + "\" instead.");
-		}
-
-		if (type == ARCHIVER_TYPE_ASCII)
-		{
-			asciiChunksPositions.push_back(file->Tell());
 		}
 	}
 	else
@@ -132,9 +126,7 @@ bool zCArchiver::Read(FileStream* _file)
 			return false;
 		}
 
-		objectCount = header.objectCount;
-
-		objectList.resize(objectCount);
+		objectList.resize(header.objectCount);
 
 		uint64_t startPos = file->Tell();
 
@@ -174,7 +166,131 @@ bool zCArchiver::Read(FileStream* _file)
 
 		file->Seek(startPos);
 	}
+
+	if (objectList.size() == 0)
+	{
+		LOG_WARN("Loaded archive contains no objects!");
+	}
+
+	// Mark the start of the reading area
+	CHUNK chunk;
+	chunk.objectOffset = file->Tell();
+
+	chunkStack.push_back(chunk);
+
+
+	return true;
+}
+
+bool zCArchiver::Write(FileStream* _file, bool briefHeader)
+{
+	mode = ARCHIVER_MODE_ASCII; // temp
+	version = 1;
+
+	file = _file;
+
+	// Write header
+
+	/*
+		ZenGin Archive
+	*/
+	file->WriteLine("ZenGin Archive", "\n");
+
+	/*
+		ver 0 / ver 1
+	*/
+	if (version == 0)		file->WriteLine("ver 0", "\n");
+	else if(version == 1)	file->WriteLine("ver 1", "\n");
+
+	/*
+		zCArchiverGeneric / zCArchiverBinSafe
+	*/
+	if (version == 1)
+	{
+		if (mode == ARCHIVER_MODE_BIN_SAFE)
+			file->WriteLine("zCArchiverBinSafe", "\n");
+		else
+			file->WriteLine("zCArchiverGeneric", "\n");
+	}
+
+	/*
+		ASCII / BINARY / BIN_SAFE
+	*/
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		if (IsProperties())
+			file->WriteLine("ASCII_PROPS", "\n");
+		else
+			file->WriteLine("ASCII", "\n");
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+		file->WriteLine("BINARY", "\n");
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+		file->WriteLine("BIN_SAFE", "\n");
+
+	/*
+		saveGame 0 / saveGame 1
+	*/
+	if (IsSavegame())	file->WriteLine("saveGame 1", "\n");
+	else				file->WriteLine("saveGame 0", "\n");
+
+	/*
+		date d.m.Y H:M:S
+	*/
+	if (version == 0 || !briefHeader)
+	{
+		time_t timer;
+		tm tmInfo;
+
+		timer = time(NULL);
+		if (localtime_s(&tmInfo, &timer) == 0)
+		{
+			file->WriteLine("date " + std::to_string(tmInfo.tm_mday) + "."
+									+ std::to_string(tmInfo.tm_mon + 1) + "."
+									+ std::to_string(tmInfo.tm_year + 1900) + " "
+									+ std::to_string(tmInfo.tm_hour) + ":"
+									+ std::to_string(tmInfo.tm_min) + ":"
+									+ std::to_string(tmInfo.tm_sec), "\n");
+		}
+	}
 	
+	if (version == 1 && !briefHeader)
+	{
+		/*
+			user x
+		*/
+		file->WriteLine("user GothicLib", "\n");
+	}
+	else if (version == 0)
+	{
+		/*
+			objects n
+		*/
+		file->WriteLine("objects          ", "\n");
+	}
+
+	/*
+			END
+	*/
+	file->WriteLine("END", "\n");
+
+	if (mode != ARCHIVER_MODE_BIN_SAFE &&
+		version == 1)
+	{
+		/*
+			objects n
+		*/
+		file->WriteLine("objects          ", "\n");
+
+		/*
+				END
+		*/
+		file->WriteLine("END", "\n");
+		file->WriteLine("", "\n");
+	}
+
+
+
 	return true;
 }
 
@@ -183,7 +299,7 @@ bool zCArchiver::ReadInt(std::string name, int& intVal)
 	if (error)
 		return false;
 
-	if (type == ARCHIVER_TYPE_ASCII)
+	if (mode == ARCHIVER_MODE_ASCII)
 	{
 		std::string value;
 		if (ReadASCIIProperty(name, "int", value))
@@ -192,12 +308,12 @@ bool zCArchiver::ReadInt(std::string name, int& intVal)
 			return true;
 		}
 	}
-	else if (type == ARCHIVER_TYPE_BINARY)
+	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&intVal, sizeof(intVal));
 	}
 
-	if (type != ARCHIVER_TYPE_ASCII)
+	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
 
 	return false;
@@ -208,7 +324,7 @@ bool zCArchiver::ReadByte(std::string name, unsigned char& byteVal)
 	if (error)
 		return false;
 
-	if (type == ARCHIVER_TYPE_ASCII)
+	if (mode == ARCHIVER_MODE_ASCII)
 	{
 		std::string value;
 		if (ReadASCIIProperty(name, "int", value))
@@ -217,12 +333,12 @@ bool zCArchiver::ReadByte(std::string name, unsigned char& byteVal)
 			return true;
 		}
 	}
-	else if (type == ARCHIVER_TYPE_BINARY)
+	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&byteVal, sizeof(byteVal));
 	}
 
-	if (type != ARCHIVER_TYPE_ASCII)
+	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
 
 	return false;
@@ -233,7 +349,7 @@ bool zCArchiver::ReadWord(std::string name, unsigned short& wordVal)
 	if (error)
 		return false;
 
-	if (type == ARCHIVER_TYPE_ASCII)
+	if (mode == ARCHIVER_MODE_ASCII)
 	{
 		std::string value;
 		if (ReadASCIIProperty(name, "int", value))
@@ -242,12 +358,12 @@ bool zCArchiver::ReadWord(std::string name, unsigned short& wordVal)
 			return true;
 		}
 	}
-	else if (type == ARCHIVER_TYPE_BINARY)
+	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&wordVal, sizeof(wordVal));
 	}
 
-	if (type != ARCHIVER_TYPE_ASCII)
+	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
 
 	return false;
@@ -258,7 +374,7 @@ bool zCArchiver::ReadFloat(std::string name, float& floatVal)
 	if (error)
 		return false;
 
-	if (type == ARCHIVER_TYPE_ASCII)
+	if (mode == ARCHIVER_MODE_ASCII)
 	{
 		std::string value;
 		if (ReadASCIIProperty(name, "float", value))
@@ -267,12 +383,12 @@ bool zCArchiver::ReadFloat(std::string name, float& floatVal)
 			return true;
 		}
 	}
-	else if (type == ARCHIVER_TYPE_BINARY)
+	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&floatVal, sizeof(floatVal));
 	}
 
-	if (type != ARCHIVER_TYPE_ASCII)
+	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
 
 	return false;
@@ -283,7 +399,7 @@ bool zCArchiver::ReadBool(std::string name, bool& boolVal)
 	if (error)
 		return false;
 
-	if (type == ARCHIVER_TYPE_ASCII)
+	if (mode == ARCHIVER_MODE_ASCII)
 	{
 		std::string value;
 		if (ReadASCIIProperty(name, "bool", value))
@@ -292,12 +408,12 @@ bool zCArchiver::ReadBool(std::string name, bool& boolVal)
 			return true;
 		}
 	}
-	else if (type == ARCHIVER_TYPE_BINARY)
+	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&boolVal, sizeof(boolVal));
 	}
 
-	if (type != ARCHIVER_TYPE_ASCII)
+	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
 
 	return false;
@@ -308,7 +424,7 @@ bool zCArchiver::ReadString(std::string name, std::string& strVal)
 	if (error)
 		return false;
 
-	if (type == ARCHIVER_TYPE_ASCII)
+	if (mode == ARCHIVER_MODE_ASCII)
 	{
 		std::string value;
 		if (ReadASCIIProperty(name, "string", value))
@@ -317,12 +433,12 @@ bool zCArchiver::ReadString(std::string name, std::string& strVal)
 			return true;
 		}
 	}
-	else if (type == ARCHIVER_TYPE_BINARY)
+	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->ReadNullString(strVal);
 	}
 
-	if (type != ARCHIVER_TYPE_ASCII)
+	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
 
 	return false;
@@ -333,7 +449,7 @@ bool zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
 	if (error)
 		return false;
 
-	if (type == ARCHIVER_TYPE_ASCII)
+	if (mode == ARCHIVER_MODE_ASCII)
 	{
 		std::string value;
 		if (ReadASCIIProperty(name, "vec3", value) &&
@@ -343,12 +459,12 @@ bool zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
 			return true;
 		}
 	}
-	else if (type == ARCHIVER_TYPE_BINARY)
+	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&vecVal, sizeof(vecVal));
 	}
 
-	if (type != ARCHIVER_TYPE_ASCII)
+	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
 
 	return false;
@@ -359,7 +475,7 @@ bool zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
 	if (error)
 		return false;
 
-	if (type == ARCHIVER_TYPE_ASCII)
+	if (mode == ARCHIVER_MODE_ASCII)
 	{
 		int vals[4];
 		std::string value;
@@ -375,12 +491,12 @@ bool zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
 			return true;
 		}
 	}
-	else if (type == ARCHIVER_TYPE_BINARY)
+	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&colorVal, sizeof(colorVal));
 	}
 
-	if (type != ARCHIVER_TYPE_ASCII)
+	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
 
 	return false;
@@ -391,7 +507,7 @@ bool zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSize)
 	if (error)
 		return false;
 
-	if (type == ARCHIVER_TYPE_ASCII)
+	if (mode == ARCHIVER_MODE_ASCII)
 	{
 		std::string value;
 		if (ReadASCIIProperty(name, "raw", value) && value.size() / 2 == bufferSize)
@@ -414,12 +530,12 @@ bool zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSize)
 			return true;
 		}		
 	}
-	else if (type == ARCHIVER_TYPE_BINARY)
+	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(buffer, bufferSize);
 	}
 
-	if (type != ARCHIVER_TYPE_ASCII)
+	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
 
 	return false;
@@ -430,7 +546,7 @@ bool zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t floatCo
 	if (error)
 		return false;
 
-	if (type == ARCHIVER_TYPE_ASCII)
+	if (mode == ARCHIVER_MODE_ASCII)
 	{
 		std::string value;
 		if (ReadASCIIProperty(name, "rawFloat", value))
@@ -451,24 +567,24 @@ bool zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t floatCo
 			if (floatCount == archivedFoatCount)
 			{
 				// Read the data
-				std::string strFloats = value;
+				size_t offset = 0;
 
 				for (size_t i = 0; i < floatCount; i++)
 				{
-					floatVals[i] = std::stof(strFloats);
-					strFloats = strFloats.substr(strFloats.find(" ") + 1);
+					floatVals[i] = atof(&value[offset]);
+					offset = value.find(" ", offset) + 1;
 				}
 
 				return true;
 			}
 		}
 	}
-	else if (type == ARCHIVER_TYPE_BINARY)
+	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(floatVals, floatCount * sizeof(float));
 	}
 
-	if (type != ARCHIVER_TYPE_ASCII)
+	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
 
 	return false;
@@ -479,7 +595,7 @@ bool zCArchiver::ReadEnum(std::string name, int& enumVal)
 	if (error)
 		return false;
 
-	if (type == ARCHIVER_TYPE_ASCII)
+	if (mode == ARCHIVER_MODE_ASCII)
 	{
 		std::string value;
 		if (ReadASCIIProperty(name, "enum", value))
@@ -488,12 +604,12 @@ bool zCArchiver::ReadEnum(std::string name, int& enumVal)
 			return true;
 		}
 	}
-	else if (type == ARCHIVER_TYPE_BINARY)
+	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&enumVal, sizeof(enumVal));
 	}
 
-	if (type != ARCHIVER_TYPE_ASCII)
+	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
 
 	return false;
@@ -629,17 +745,24 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 	return object;
 }
 
-bool zCArchiver::ReadChunkStart(std::string* objectName, std::string* className, uint16_t* classVersion, uint32_t* objectIndex)
+bool zCArchiver::ReadChunkStart(std::string* _objectName, std::string* _className, uint16_t* _classVersion, uint32_t* _objectIndex)
 {
 	if (error)
 		return false;
 
-	if (type == ARCHIVER_TYPE_ASCII ||
-		type == ARCHIVER_TYPE_BIN_SAFE)
+	BinaryObjectHeader binHeader;
+
+	std::string objectName;
+	std::string className; 
+	uint16_t classVersion;
+	uint32_t objectIndex;
+
+	if (mode == ARCHIVER_MODE_ASCII ||
+		mode == ARCHIVER_MODE_BIN_SAFE)
 	{
 		std::string line;
 
-		if (type == ARCHIVER_TYPE_BIN_SAFE)
+		if (mode == ARCHIVER_MODE_BIN_SAFE)
 		{
 			char* str;
 			size_t length;
@@ -658,10 +781,6 @@ bool zCArchiver::ReadChunkStart(std::string* objectName, std::string* className,
 			// of the current chuck and find the one that matches
 			// the specified criteria.
 
-			// Go to the start of the current chunk before we
-			// perform the search.
-			//file->Seek(asciiChunksPositions[asciiChunksPositions.size() - 1]);
-
 			bool first = true;
 
 			bool looping = false;
@@ -673,8 +792,6 @@ bool zCArchiver::ReadChunkStart(std::string* objectName, std::string* className,
 
 			while (file->ReadLine(line))
 			{
-				//LOG_DEBUG("ReadChunkStart    : " + line);
-
 				bool isHeader = false;
 
 				if (looping && file->Tell() >= startPos)
@@ -714,7 +831,7 @@ bool zCArchiver::ReadChunkStart(std::string* objectName, std::string* className,
 					looping = true;
 
 					// Go to start
-					file->Seek(asciiChunksPositions[asciiChunksPositions.size() - 1]);
+					file->Seek(chunkStack[chunkStack.size() - 1].objectOffset);
 
 					continue;
 				}
@@ -724,8 +841,7 @@ bool zCArchiver::ReadChunkStart(std::string* objectName, std::string* className,
 
 					if (isHeader && sPos != std::string::npos)
 					{
-						if (objectName == nullptr ||
-							(*objectName).empty())
+						if (objectName.empty())
 						{
 							valid = true;
 							break;
@@ -734,7 +850,7 @@ bool zCArchiver::ReadChunkStart(std::string* objectName, std::string* className,
 						{
 							std::string chunkName = line.substr(tabCount + 1, sPos - tabCount - 1);
 
-							if ((*objectName) == chunkName)
+							if (objectName == chunkName)
 							{
 								valid = true;
 								break;
@@ -745,7 +861,7 @@ bool zCArchiver::ReadChunkStart(std::string* objectName, std::string* className,
 					if (first)
 					{
 						first = false;
-						LOG_WARN("Incorrect chunk order, expected \"" + (*objectName) + "\"!");
+						LOG_WARN("Incorrect chunk order, expected \"" + objectName + "\"!");
 					}
 				}				
 			}
@@ -755,9 +871,6 @@ bool zCArchiver::ReadChunkStart(std::string* objectName, std::string* className,
 				LOG_ERROR("No chunk matching the desired criteria has been found!");
 				return false;
 			}
-
-			// Mark that we entered a new chunk
-			asciiChunksPositions.push_back(file->Tell());
 		}
 
 		size_t p1 = line.find("[");
@@ -765,22 +878,14 @@ bool zCArchiver::ReadChunkStart(std::string* objectName, std::string* className,
 		size_t p3 = line.find(" ", p2 + 1);
 		size_t p4 = line.find(" ", p3 + 1);
 
-		if (objectName != nullptr)
-			*objectName	= line.substr(p1 + 1, p2 - p1 - 1);
-
-		if (className != nullptr)
-			*className	= line.substr(p2 + 1, p3 - p2 - 1);
-
-		if (classVersion != nullptr)
-			*classVersion = std::stoi(line.substr(p3));
-
-		if (objectIndex != nullptr)
-			*objectIndex = std::stoi(line.substr(p4));
+		objectName		= line.substr(p1 + 1, p2 - p1 - 1);
+		className		= line.substr(p2 + 1, p3 - p2 - 1);
+		classVersion	= atoi(&line[p3]);
+		objectIndex		= atoi(&line[p4]);
 	}
-	else if (type == ARCHIVER_TYPE_BINARY)
+	else if (mode == ARCHIVER_MODE_BINARY)
 	{
-		BinaryObjectHeader header;
-		if (!file->Read(&header, sizeof(header)))
+		if (!file->Read(&binHeader, sizeof(binHeader)))
 			return false;
 
 		std::string readObjectName;
@@ -791,36 +896,54 @@ bool zCArchiver::ReadChunkStart(std::string* objectName, std::string* className,
 		if (!file->ReadNullString(readClassName))
 			return false;
 
-		if (objectName != nullptr)
-			*objectName = readObjectName;
-
-		if (className != nullptr)
-			*className = readClassName;
-
-		if (classVersion != nullptr)
-			*classVersion = header.classVersion;
-
-		if (objectIndex != nullptr)
-			*objectIndex = header.objectIndex;
+		objectName		= readObjectName;
+		className		= readClassName;
+		classVersion	= binHeader.classVersion;
+		objectIndex		= binHeader.objectIndex;
 	}
 
-	if (objectIndex != nullptr &&
-		*objectIndex >= objectList.size())
+	if (objectIndex >= objectList.size())
 	{
 		return false;
 	}
+
+	// Mark that we entered a new chunk
+	CHUNK chunk;
+	chunk.objectName	= objectName;
+	chunk.className		= className;
+	chunk.objectIndex	= objectIndex;
+	chunk.objectOffset	= file->Tell();
+	
+	if (mode == ARCHIVER_MODE_BINARY)
+	{
+		chunk.binObjectSize = binHeader.objectSize;
+	}
+
+	chunkStack.push_back(chunk);
+
+	if (_objectName != nullptr)
+		*_objectName = objectName;
+
+	if (_className != nullptr)
+		*_className = className;
+
+	if (_classVersion != nullptr)
+		*_classVersion = classVersion;
+
+	if (_objectIndex != nullptr)
+		*_objectIndex = objectIndex;
 
 	return true;
 }
 
 bool zCArchiver::ReadChunkEnd()
 {
-	if (type == ARCHIVER_TYPE_ASCII ||
-		type == ARCHIVER_TYPE_BIN_SAFE)
+	if (mode == ARCHIVER_MODE_ASCII ||
+		mode == ARCHIVER_MODE_BIN_SAFE)
 	{
 		std::string line;
 
-		if (type == ARCHIVER_TYPE_BIN_SAFE)
+		if (mode == ARCHIVER_MODE_BIN_SAFE)
 		{
 			char* str;
 			size_t length;
@@ -888,7 +1011,7 @@ bool zCArchiver::ReadChunkEnd()
 				return false;
 			}
 
-			asciiChunksPositions.pop_back();
+			chunkStack.pop_back();
 		}
 	}
 
@@ -922,8 +1045,6 @@ bool zCArchiver::ReadASCIIProperty(std::string name, std::string type, std::stri
 	std::string line;
 	while (file->ReadLine(line))
 	{
-		//LOG_DEBUG("ReadASCIIProperty : " + line);
-
 		if (looping && file->Tell() >= startPos)
 		{
 			break;
@@ -958,7 +1079,7 @@ bool zCArchiver::ReadASCIIProperty(std::string name, std::string type, std::stri
 			looping = true;
 
 			// Go to start
-			file->Seek(asciiChunksPositions[asciiChunksPositions.size() - 1]);
+			file->Seek(chunkStack[chunkStack.size() - 1].objectOffset);
 
 			continue;
 		}

@@ -640,7 +640,7 @@ bool zCCSCamera::Unarchive(zCArchiver* archiver)
 		archiver->ReadFloat(ARC_ARGS(autoCamUntriggerOnLastKeyDelay));
 	}
 
-	if (!archiver->IsProps())
+	if (!archiver->IsProperties())
 	{
 		int numPos, numTargets = 0;
 
@@ -719,7 +719,7 @@ bool zCCamTrj_KeyFrame::Unarchive(zCArchiver* archiver)
 
 	archiver->ReadBool(ARC_ARGS(timeIsFixed));
 
-	if (!archiver->IsProps())
+	if (!archiver->IsProperties())
 	{
 		archiver->ReadRaw(ARC_ARGSR(originalPose));
 	}
@@ -1013,7 +1013,7 @@ bool oCMOB::Unarchive(zCArchiver* archiver)
 	archiver->ReadString(ARC_ARGS(owner));
 	archiver->ReadString(ARC_ARGS(ownerGuild));
 
-	if (!archiver->IsProps())
+	if (!archiver->IsProperties())
 	{
 		archiver->ReadBool(ARC_ARGS(isDestroyed));
 	}
@@ -1034,7 +1034,7 @@ bool oCMobInter::Unarchive(zCArchiver* archiver)
 	if (!oCMOB::Unarchive(archiver))
 		return false;
 
-	if (!archiver->IsProps())
+	if (!archiver->IsProperties())
 	{
 		if (game <= GAME_CHRISTMASEDITION)
 		{
@@ -1358,7 +1358,7 @@ bool zCCodeMaster::Unarchive(zCArchiver* archiver)
 	archiver->ReadString(ARC_ARGS(triggerTargetFailure));
 	archiver->ReadBool(ARC_ARGS(untriggerCancels));
 
-	if (!archiver->IsProps())
+	if (!archiver->IsProperties())
 	{
 		unsigned char numSlaves = 6;
 		archiver->ReadByte(ARC_ARGS(numSlaves));
@@ -1443,7 +1443,7 @@ bool zCTrigger::Unarchive(zCArchiver* archiver)
 	if (!zCTriggerBase::Unarchive(archiver))
 		return false;
 
-	if (!archiver->IsProps())
+	if (!archiver->IsProperties())
 	{
 		if (game >= GAME_SEPTEMBERDEMO)
 		{
@@ -1506,7 +1506,7 @@ bool zCTrigger::Unarchive(zCArchiver* archiver)
 		archiver->ReadEnum(ARC_ARGSE(repeatTrigger));
 	}
 
-	if (archiver->IsProps())
+	if (archiver->IsProperties())
 	{
 		archiver->ReadBool(ARC_ARGS(sendUntrigger));
 	}
@@ -1571,7 +1571,7 @@ bool zCMover::Unarchive(zCArchiver* archiver)
 		archiver->ReadEnum(ARC_ARGSE(posLerpType));
 		archiver->ReadEnum(ARC_ARGSE(speedType));
 
-		if (!archiver->IsProps())
+		if (!archiver->IsProperties())
 		{
 			keyframeList.resize(numKeyframes);
 
@@ -1641,7 +1641,7 @@ bool zCTriggerList::Unarchive(zCArchiver* archiver)
 
 	unsigned char numTarget = 6;
 
-	if (!archiver->IsProps())
+	if (!archiver->IsProperties())
 	{
 		archiver->ReadByte(ARC_ARGS(numTarget));
 	}
@@ -1782,7 +1782,7 @@ bool zCVobLight::Unarchive(zCArchiver* archiver)
 		archiver->ReadString(ARC_ARGS(lensflareFX));
 	}
 
-	if (archiver->IsProps() || !lightStatic || game <= GAME_DEMO5)
+	if (archiver->IsProperties() || !lightStatic || game <= GAME_DEMO5)
 	{
 		if (game >= GAME_SEPTEMBERDEMO)
 		{

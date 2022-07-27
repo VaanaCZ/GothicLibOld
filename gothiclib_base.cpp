@@ -86,6 +86,9 @@ bool FileStream::Open(std::wstring filename, char openMode)
 		iTotalSize = iFile.tellg();
 		iFile.seekg(0, std::ios::beg);
 
+		iFileCache = new char[FILE_CACHE_SIZE];
+		iFile.read(iFileCache, iTotalSize < FILE_CACHE_SIZE ? iTotalSize : FILE_CACHE_SIZE );
+		iFileCacheBlock = 0;
 	}
 	else if (openMode == 'w' or openMode == 'a')
 	{
@@ -217,6 +220,8 @@ void FileStream::Close()
 		if (iSource == STREAM_SOURCE_RAWFILE)
 		{
 			iFile.close();
+
+			delete[] iFileCache;
 		}
 		else if (iSource == STREAM_SOURCE_BUFFER && iDisposeBuffer)
 		{
@@ -282,14 +287,55 @@ bool FileStream::Read(void* readBuffer, uint64_t readSize)
 		// Read data depending on the source
 		if (iSource == STREAM_SOURCE_RAWFILE)
 		{
-			if (iFile.tellg() != iSubOffset + iPosition)
-				iFile.seekg(iSubOffset + iPosition);
+			uint64_t bytesLeft = readSize;
 
-			iFile.read((char*)readBuffer, readSize);
+			while (true)
+			{
+				uint64_t cacheBlock = iPosition / FILE_CACHE_SIZE;
+
+				if (cacheBlock != iFileCacheBlock)
+				{
+					// Cache next file block
+					iFileCacheBlock = cacheBlock;
+
+					uint64_t offset	= iFileCacheBlock * FILE_CACHE_SIZE;
+					uint64_t size	= iTotalSize - offset;
+
+					if (FILE_CACHE_SIZE < size)
+						size = FILE_CACHE_SIZE;
+
+					iFile.seekg(iSubOffset + offset);
+					iFile.read(iFileCache, size);
+				}
+
+				// Retrieve from cache
+				uint64_t cacheReadOffset	= iPosition % FILE_CACHE_SIZE;
+				uint64_t cacheReadSize		= FILE_CACHE_SIZE - cacheReadOffset;
+
+				if (bytesLeft < cacheReadSize)
+					cacheReadSize = bytesLeft;
+
+				char* cBuff = (char*)readBuffer;
+
+				memcpy(&cBuff[readSize - bytesLeft], &iFileCache[cacheReadOffset], cacheReadSize);
+
+				bytesLeft -= cacheReadSize;
+				iPosition += cacheReadSize;
+
+				if (bytesLeft == 0)
+					break;
+			}
+
+			//if (iFile.tellg() != iSubOffset + iPosition)
+			//	iFile.seekg(iSubOffset + iPosition);
+			//
+			//iFile.read((char*)readBuffer, readSize);
 		}
 		else if (iSource == STREAM_SOURCE_BUFFER)
 		{
 			memcpy(readBuffer, &iBuffer[iSubOffset + iPosition], readSize);
+
+			iPosition += readSize;
 		}
 		else if (iSource == STREAM_SOURCE_SUBSTREAM)
 		{
@@ -300,9 +346,10 @@ bool FileStream::Read(void* readBuffer, uint64_t readSize)
 				error = true;
 				return false;
 			}
+
+			iPosition += readSize;
 		}
 
-		iPosition += readSize;
 	}
 	
 	return true;
@@ -382,35 +429,81 @@ bool FileStream::ReadLine(std::string& line)
 	// Doesn't read the last line if it's empty
 	// (because I cannot be bothered ¯\_(ツ)_/¯)
 
-	char c;
+	char lineCache[LINE_CACHE_SIZE];
+
+	uint64_t readSize = iTotalSize - iPosition;
+
+	if (LINE_CACHE_SIZE < readSize)
+		readSize = LINE_CACHE_SIZE;
+
+	char c = 0;
 	bool result = false;
 
 	line = "";
 
-	while (Read(&c, sizeof(c)))
+	bool end = false;
+
+	bool hasCR = false;
+	bool hasLF = false;
+
+	uint64_t startPos = Tell();
+
+	while (Read(&lineCache, readSize))
 	{
 		result = true;
 
-		if (c == '\r')
-		{
-			uint64_t currPos = Tell();
-			char nextChar;
+		size_t length = 0;
 
-			if (!Read(&nextChar, sizeof(nextChar)) ||
-				nextChar != '\n')
+		for (size_t i = 0; i < readSize; i++)
+		{
+			c = lineCache[i];
+
+			if (c == '\r')
 			{
-				Seek(currPos);
+				length = i;
+
+				hasCR = true;
 			}
+			else if (c == '\n')
+			{
+				end = true;
 
-			break;
+				if (!hasCR)
+					length = i;
+
+				hasLF = true;
+
+				break;
+			}
+			else if (hasCR)
+			{
+				end = true;
+
+				break;
+			}
+			else
+			{
+				length++;
+			}
 		}
 
-		if (c == '\n')
+		line += std::string(lineCache, length);
+
+		if (end)
 		{
+			// Make sure the file position is correct
+			uint64_t offsetBack = startPos + line.size();
+
+			if (hasCR)
+				offsetBack++;
+
+			if (hasLF)
+				offsetBack++;
+
+			Seek(offsetBack);
+
 			break;
 		}
-
-		line += c;
 	}
 
 	return result;

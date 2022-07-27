@@ -140,6 +140,7 @@ namespace GothicLib
 			~zCArchiver()	{ }
 
 			bool Read(FileStream*);
+			bool Write(FileStream*, bool = false);
 
 			bool ReadInt		(std::string, int&);
 			bool ReadByte		(std::string, unsigned char&);
@@ -177,7 +178,7 @@ namespace GothicLib
 			inline FileStream*	GetFile() { return file; }
 
 			inline bool	IsSavegame()	{ return savegame; }
-			inline bool	IsProps()		{ return props; }
+			inline bool	IsProperties()	{ return properties; }
 
 			GAME game = GAME_NONE;
 			bool error = false;
@@ -203,26 +204,32 @@ namespace GothicLib
 			bool ReadASCIIProperty(std::string, std::string, std::string&);
 			bool ReadBinSafeProperty(BINSAFE_TYPE, char*&, size_t&);
 
-			enum ARCHIVER_TYPE
+			enum ARCHIVER_MODE
 			{
-				ARCHIVER_TYPE_BINARY,
-				ARCHIVER_TYPE_ASCII,
-				ARCHIVER_TYPE_BIN_SAFE,
+				ARCHIVER_MODE_BINARY,
+				ARCHIVER_MODE_ASCII,
+				ARCHIVER_MODE_BIN_SAFE,
 
-				ARCHIVER_TYPE_NONE = -1
+				ARCHIVER_MODE_NONE = -1
 			};
 
 			FileStream*		file;
 
 			unsigned short	version		= -1;
-			ARCHIVER_TYPE	type		= ARCHIVER_TYPE_NONE;
+			ARCHIVER_MODE	mode		= ARCHIVER_MODE_NONE;
 			bool			savegame	= false;
-			uint32_t		objectCount = -1;
-			bool			props		= false;
+			bool			properties	= false;
 
-			std::vector<uint64_t> asciiChunksPositions;
-			std::vector<uint64_t> binaryChunksPositions;
-			std::vector<uint64_t> binaryChunksSizes;
+			struct CHUNK
+			{
+				std::string	objectName;
+				std::string	className;
+				uint32_t	objectIndex		= 0;
+				uint64_t	objectOffset	= 0;
+				uint64_t	binObjectSize	= 0;
+			};
+
+			std::vector<CHUNK>		chunkStack;
 
 			std::vector<zCObject*>	objectList;
 
