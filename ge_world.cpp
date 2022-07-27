@@ -2,6 +2,10 @@
 
 using namespace GothicLib::Genome;
 
+/*
+	gCProject
+*/
+
 bool gCProject::OnWrite(FileStream* file)
 {
 	if (game <= GAME_GOTHIC3)
@@ -59,12 +63,6 @@ bool gCProject::WriteData(FileStream* file)
 	{
 		file->WriteString(worlds[i]);
 	}
-	
-	if (file->Error())
-	{
-		LOG_ERROR("Error encountered while writing gCProject class!");
-		return false;
-	}
 
 	return true;
 }
@@ -87,31 +85,211 @@ bool gCProject::ReadData(FileStream* file)
 		}
 	}
 
-	if (file->Error())
+	return true;
+}
+
+/*
+	gCWorld
+*/
+
+bool gCWorld::OnWrite(FileStream* file)
+{
+	if (game <= GAME_GOTHIC3)
 	{
-		LOG_ERROR("Error encountered while reading gCProject class!");
-		return false;
+		return bCObjectRefBase::OnWrite(file);
+	}
+
+	return WriteData(file);
+}
+
+bool gCWorld::OnRead(FileStream* file)
+{
+	if (game <= GAME_GOTHIC3)
+	{
+		return bCObjectRefBase::OnRead(file);
+	}
+
+	return ReadData(file);
+}
+
+bool gCWorld::DoLoadData(FileStream* file)
+{
+	if (game <= GAME_GOTHIC3)
+	{
+		return ReadData(file);
 	}
 
 	return true;
 }
 
-bool gCWorld::OnWrite(FileStream* file)
-{
-	return false;
-}
-
-bool gCWorld::OnRead(FileStream* file)
-{
-	return false;
-}
-
-bool gCWorld::DoLoadData(FileStream* file)
-{
-	return false;
-}
-
 bool gCWorld::DoSaveData(FileStream* file)
 {
-	return false;
+	if (game <= GAME_GOTHIC3)
+	{
+		return WriteData(file);
+	}
+
+	return true;
+}
+
+bool gCWorld::WriteData(FileStream* file)
+{
+	uint16_t version = 36;
+
+	if (game >= GAME_RISEN1)
+	{
+		version = 200;
+	}
+
+	file->Write(FILE_ARGS(version));
+	file->WriteString(sectorFile);
+
+	return true;
+}
+
+bool gCWorld::ReadData(FileStream* file)
+{
+	uint16_t version;
+
+	file->Read(FILE_ARGS(version));
+	file->ReadString(sectorFile);
+
+	return true;
+}
+
+/*
+	gCSector
+*/
+
+bool gCSector::OnWrite(FileStream* file)
+{
+	uint16_t version = 27;
+
+	if (game >= GAME_RISEN1)
+	{
+		version = 200;
+	}
+
+	file->Write(FILE_ARGS(version));
+
+	if (version >= 27)
+		file->Write(FILE_ARGS(enabled));
+
+	if (game >= GAME_RISEN1)
+	{
+		return WriteData(file);
+	}
+
+	return true;
+}
+
+bool gCSector::OnRead(FileStream* file)
+{
+	uint16_t version;
+
+	file->Read(FILE_ARGS(version));
+
+	if (version >= 27)
+		file->Read(FILE_ARGS(enabled));
+
+	if (game >= GAME_RISEN1 &&
+		version >= 200)
+	{
+		return ReadData(file);
+	}
+
+	return true;
+}
+
+bool gCSector::DoLoadData(FileStream* file)
+{
+	if (game <= GAME_GOTHIC3)
+	{
+		uint16_t version;
+
+		file->Read(FILE_ARGS(version));
+
+		return ReadData(file);
+	}
+
+	return true;
+}
+
+bool gCSector::DoSaveData(FileStream* file)
+{
+	if (game <= GAME_GOTHIC3)
+	{
+		uint16_t version = 27;
+
+		file->Write(FILE_ARGS(version));
+
+		return WriteData(file);
+	}
+
+	return true;
+}
+
+bool gCSector::WriteData(FileStream* file)
+{
+	uint32_t dynamicLayerCount	= dynamicLayers.size();
+	uint32_t geometryLayerCount	= geometryLayers.size();
+
+	file->Write(FILE_ARGS(dynamicLayerCount));
+	file->Write(FILE_ARGS(geometryLayerCount));
+
+	for (size_t i = 0; i < dynamicLayerCount; i++)
+	{
+		file->WriteString(dynamicLayers[i]);
+	}
+
+	if (geometryLayerCount > 0 &&
+		game >= GAME_RISEN1)
+	{
+		LOG_WARN("Geometry layers are not supported in Risen, yet they are specified!");
+		return false;
+	}
+
+	for (size_t i = 0; i < geometryLayerCount; i++)
+	{
+		file->WriteString(geometryLayers[i]);
+	}
+
+	return true;
+}
+
+bool gCSector::ReadData(FileStream* file)
+{
+	uint32_t dynamicLayerCount;
+	uint32_t geometryLayerCount;
+
+	file->Read(FILE_ARGS(dynamicLayerCount));
+	file->Read(FILE_ARGS(geometryLayerCount));
+
+	if (dynamicLayerCount > 0)
+	{
+		dynamicLayers.resize(dynamicLayerCount);
+
+		for (size_t i = 0; i < dynamicLayerCount; i++)
+		{
+			file->ReadString(dynamicLayers[i]);
+		}
+	}
+
+	if (geometryLayerCount > 0)
+	{
+		if (game >= GAME_RISEN1)
+		{
+			LOG_WARN("Geometry layers are not supported in Risen, yet they are specified!");
+			return false;
+		}
+
+		geometryLayers.resize(geometryLayerCount);
+
+		for (size_t i = 0; i < geometryLayerCount; i++)
+		{
+			file->ReadString(geometryLayers[i]);
+		}
+	}
+
+	return true;
 }

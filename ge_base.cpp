@@ -42,13 +42,31 @@ bool eCArchiveFile::WriteString(std::string str)
 		return FileStream::WriteString(str);
 	}
 
-	uint16_t index = stringPool.size();
+	// Find if the string is already pooled
+	bool found = false;
+	uint16_t index;
+
+	for (size_t i = 0; i < stringPool.size(); i++)
+	{
+		if (stringPool[i] == str)
+		{
+			index = i;
+			found = true;
+
+			break;
+		}
+	}
+
+	if (!found)
+	{
+		index = stringPool.size();
+		stringPool.push_back(str);
+	}
+
 	if (!Write(&index, sizeof(index)))
 	{
 		return false;
 	}
-
-	stringPool.push_back(str);
 
 	return true;
 }
@@ -245,7 +263,7 @@ bool bCAccessorPropertyObject::Write(FileStream* file)
 
 			// Gothic 3 exceptions
 			if (game <= GAME_GOTHIC3 &&
-				type == "bTRefPtrArray<class gCWorld *>")
+				type.find("bTRefPtrArray<class") == 0)
 			{
 				type = "bTRefPtrArray<class bCPropertyObjectBase *>";
 			}
@@ -299,13 +317,7 @@ bool bCAccessorPropertyObject::Write(FileStream* file)
 
 			file->Seek(propPos);
 
-			propertyWritten.version	= 1;
-
-			if (game <= GAME_GOTHIC3)
-			{
-				propertyWritten.version = 30;
-			}
-
+			propertyWritten.version = 30;
 			propertyWritten.size	= currPos - propPos - sizeof(propertyWritten);
 
 			if (!file->Write(&propertyWritten, sizeof(propertyWritten)))
@@ -330,6 +342,12 @@ bool bCAccessorPropertyObject::Write(FileStream* file)
 	// Write class data
 	if (!nativeObject->OnWrite(file))
 	{
+		return false;
+	}
+
+	if (file->Error())
+	{
+		LOG_ERROR("Error encountered while writing class \"" + nativeObject->GetClassDef()->GetName() + "\"!");
 		return false;
 	}
 
@@ -466,9 +484,6 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 			return false;
 		}
 
-		if (propertyWritten.size == 0)
-			continue;
-
 		// Check if the native object contains this property
 		ClassDefinition* currClassDef = classDef;
 		std::vector<PropertyDefinition*> properties;
@@ -496,10 +511,15 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 
 			if (currClassDef->GetBaseDef())
 				currClassDef = currClassDef->GetBaseDef();
+			else
+				break;
 		}
 
 		if (found)
 		{
+			if (propertyWritten.size == 0)
+				continue;
+
 			// Special cases
 			if (propertyType == "bCString")
 			{
@@ -541,6 +561,8 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 		}
 		else
 		{
+			file->Seek(file->Tell() + propertyWritten.size);
+
 			LOG_WARN("Property \"" + propertyName + "\" of type \"" + propertyType +
 				"\" was not found in \"" + className + "\" object!");
 		}
@@ -549,6 +571,12 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 	// Read class data
 	if (!nativeObject->OnRead(file))
 	{
+		return false;
+	}
+
+	if (file->Error())
+	{
+		LOG_ERROR("Error encountered while reading class \"" + className + "\"!");
 		return false;
 	}
 
@@ -689,6 +717,13 @@ bool eCProcessibleElement::Save(FileStream* file, FileStream* datFile)
 		{
 			return false;
 		}
+
+		if (datFile->Error())
+		{
+			LOG_ERROR("Error encountered while saving data of class \"" +
+				accessor.GetNativeObject()->GetClassDef()->GetName() + "\"!");
+			return false;
+		}
 	}
 
 	return true;
@@ -725,6 +760,13 @@ bool eCProcessibleElement::Load(FileStream* file, FileStream* datFile)
 	{
 		if (!DoLoadData(datFile))
 		{
+			return false;
+		}
+
+		if (datFile->Error())
+		{
+			LOG_ERROR("Error encountered while loading data of class \"" +
+				accessor.GetNativeObject()->GetClassDef()->GetName() + "\"!");
 			return false;
 		}
 	}
