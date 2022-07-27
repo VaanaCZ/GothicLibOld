@@ -4,6 +4,119 @@
 
 using namespace GothicLib::ZenGin;
 
+
+bool zCArchiver::Write(FileStream* _file, bool briefHeader)
+{
+	mode = ARCHIVER_MODE_ASCII; // temp
+	version = 1;
+
+	file = _file;
+
+	// Write header
+
+	/*
+		ZenGin Archive
+	*/
+	file->WriteLine("ZenGin Archive", "\n");
+
+	/*
+		ver 0 / ver 1
+	*/
+	if (version == 0)		file->WriteLine("ver 0", "\n");
+	else if(version == 1)	file->WriteLine("ver 1", "\n");
+
+	/*
+		zCArchiverGeneric / zCArchiverBinSafe
+	*/
+	if (version == 1)
+	{
+		if (mode == ARCHIVER_MODE_BIN_SAFE)
+			file->WriteLine("zCArchiverBinSafe", "\n");
+		else
+			file->WriteLine("zCArchiverGeneric", "\n");
+	}
+
+	/*
+		ASCII / BINARY / BIN_SAFE
+	*/
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		if (IsProperties())
+			file->WriteLine("ASCII_PROPS", "\n");
+		else
+			file->WriteLine("ASCII", "\n");
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+		file->WriteLine("BINARY", "\n");
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+		file->WriteLine("BIN_SAFE", "\n");
+
+	/*
+		saveGame 0 / saveGame 1
+	*/
+	if (IsSavegame())	file->WriteLine("saveGame 1", "\n");
+	else				file->WriteLine("saveGame 0", "\n");
+
+	/*
+		date d.m.Y H:M:S
+	*/
+	if (version == 0 || !briefHeader)
+	{
+		time_t timer;
+		tm tmInfo;
+
+		timer = time(NULL);
+		if (localtime_s(&tmInfo, &timer) == 0)
+		{
+			file->WriteLine("date " + std::to_string(tmInfo.tm_mday) + "."
+									+ std::to_string(tmInfo.tm_mon + 1) + "."
+									+ std::to_string(tmInfo.tm_year + 1900) + " "
+									+ std::to_string(tmInfo.tm_hour) + ":"
+									+ std::to_string(tmInfo.tm_min) + ":"
+									+ std::to_string(tmInfo.tm_sec), "\n");
+		}
+	}
+	
+	if (version == 1 && !briefHeader)
+	{
+		/*
+			user x
+		*/
+		file->WriteLine("user GothicLib", "\n");
+	}
+	else if (version == 0)
+	{
+		/*
+			objects n
+		*/
+		file->WriteLine("objects          ", "\n");
+	}
+
+	/*
+			END
+	*/
+	file->WriteLine("END", "\n");
+
+	if (mode != ARCHIVER_MODE_BIN_SAFE &&
+		version == 1)
+	{
+		/*
+			objects n
+		*/
+		file->WriteLine("objects          ", "\n");
+
+		/*
+				END
+		*/
+		file->WriteLine("END", "\n");
+		file->WriteLine("", "\n");
+	}
+
+
+
+	return true;
+}
+
 //
 // bool Read(FileStream* _file)
 // 
@@ -182,114 +295,133 @@ bool zCArchiver::Read(FileStream* _file)
 	return true;
 }
 
-bool zCArchiver::Write(FileStream* _file, bool briefHeader)
+bool zCArchiver::WriteObject(std::string name, zCObject* object)
 {
-	mode = ARCHIVER_MODE_ASCII; // temp
-	version = 1;
-
-	file = _file;
-
-	// Write header
-
-	/*
-		ZenGin Archive
-	*/
-	file->WriteLine("ZenGin Archive", "\n");
-
-	/*
-		ver 0 / ver 1
-	*/
-	if (version == 0)		file->WriteLine("ver 0", "\n");
-	else if(version == 1)	file->WriteLine("ver 1", "\n");
-
-	/*
-		zCArchiverGeneric / zCArchiverBinSafe
-	*/
-	if (version == 1)
+	// Stop early if its a nullptr
+	if (object == nullptr)
 	{
-		if (mode == ARCHIVER_MODE_BIN_SAFE)
-			file->WriteLine("zCArchiverBinSafe", "\n");
-		else
-			file->WriteLine("zCArchiverGeneric", "\n");
-	}
-
-	/*
-		ASCII / BINARY / BIN_SAFE
-	*/
-	if (mode == ARCHIVER_MODE_ASCII)
-	{
-		if (IsProperties())
-			file->WriteLine("ASCII_PROPS", "\n");
-		else
-			file->WriteLine("ASCII", "\n");
-	}
-	else if (mode == ARCHIVER_MODE_BINARY)
-		file->WriteLine("BINARY", "\n");
-	else if (mode == ARCHIVER_MODE_BIN_SAFE)
-		file->WriteLine("BIN_SAFE", "\n");
-
-	/*
-		saveGame 0 / saveGame 1
-	*/
-	if (IsSavegame())	file->WriteLine("saveGame 1", "\n");
-	else				file->WriteLine("saveGame 0", "\n");
-
-	/*
-		date d.m.Y H:M:S
-	*/
-	if (version == 0 || !briefHeader)
-	{
-		time_t timer;
-		tm tmInfo;
-
-		timer = time(NULL);
-		if (localtime_s(&tmInfo, &timer) == 0)
+		if (!WriteChunkStart(name, "%", 0, 0) ||
+			!WriteChunkEnd())
 		{
-			file->WriteLine("date " + std::to_string(tmInfo.tm_mday) + "."
-									+ std::to_string(tmInfo.tm_mon + 1) + "."
-									+ std::to_string(tmInfo.tm_year + 1900) + " "
-									+ std::to_string(tmInfo.tm_hour) + ":"
-									+ std::to_string(tmInfo.tm_min) + ":"
-									+ std::to_string(tmInfo.tm_sec), "\n");
+			error = true;
+			return false;
+		}
+
+		return true;
+	}
+
+	// Find out if the object is in the list
+	for (size_t i = 0; i < objectList.size(); i++)
+	{
+		if (objectList[i] == object)
+		{
+			if (!WriteChunkStart(name, "§", 0, i) ||
+				!WriteChunkEnd())
+			{
+				error = true;
+				return false;
+			}
+
+			return true;
 		}
 	}
+
+	uint32_t objectIndex = objectList.size();
+	objectList.push_back(object);
+
+	// Figure out the full class name
+	ClassDefinition* classDef = object->GetClassDef();
+
+	std::string	className = classDef->GetName();
+	uint16_t	versionSum = classDef->GetVersionSum(game);
+
+	while (true)
+	{
+		classDef = classDef->GetBaseDef();
+
+		if (!classDef)
+			break;
+
+		if (!classDef->IsAbstract())
+			className += ":" + classDef->GetName();
+	}
+
+	// Write chunk
+	if (!WriteChunkStart(name, className, versionSum, objectIndex) ||
+		!object->Archive(this) ||
+		!WriteChunkEnd())
+	{
+		error = true;
+		return false;
+	}
+
+	return true;
+}
+
+bool zCArchiver::WriteChunkStart(std::string objectName, std::string className, uint16_t classVersion, uint32_t objectIndex)
+{
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		std::string output = "";
+
+		// Tabs
+		if (chunkStack.size() != 0)
+		{
+			output.resize(chunkStack.size());
+
+			for (size_t i = 0; i < chunkStack.size(); i++)
+			{
+				output[i] = '\t';
+			}
+		}
+
+		// Chunk start
+		output += "[" + (objectName.empty() ? "%" : objectName) + " " +
+						(className.empty() ? "%" : className) + " " +
+						std::to_string(classVersion) + " " +
+						std::to_string(objectIndex) + "]";
+
+		file->WriteLine(output, "\n");
+	}
+
+	// Mark that we entered a new chunk
+	CHUNK chunk;
+	chunk.objectName	= (objectName.empty() ? "%" : objectName);
+	chunk.className		= (className.empty() ? "%" : className);
+	chunk.objectIndex	= objectIndex;
+	chunk.objectOffset	= file->Tell();
 	
-	if (version == 1 && !briefHeader)
+	chunkStack.push_back(chunk);
+
+	return true;
+}
+
+bool zCArchiver::WriteChunkEnd()
+{
+	// Mark that we left a chunk
+	chunkStack.pop_back();
+
+	// Read end
+	if (mode == ARCHIVER_MODE_ASCII)
 	{
-		/*
-			user x
-		*/
-		file->WriteLine("user GothicLib", "\n");
+		std::string output = "";
+
+		// Tabs
+		if (chunkStack.size() != 0)
+		{
+			output.resize(chunkStack.size());
+
+			for (size_t i = 0; i < chunkStack.size(); i++)
+			{
+				output[i] = '\t';
+			}
+		}
+
+		// Chunk start
+		output += "[]";
+
+		file->WriteLine(output, "\n");
 	}
-	else if (version == 0)
-	{
-		/*
-			objects n
-		*/
-		file->WriteLine("objects          ", "\n");
-	}
-
-	/*
-			END
-	*/
-	file->WriteLine("END", "\n");
-
-	if (mode != ARCHIVER_MODE_BIN_SAFE &&
-		version == 1)
-	{
-		/*
-			objects n
-		*/
-		file->WriteLine("objects          ", "\n");
-
-		/*
-				END
-		*/
-		file->WriteLine("END", "\n");
-		file->WriteLine("", "\n");
-	}
-
-
 
 	return true;
 }
@@ -311,6 +443,10 @@ bool zCArchiver::ReadInt(std::string name, int& intVal)
 	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&intVal, sizeof(intVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return ReadBinSafeProperty(BINSAFE_TYPE_INTEGER, &intVal);
 	}
 
 	if (mode != ARCHIVER_MODE_ASCII)
@@ -337,6 +473,10 @@ bool zCArchiver::ReadByte(std::string name, unsigned char& byteVal)
 	{
 		return file->Read(&byteVal, sizeof(byteVal));
 	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return ReadBinSafeProperty(BINSAFE_TYPE_BYTE, &byteVal);
+	}
 
 	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
@@ -361,6 +501,10 @@ bool zCArchiver::ReadWord(std::string name, unsigned short& wordVal)
 	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&wordVal, sizeof(wordVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return ReadBinSafeProperty(BINSAFE_TYPE_WORD, &wordVal);
 	}
 
 	if (mode != ARCHIVER_MODE_ASCII)
@@ -387,6 +531,10 @@ bool zCArchiver::ReadFloat(std::string name, float& floatVal)
 	{
 		return file->Read(&floatVal, sizeof(floatVal));
 	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return ReadBinSafeProperty(BINSAFE_TYPE_FLOAT, &floatVal);
+	}
 
 	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
@@ -411,6 +559,10 @@ bool zCArchiver::ReadBool(std::string name, bool& boolVal)
 	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&boolVal, sizeof(boolVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return ReadBinSafeProperty(BINSAFE_TYPE_BOOL, &boolVal);
 	}
 
 	if (mode != ARCHIVER_MODE_ASCII)
@@ -437,6 +589,10 @@ bool zCArchiver::ReadString(std::string name, std::string& strVal)
 	{
 		return file->ReadNullString(strVal);
 	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return ReadBinSafeProperty(BINSAFE_TYPE_STRING, &strVal);
+	}
 
 	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
@@ -462,6 +618,10 @@ bool zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
 	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&vecVal, sizeof(vecVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return ReadBinSafeProperty(BINSAFE_TYPE_VEC3, &vecVal);
 	}
 
 	if (mode != ARCHIVER_MODE_ASCII)
@@ -494,6 +654,10 @@ bool zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
 	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&colorVal, sizeof(colorVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return ReadBinSafeProperty(BINSAFE_TYPE_COLOR, &colorVal);
 	}
 
 	if (mode != ARCHIVER_MODE_ASCII)
@@ -533,6 +697,10 @@ bool zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSize)
 	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(buffer, bufferSize);
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return ReadBinSafeProperty(BINSAFE_TYPE_RAW, buffer, bufferSize);
 	}
 
 	if (mode != ARCHIVER_MODE_ASCII)
@@ -583,6 +751,10 @@ bool zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t floatCo
 	{
 		return file->Read(floatVals, floatCount * sizeof(float));
 	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return ReadBinSafeProperty(BINSAFE_TYPE_RAWFLOAT, floatVals, floatCount * sizeof(float));
+	}
 
 	if (mode != ARCHIVER_MODE_ASCII)
 		error = true;
@@ -607,6 +779,10 @@ bool zCArchiver::ReadEnum(std::string name, int& enumVal)
 	else if (mode == ARCHIVER_MODE_BINARY)
 	{
 		return file->Read(&enumVal, sizeof(enumVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return ReadBinSafeProperty(BINSAFE_TYPE_ENUM, &enumVal);
 	}
 
 	if (mode != ARCHIVER_MODE_ASCII)
@@ -764,14 +940,8 @@ bool zCArchiver::ReadChunkStart(std::string* _objectName, std::string* _classNam
 
 		if (mode == ARCHIVER_MODE_BIN_SAFE)
 		{
-			char* str;
-			size_t length;
-			if (!ReadBinSafeProperty(BINSAFE_TYPE_STRING, str, length))
+			if (!ReadBinSafeProperty(BINSAFE_TYPE_STRING, &line))
 				return false;
-
-			line = std::string(str, length);
-
-			delete[] str;
 		}
 		else
 		{
@@ -945,14 +1115,8 @@ bool zCArchiver::ReadChunkEnd()
 
 		if (mode == ARCHIVER_MODE_BIN_SAFE)
 		{
-			char* str;
-			size_t length;
-			if (!ReadBinSafeProperty(BINSAFE_TYPE_STRING, str, length))
+			if (!ReadBinSafeProperty(BINSAFE_TYPE_STRING, &line))
 				return false;
-
-			line = std::string(str, length);
-
-			delete[] str;
 		}
 		else
 		{
@@ -963,8 +1127,6 @@ bool zCArchiver::ReadChunkEnd()
 
 			while (file->ReadLine(line))
 			{
-				//LOG_DEBUG("ReadChunkEnd      : " + line);
-
 				// Figure out nesting
 				size_t tabCount = 0;
 
@@ -1010,8 +1172,6 @@ bool zCArchiver::ReadChunkEnd()
 				LOG_ERROR("End of the file reached, but the chunk remains open. This archive is invalid!");
 				return false;
 			}
-
-			chunkStack.pop_back();
 		}
 	}
 
@@ -1020,6 +1180,9 @@ bool zCArchiver::ReadChunkEnd()
 		LOG_ERROR("An error occured while reading chunk.");
 		error = false;
 	}
+
+	// Mark that we left a chunk
+	chunkStack.pop_back();
 
 	return true;
 }
@@ -1137,7 +1300,7 @@ bool zCArchiver::ReadASCIIProperty(std::string name, std::string type, std::stri
 	return false;
 }
 
-bool zCArchiver::ReadBinSafeProperty(BINSAFE_TYPE type, char*& data, size_t& size)
+bool zCArchiver::ReadBinSafeProperty(BINSAFE_TYPE type, void* data, size_t size)
 {
 	// First read the type
 	char readType;
@@ -1151,42 +1314,92 @@ bool zCArchiver::ReadBinSafeProperty(BINSAFE_TYPE type, char*& data, size_t& siz
 	switch (readType)
 	{
 	case BINSAFE_TYPE_STRING:
+	{
+		std::string* strVal = (std::string*)data;
+
+		if (!file->ReadString(*strVal))
+			return false;
+
+		break;
+	}
 		
+	case BINSAFE_TYPE_INTEGER:
+	{
+		if (!file->Read(data, sizeof(int)))
+			return false;
+
+		break;
+	}
+
+	case BINSAFE_TYPE_FLOAT:
+	{
+		if (!file->Read(data, sizeof(float)))
+			return false;
+
+		break;
+	}
+
+	case BINSAFE_TYPE_BOOL:
+	{
+		if (!file->Read(data, sizeof(bool)))
+			return false;
+
+		break;
+	}
+
+	case BINSAFE_TYPE_VEC3:
+	{
+		if (!file->Read(data, sizeof(zVEC3)))
+			return false;
+
+		break;
+	}
+
+	case BINSAFE_TYPE_COLOR:
+	{
+		if (!file->Read(data, sizeof(zCOLOR)))
+			return false;
+
+		break;
+	}
+
+	case BINSAFE_TYPE_RAW:
+	{
 		uint16_t length;
 		if (!file->Read(&length, sizeof(length)))
 			return false;
 
-		data = new char[length];
+		if (length != size)
+			return false;
+
 		if (!file->Read(data, length))
 			return false;
 
-		size = length;
-
 		break;
-
-	case BINSAFE_TYPE_INT:
-		break;
-
-	case BINSAFE_TYPE_FLOAT:
-		break;
-
-	case BINSAFE_TYPE_BOOL:
-		break;
-
-	case BINSAFE_TYPE_VEC3:
-		break;
-
-	case BINSAFE_TYPE_COLOR:
-		break;
-
-	case BINSAFE_TYPE_RAW:
-		break;
+	}
 
 	case BINSAFE_TYPE_RAWFLOAT:
+	{
+		uint16_t length;
+		if (!file->Read(&length, sizeof(length)))
+			return false;
+
+		if (length != size)
+			return false;
+
+		if (!file->Read(data, length))
+			return false;
+
 		break;
+	}
 
 	case BINSAFE_TYPE_ENUM:
+	{
+		if (!file->Read(data, sizeof(int)))
+			return false;
+
 		break;
+	}
 
 	default:
 		break;

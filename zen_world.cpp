@@ -28,6 +28,8 @@ bool zCWorld::LoadWorld(FileStream* file)
 		{
 			return false;
 		}
+
+		archiver.Close();
 	}
 	else
 	{
@@ -38,7 +40,34 @@ bool zCWorld::LoadWorld(FileStream* file)
 
 bool zCWorld::SaveWorld(FileStream* file)
 {
-	return false;
+	if (game == GAME_DEMO3)
+	{
+		if (!SaveWorldFile(file))
+		{
+			return false;
+		}
+	}
+	else if (game >= GAME_DEMO5)
+	{
+		zCArchiver archiver;
+		archiver.game = game;
+		if (!archiver.Write(file))
+		{
+			return false;
+		}
+
+		if (!archiver.WriteObject(this))
+		{
+			return false;
+		}
+
+		archiver.Close();
+	}
+	else
+	{
+		LOG_ERROR("Game not specified. Please specify a game to use before loading a world!");
+		return false;
+	}
 }
 
 bool zCWorld::Archive(zCArchiver* archiver)
@@ -286,7 +315,7 @@ bool zCWorld::SaveVobTree(FileStream* file, zCVob* parentVob)
 
 bool oCWorld::Archive(zCArchiver* archiver)
 {
-	return false;
+	return true;
 }
 
 bool oCWorld::Unarchive(zCArchiver* archiver)

@@ -139,8 +139,16 @@ namespace GothicLib
 			zCArchiver()	{ }
 			~zCArchiver()	{ }
 
-			bool Read(FileStream*);
 			bool Write(FileStream*, bool = false);
+			bool Read(FileStream*);
+
+			void Close() { file->Close(); }
+
+			bool WriteObject(zCObject* o) { return WriteObject(std::string(), o); }
+			bool WriteObject(std::string, zCObject*);
+
+			bool WriteChunkStart(std::string, std::string, uint16_t, uint32_t);
+			bool WriteChunkEnd();
 
 			bool ReadInt		(std::string, int&);
 			bool ReadByte		(std::string, unsigned char&);
@@ -188,7 +196,7 @@ namespace GothicLib
 			enum BINSAFE_TYPE
 			{
 				BINSAFE_TYPE_STRING		= 0x1,
-				BINSAFE_TYPE_INT		= 0x2,
+				BINSAFE_TYPE_INTEGER	= 0x2,
 				BINSAFE_TYPE_FLOAT		= 0x3,
 				BINSAFE_TYPE_BYTE		= 0x4,
 				BINSAFE_TYPE_WORD		= 0x5,
@@ -202,7 +210,7 @@ namespace GothicLib
 			};
 
 			bool ReadASCIIProperty(std::string, std::string, std::string&);
-			bool ReadBinSafeProperty(BINSAFE_TYPE, char*&, size_t&);
+			bool ReadBinSafeProperty(BINSAFE_TYPE, void*, size_t = 0);
 
 			enum ARCHIVER_MODE
 			{
