@@ -86,6 +86,8 @@ bool zCArchiver::Write(FileStream* _file, bool briefHeader)
 	}
 	else if (version == 0)
 	{
+		objectCountPos = file->Tell() + 8; // "objects "
+
 		/*
 			objects n
 		*/
@@ -100,6 +102,8 @@ bool zCArchiver::Write(FileStream* _file, bool briefHeader)
 	if (mode != ARCHIVER_MODE_BIN_SAFE &&
 		version == 1)
 	{
+		objectCountPos = file->Tell() + 8; // "objects "
+
 		/*
 			objects n
 		*/
@@ -295,6 +299,316 @@ bool zCArchiver::Read(FileStream* _file)
 	return true;
 }
 
+void GothicLib::ZenGin::zCArchiver::Close()
+{
+	// Write object count
+	file->Seek(objectCountPos);
+
+	if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+
+	}
+	else
+	{
+		std::string strCount = std::to_string(objectList.size());
+		file->Write((char*)strCount.c_str(), strCount.size()); // Yes, this is correct.
+	}
+
+	// Close file
+	file->Close();
+}
+
+bool zCArchiver::WriteInt(std::string name, int intVal)
+{
+	if (error)
+		return false;
+
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		return WriteASCIIProperty(name, "int", std::to_string(intVal));
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		return file->Write(&intVal, sizeof(intVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return WriteBinSafeProperty(BINSAFE_TYPE_INTEGER, &intVal);
+	}
+
+	if (mode != ARCHIVER_MODE_ASCII)
+		error = true;
+
+	return false;
+}
+
+bool zCArchiver::WriteByte(std::string name, unsigned char byteVal)
+{
+	if (error)
+		return false;
+
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		return WriteASCIIProperty(name, "int", std::to_string(byteVal));
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		return file->Write(&byteVal, sizeof(byteVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return WriteBinSafeProperty(BINSAFE_TYPE_BYTE, &byteVal);
+	}
+
+	if (mode != ARCHIVER_MODE_ASCII)
+		error = true;
+
+	return false;
+}
+
+bool zCArchiver::WriteWord(std::string name, unsigned short wordVal)
+{
+	if (error)
+		return false;
+
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		return WriteASCIIProperty(name, "int", std::to_string(wordVal));
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		return file->Write(&wordVal, sizeof(wordVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return WriteBinSafeProperty(BINSAFE_TYPE_WORD, &wordVal);
+	}
+
+	if (mode != ARCHIVER_MODE_ASCII)
+		error = true;
+
+	return false;
+}
+
+bool zCArchiver::WriteFloat(std::string name, float floatVal)
+{
+	if (error)
+		return false;
+
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		return WriteASCIIProperty(name, "float", FloatToString(floatVal));
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		return file->Write(&floatVal, sizeof(floatVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return WriteBinSafeProperty(BINSAFE_TYPE_FLOAT, &floatVal);
+	}
+
+	if (mode != ARCHIVER_MODE_ASCII)
+		error = true;
+
+	return false;
+}
+
+bool zCArchiver::WriteBool(std::string name, bool boolVal)
+{
+	if (error)
+		return false;
+
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		return WriteASCIIProperty(name, "bool", std::to_string(boolVal));
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		return file->Write(&boolVal, sizeof(boolVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return WriteBinSafeProperty(BINSAFE_TYPE_BOOL, &boolVal);
+	}
+
+	if (mode != ARCHIVER_MODE_ASCII)
+		error = true;
+
+	return false;
+}
+
+bool zCArchiver::WriteString(std::string name, std::string strVal)
+{
+	if (error)
+		return false;
+
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		return WriteASCIIProperty(name, "string", strVal);
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		return file->WriteNullString(strVal);
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return WriteBinSafeProperty(BINSAFE_TYPE_STRING, &strVal);
+	}
+
+	if (mode != ARCHIVER_MODE_ASCII)
+		error = true;
+
+	return false;
+}
+
+bool zCArchiver::WriteVec3(std::string name, zVEC3 vecVal)
+{
+	if (error)
+		return false;
+
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		std::string value = FloatToString(vecVal.x) + " " +
+							FloatToString(vecVal.y) + " " +
+							FloatToString(vecVal.z);
+
+		return WriteASCIIProperty(name, "vec3", value);
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		return file->Write(&vecVal, sizeof(vecVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return WriteBinSafeProperty(BINSAFE_TYPE_VEC3, &vecVal);
+	}
+
+	if (mode != ARCHIVER_MODE_ASCII)
+		error = true;
+
+	return false;
+}
+
+bool zCArchiver::WriteColor(std::string name, zCOLOR colorVal)
+{
+	if (error)
+		return false;
+
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		int vals[4];
+		vals[0] = colorVal.b;
+		vals[1] = colorVal.g;
+		vals[2] = colorVal.r;
+		vals[3] = colorVal.a;
+
+		char buffer[16];
+		sprintf_s(buffer, 16, "%d %d %d %d", vals[0], vals[1], vals[2], vals[3]);
+
+		return WriteASCIIProperty(name, "color", std::string(buffer));
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		return file->Write(&colorVal, sizeof(colorVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return WriteBinSafeProperty(BINSAFE_TYPE_COLOR, &colorVal);
+	}
+
+	return false;
+}
+
+bool zCArchiver::WriteRaw(std::string name, char* buffer, size_t bufferSize)
+{
+	if (error)
+		return false;
+
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		std::string value;
+
+		char charVal[3];
+		unsigned int rawValue = 0;
+
+		for (size_t i = 0; i < bufferSize; i++)
+		{
+			rawValue = (unsigned char)buffer[i];
+			sprintf_s(charVal, "%02x", rawValue);
+			value += charVal;
+		}
+
+		return WriteASCIIProperty(name, "raw", value);
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		return file->Write(buffer, bufferSize);
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return WriteBinSafeProperty(BINSAFE_TYPE_RAW, buffer, bufferSize);
+	}
+
+	return false;
+}
+
+bool zCArchiver::WriteRawFloat(std::string name, float* floatVals, size_t floatCount)
+{
+	if (error)
+		return false;
+
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		std::string value = "";
+
+		for (size_t i = 0; i < floatCount; i++)
+		{
+			value += FloatToString(floatVals[i]) + " ";
+		}
+
+		return WriteASCIIProperty(name, "rawFloat", value);
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		return file->Write(floatVals, floatCount * sizeof(float));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return WriteBinSafeProperty(BINSAFE_TYPE_RAWFLOAT, floatVals, floatCount * sizeof(float));
+	}
+
+	return false;
+}
+
+bool zCArchiver::WriteEnum(std::string name, std::string choices, int enumVal)
+{
+	if (error)
+		return false;
+
+	if (mode == ARCHIVER_MODE_ASCII)
+	{
+		std::string type = "enum";
+
+		if (version == 0 || IsProperties())
+		{
+			type += ";" + choices;
+		}
+
+		return WriteASCIIProperty(name, type, std::to_string(enumVal));
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		return file->Write(&enumVal, sizeof(enumVal));
+	}
+	else if (mode == ARCHIVER_MODE_BIN_SAFE)
+	{
+		return WriteBinSafeProperty(BINSAFE_TYPE_ENUM, &enumVal);
+	}
+
+	return false;
+}
+
 bool zCArchiver::WriteObject(std::string name, zCObject* object)
 {
 	// Stop early if its a nullptr
@@ -421,6 +735,28 @@ bool zCArchiver::WriteChunkEnd()
 		output += "[]";
 
 		file->WriteLine(output, "\n");
+	}
+
+	return true;
+}
+
+bool zCArchiver::WriteGroupBegin(std::string name)
+{
+	if (mode == ARCHIVER_MODE_ASCII &&
+		IsProperties())
+	{
+		return WriteASCIIProperty(name, "groupBegin", "");
+	}
+
+	return true;
+}
+
+bool zCArchiver::WriteGroupEnd(std::string name)
+{
+	if (mode == ARCHIVER_MODE_ASCII &&
+		IsProperties())
+	{
+		return WriteASCIIProperty(name, "groupEnd", "");
 	}
 
 	return true;
@@ -1183,6 +1519,132 @@ bool zCArchiver::ReadChunkEnd()
 
 	// Mark that we left a chunk
 	chunkStack.pop_back();
+
+	return true;
+}
+
+bool zCArchiver::WriteASCIIProperty(std::string name, std::string type, std::string value)
+{
+	// Tabs
+	std::string output = "";
+
+	if (chunkStack.size() != 0)
+	{
+		output.resize(chunkStack.size());
+
+		for (size_t i = 0; i < chunkStack.size(); i++)
+		{
+			output[i] = '\t';
+		}
+	}
+
+	// Chunk start
+	output += name + "=" + type + ":" + value;
+
+	return file->WriteLine(output, "\n");
+}
+
+bool zCArchiver::WriteBinSafeProperty(BINSAFE_TYPE type, void* data, size_t size)
+{
+	// First read the type
+	char writeType = type;
+	if (!file->Write(&writeType, sizeof(writeType)))
+		return false;
+
+	// Proceed based on type
+	switch (type)
+	{
+	case BINSAFE_TYPE_STRING:
+	{
+		std::string* strVal = (std::string*)data;
+
+		if (!file->WriteString(*strVal))
+			return false;
+
+		break;
+	}
+		
+	case BINSAFE_TYPE_INTEGER:
+	{
+		if (!file->Write(data, sizeof(int)))
+			return false;
+
+		break;
+	}
+
+	case BINSAFE_TYPE_FLOAT:
+	{
+		if (!file->Write(data, sizeof(float)))
+			return false;
+
+		break;
+	}
+
+	case BINSAFE_TYPE_BOOL:
+	{
+		if (!file->Write(data, sizeof(bool)))
+			return false;
+
+		break;
+	}
+
+	case BINSAFE_TYPE_VEC3:
+	{
+		if (!file->Write(data, sizeof(zVEC3)))
+			return false;
+
+		break;
+	}
+
+	case BINSAFE_TYPE_COLOR:
+	{
+		if (!file->Write(data, sizeof(zCOLOR)))
+			return false;
+
+		break;
+	}
+
+	case BINSAFE_TYPE_RAW:
+	{
+		uint16_t length;
+		if (!file->Write(&length, sizeof(length)))
+			return false;
+
+		if (length != size)
+			return false;
+
+		if (!file->Write(data, length))
+			return false;
+
+		break;
+	}
+
+	case BINSAFE_TYPE_RAWFLOAT:
+	{
+		uint16_t length;
+		if (!file->Write(&length, sizeof(length)))
+			return false;
+
+		if (length != size)
+			return false;
+
+		if (!file->Write(data, length))
+			return false;
+
+		break;
+	}
+
+	case BINSAFE_TYPE_ENUM:
+	{
+		if (!file->Write(data, sizeof(int)))
+			return false;
+
+		break;
+	}
+
+	default:
+		break;
+	}
 
 	return true;
 }

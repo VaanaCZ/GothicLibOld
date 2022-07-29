@@ -2772,7 +2772,7 @@ namespace GothicLib
 				Properties
 			*/
 
-			int waynetVersion			= 0;
+			int waynetVersion			= 1;
 			std::vector<zCWaypoint*>	waypointList;
 			std::vector<zCWay>			wayList;
 			std::vector<std::string>	oldWaypointList;	// Legacy

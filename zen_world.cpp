@@ -72,11 +72,48 @@ bool zCWorld::SaveWorld(FileStream* file)
 
 bool zCWorld::Archive(zCArchiver* archiver)
 {
-	return false;
+	if (!zCObject::Archive(archiver))
+		return false;
+
+	// VobTree
+	if (vobTree)
+	{
+		size_t vobCount = 0;
+
+		archiver->WriteChunkStart("VobTree");
+		if (!ArcVobTree(archiver, vobTree, vobCount))
+		{
+			return false;
+		}
+		archiver->WriteChunkEnd();
+	}
+
+	// WayNet
+	if (wayNet && game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->WriteChunkStart("WayNet");
+		archiver->WriteObject(wayNet);
+		archiver->WriteChunkEnd();
+	}
+
+	// EndMarker
+	archiver->WriteChunkStart("EndMarker");
+	archiver->WriteChunkEnd();
+
+	// old WayNet
+	if (wayNet && game <= GAME_DEMO5)
+	{
+		archiver->WriteObject(wayNet);
+	}
+
+	return true;
 }
 
 bool zCWorld::Unarchive(zCArchiver* archiver)
 {
+	if (!zCObject::Unarchive(archiver))
+		return false;
+
 	// Loop through chunks until the end
 	bool loop = true;
 
@@ -146,6 +183,25 @@ bool zCWorld::Unarchive(zCArchiver* archiver)
 
 bool zCWorld::ArcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vobCount)
 {
+	// Write vobs
+	if (vobCount != 0)
+	{
+		archiver->WriteObject(vob);
+	}
+	
+	// Write childs
+	int childCount = vob->children.size();
+	if (!archiver->WriteInt("childs" + std::to_string(vobCount), childCount))
+		return false;
+
+	vobCount++;
+
+	for (size_t i = 0; i < childCount; i++)
+	{
+		if (!ArcVobTree(archiver, vob->children[i], vobCount))
+			return false;
+	}
+
 	return true;
 }
 
@@ -315,6 +371,11 @@ bool zCWorld::SaveVobTree(FileStream* file, zCVob* parentVob)
 
 bool oCWorld::Archive(zCArchiver* archiver)
 {
+	if (!zCWorld::Archive(archiver))
+		return false;
+
+	//todo: savegame
+	
 	return true;
 }
 
@@ -372,11 +433,98 @@ bool zCBspTree::LoadBIN(FileStream* file)
 
 bool zCVob::Archive(zCArchiver* archiver)
 {
-	return false;
+	if (!zCObject::Archive(archiver))
+		return false;
+
+	archiver->WriteGroupBegin("Internals");
+
+	int	pack = 0;
+
+	// Only 1.06l and up use pack
+	if (game >= GAME_GOTHIC1)
+	{
+		archiver->WriteInt(ARC_ARGS(pack));
+	}
+
+	if (pack)
+	{
+		return true;
+	}
+	else
+	{
+		if (game <= GAME_SEPTEMBERDEMO)
+		{
+			archiver->WriteInt(ARC_ARGS(vobID));
+		}
+
+		archiver->WriteString(ARC_ARGS(presetName));
+
+		if (game <= GAME_SEPTEMBERDEMO)
+		{
+			archiver->WriteBool(ARC_ARGS(drawBBox3D));
+		}
+
+		archiver->WriteRawFloat(ARC_ARGSF(bbox3DWS));
+
+		if (game <= GAME_SEPTEMBERDEMO)
+		{
+			archiver->WriteRaw(ARC_ARGSR(trafoRot));
+			archiver->WriteVec3(ARC_ARGS(trafoPos));
+		}
+
+		archiver->WriteRaw(ARC_ARGSR(trafoOSToWSRot));
+		archiver->WriteVec3(ARC_ARGS(trafoOSToWSPos));
+
+		archiver->WriteGroupEnd("Internals");
+
+		archiver->WriteGroupBegin("Vob");
+
+		archiver->WriteString(ARC_ARGS(vobName));
+		archiver->WriteString(ARC_ARGS(visual));
+		archiver->WriteBool(ARC_ARGS(showVisual));
+		archiver->WriteEnum(ARC_ARGSEW(visualCamAlign, "NONE;YAW;FULL"));
+
+		if (game >= GAME_GOTHIC2)
+		{
+			archiver->WriteEnum(ARC_ARGSEW(visualAniMode, "NONE;WIND;WIND2"));
+			archiver->WriteFloat(ARC_ARGS(visualAniModeStrength));
+			archiver->WriteFloat(ARC_ARGS(vobFarClipZScale));
+		}
+
+		archiver->WriteBool(ARC_ARGS(cdStatic));
+		archiver->WriteBool(ARC_ARGS(cdDyn));
+		archiver->WriteBool(ARC_ARGS(staticVob));
+
+		if (game >= GAME_SEPTEMBERDEMO)
+		{
+			archiver->WriteEnum(ARC_ARGSEW(dynShadow, "DS_NONE;DS_BLOB"));
+		}
+
+		if (game >= GAME_GOTHIC2)
+		{
+			archiver->WriteInt(ARC_ARGS(zbias));
+			archiver->WriteBool(ARC_ARGS(isAmbient));
+		}
+
+		archiver->WriteGroupEnd("Vob");
+
+		archiver->WriteObject("visual", visualPtr);
+		archiver->WriteObject("ai", aiPtr);
+
+		if (archiver->IsSavegame())
+		{
+			archiver->WriteBool(ARC_ARGS(physicsEnabled));
+		}
+	}
+
+	return true;
 }
 
 bool zCVob::Unarchive(zCArchiver* archiver)
 {
+	if (!zCObject::Unarchive(archiver))
+		return false;
+
 	int	pack = 0;
 
 	// Only 1.06l and up use pack
@@ -642,7 +790,7 @@ bool zCCSCamera::Archive(zCArchiver* archiver)
 	if (!zCVob::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCCSCamera::Unarchive(zCArchiver* archiver)
@@ -717,7 +865,7 @@ bool zCCamTrj_KeyFrame::Archive(zCArchiver* archiver)
 	if (!zCVob::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCCamTrj_KeyFrame::Unarchive(zCArchiver* archiver)
@@ -784,7 +932,7 @@ bool zCEarthquake::Archive(zCArchiver* archiver)
 	if (!zCEffect::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCEarthquake::Unarchive(zCArchiver* archiver)
@@ -804,7 +952,7 @@ bool zCPFXControler::Archive(zCArchiver* archiver)
 	if (!zCEffect::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCPFXControler::Unarchive(zCArchiver* archiver)
@@ -824,7 +972,7 @@ bool zCVobAnimate::Archive(zCArchiver* archiver)
 	if (!zCEffect::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCVobAnimate::Unarchive(zCArchiver* archiver)
@@ -851,7 +999,7 @@ bool zCTouchDamage::Archive(zCArchiver* archiver)
 	if (!zCEffect::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCTouchDamage::Unarchive(zCArchiver* archiver)
@@ -880,7 +1028,7 @@ bool zCVobLensFlare::Archive(zCArchiver* archiver)
 	if (!zCEffect::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCVobLensFlare::Unarchive(zCArchiver* archiver)
@@ -898,7 +1046,7 @@ bool zCVobScreenFX::Archive(zCArchiver* archiver)
 	if (!zCEffect::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCVobScreenFX::Unarchive(zCArchiver* archiver)
@@ -928,7 +1076,7 @@ bool oCItem::Archive(zCArchiver* archiver)
 	if (!oCVob::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool oCItem::Unarchive(zCArchiver* archiver)
@@ -952,7 +1100,7 @@ bool oCItem::Save(FileStream* file)
 	if (!zCVob::Save(file))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool oCItem::Load(FileStream* file)
@@ -1013,7 +1161,7 @@ bool oCMOB::Archive(zCArchiver* archiver)
 	if (!oCVob::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool oCMOB::Unarchive(zCArchiver* archiver)
@@ -1055,7 +1203,7 @@ bool oCMobInter::Archive(zCArchiver* archiver)
 	if (!oCMOB::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool oCMobInter::Unarchive(zCArchiver* archiver)
@@ -1097,7 +1245,7 @@ bool oCMobFire::Archive(zCArchiver* archiver)
 	if (!oCMobInter::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool oCMobFire::Unarchive(zCArchiver* archiver)
@@ -1116,7 +1264,7 @@ bool oCMobLockable::Archive(zCArchiver* archiver)
 	if (!oCMobInter::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool oCMobLockable::Unarchive(zCArchiver* archiver)
@@ -1139,7 +1287,7 @@ bool oCMobContainer::Archive(zCArchiver* archiver)
 	if (!oCMobLockable::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool oCMobContainer::Unarchive(zCArchiver* archiver)
@@ -1175,7 +1323,7 @@ bool oCMob::Archive(zCArchiver* archiver)
 	if (!oCVob::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool oCMob::Unarchive(zCArchiver* archiver)
@@ -1243,7 +1391,7 @@ bool oCNpc::Archive(zCArchiver* archiver)
 	if (!oCVob::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool oCNpc::Unarchive(zCArchiver* archiver)
@@ -1353,7 +1501,7 @@ bool zCTriggerBase::Archive(zCArchiver* archiver)
 	if (!zCVob::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCTriggerBase::Unarchive(zCArchiver* archiver)
@@ -1374,7 +1522,7 @@ bool zCCodeMaster::Archive(zCArchiver* archiver)
 	if (!zCTriggerBase::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCCodeMaster::Unarchive(zCArchiver* archiver)
@@ -1426,7 +1574,7 @@ bool zCMessageFilter::Archive(zCArchiver* archiver)
 	if (!zCTriggerBase::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCMessageFilter::Unarchive(zCArchiver* archiver)
@@ -1445,7 +1593,7 @@ bool zCMoverControler::Archive(zCArchiver* archiver)
 	if (!zCTriggerBase::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCMoverControler::Unarchive(zCArchiver* archiver)
@@ -1464,7 +1612,7 @@ bool zCTrigger::Archive(zCArchiver* archiver)
 	if (!zCTriggerBase::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCTrigger::Unarchive(zCArchiver* archiver)
@@ -1563,7 +1711,7 @@ bool zCMover::Archive(zCArchiver* archiver)
 	if (!zCTrigger::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCMover::Unarchive(zCArchiver* archiver)
@@ -1639,7 +1787,7 @@ bool oCTriggerChangeLevel::Archive(zCArchiver* archiver)
 	if (!zCTrigger::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool oCTriggerChangeLevel::Unarchive(zCArchiver* archiver)
@@ -1658,7 +1806,7 @@ bool zCTriggerList::Archive(zCArchiver* archiver)
 	if (!zCTrigger::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCTriggerList::Unarchive(zCArchiver* archiver)
@@ -1707,7 +1855,7 @@ bool oCTriggerScript::Archive(zCArchiver* archiver)
 	if (!zCTrigger::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool oCTriggerScript::Unarchive(zCArchiver* archiver)
@@ -1725,7 +1873,7 @@ bool zCTriggerTeleport::Archive(zCArchiver* archiver)
 	if (!zCTrigger::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCTriggerTeleport::Unarchive(zCArchiver* archiver)
@@ -1743,7 +1891,7 @@ bool zCTriggerWorldStart::Archive(zCArchiver* archiver)
 	if (!zCTriggerBase::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCTriggerWorldStart::Unarchive(zCArchiver* archiver)
@@ -1774,7 +1922,7 @@ bool zCVobLight::Archive(zCArchiver* archiver)
 	if (!zCVob::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCVobLight::Unarchive(zCArchiver* archiver)
@@ -1963,15 +2111,15 @@ bool zCVobLight::Load(FileStream* file)
 
 bool zCVobSound::Archive(zCArchiver* archiver)
 {
-	if (!zCVob::Archive(archiver))
+	if (!zCZone::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCVobSound::Unarchive(zCArchiver* archiver)
 {
-	if (!zCVob::Unarchive(archiver))
+	if (!zCZone::Unarchive(archiver))
 		return false;
 
 	if (game <= GAME_DEMO5)
@@ -2015,7 +2163,7 @@ bool zCVobSoundDaytime::Archive(zCArchiver* archiver)
 	if (!zCVobSound::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCVobSoundDaytime::Unarchive(zCArchiver* archiver)
@@ -2032,15 +2180,15 @@ bool zCVobSoundDaytime::Unarchive(zCArchiver* archiver)
 
 bool oCZoneMusic::Archive(zCArchiver* archiver)
 {
-	if (!zCZone::Archive(archiver))
+	if (!zCZoneMusic::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool oCZoneMusic::Unarchive(zCArchiver* archiver)
 {
-	if (!zCZone::Unarchive(archiver))
+	if (!zCZoneMusic::Unarchive(archiver))
 		return false;
 
 	archiver->ReadBool(ARC_ARGS(enabled));
@@ -2069,7 +2217,7 @@ bool zCZoneVobFarPlane::Archive(zCArchiver* archiver)
 	if (!zCZone::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCZoneVobFarPlane::Unarchive(zCArchiver* archiver)
@@ -2088,7 +2236,7 @@ bool zCZoneZFog::Archive(zCArchiver* archiver)
 	if (!zCZone::Archive(archiver))
 		return false;
 
-	return false;
+	return true;
 }
 
 bool zCZoneZFog::Unarchive(zCArchiver* archiver)
@@ -2115,11 +2263,17 @@ bool zCZoneZFog::Unarchive(zCArchiver* archiver)
 
 bool zCAIPlayer::Archive(zCArchiver* archiver)
 {
+	if (!zCAIBase::Archive(archiver))
+		return false;
+
 	return false;
 }
 
 bool zCAIPlayer::Unarchive(zCArchiver* archiver)
 {
+	if (!zCAIBase::Unarchive(archiver))
+		return false;
+
 	if (archiver->IsSavegame())
 	{
 		archiver->ReadInt(ARC_ARGS(waterLevel));
@@ -2169,11 +2323,17 @@ bool oCAniCtrl_Human::Unarchive(zCArchiver* archiver)
 
 bool zCEventManager::Archive(zCArchiver* archiver)
 {
+	if (!zCObject::Archive(archiver))
+		return false;
+
 	return false;
 }
 
 bool zCEventManager::Unarchive(zCArchiver* archiver)
 {
+	if (!zCObject::Unarchive(archiver))
+		return false;
+
 	return false;
 }
 
@@ -2183,11 +2343,74 @@ bool zCEventManager::Unarchive(zCArchiver* archiver)
 
 bool zCWayNet::Archive(zCArchiver* archiver)
 {
-	return false;
+	if (!zCObject::Archive(archiver))
+		return false;
+	
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->WriteInt(ARC_ARGS(waynetVersion));
+	}
+
+	// Waypoints
+	if (waynetVersion == 0)
+	{
+		int numWaypoints = oldWaypointList.size();
+		archiver->WriteInt(ARC_ARGS(numWaypoints));
+
+		for (size_t i = 0; i < numWaypoints; i++)
+		{
+			std::string waypointKey = "waypoint" + std::to_string(i);
+			archiver->WriteString(waypointKey, oldWaypointList[i]);
+		}
+
+	}
+	else if (waynetVersion == 1)
+	{
+		int numWaypoints = waypointList.size();
+		archiver->WriteInt(ARC_ARGS(numWaypoints));
+
+		for (size_t i = 0; i < numWaypoints; i++)
+		{
+			std::string waypointKey = "waypoint" + std::to_string(i);
+			archiver->WriteObject(waypointKey, waypointList[i]);
+		}
+	}
+
+	// Ways
+	if (waynetVersion == 0)
+	{
+		int numWays = oldWayList.size();
+		archiver->WriteInt(ARC_ARGS(numWays));
+
+		for (size_t i = 0; i < numWays; i++)
+		{
+			std::string wayKey = "way" + std::to_string(i);
+			archiver->WriteString(wayKey, oldWayList[i]);
+		}
+	}
+	else if (waynetVersion == 1)
+	{
+		int numWays = wayList.size();
+		archiver->WriteInt(ARC_ARGS(numWays));
+
+		for (size_t i = 0; i < numWays; i++)
+		{
+			std::string waylKey = "wayl" + std::to_string(i);
+			archiver->WriteObject(waylKey, wayList[i].left);
+
+			std::string wayrKey = "wayr" + std::to_string(i);
+			archiver->WriteObject(wayrKey, wayList[i].right);
+		}
+	}
+
+	return true;
 }
 
 bool zCWayNet::Unarchive(zCArchiver* archiver)
 {
+	if (!zCObject::Unarchive(archiver))
+		return false;
+
 	waynetVersion = 0;
 
 	if (game >= GAME_CHRISTMASEDITION)
@@ -2311,11 +2534,23 @@ bool zCWayNet::LoadWaynet(FileStream* file)
 
 bool zCWaypoint::Archive(zCArchiver* archiver)
 {
-	return false;
+	if (!zCObject::Archive(archiver))
+		return false;
+
+	archiver->WriteString(ARC_ARGS(wpName));
+	archiver->WriteInt(ARC_ARGS(waterDepth));
+	archiver->WriteBool(ARC_ARGS(underWater));
+	archiver->WriteVec3(ARC_ARGS(position));
+	archiver->WriteVec3(ARC_ARGS(direction));
+
+	return true;
 }
 
 bool zCWaypoint::Unarchive(zCArchiver* archiver)
 {
+	if (!zCObject::Unarchive(archiver))
+		return false;
+
 	archiver->ReadString(ARC_ARGS(wpName));
 	archiver->ReadInt(ARC_ARGS(waterDepth));
 	archiver->ReadBool(ARC_ARGS(underWater));

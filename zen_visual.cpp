@@ -29,7 +29,20 @@ bool zCDecal::Archive(zCArchiver* archiver)
 	if (!zCVisual::Archive(archiver))
 		return false;
 
-	return false;
+	archiver->WriteString(ARC_ARGS(name));
+	archiver->WriteRawFloat(ARC_ARGSF(decalDim));
+	archiver->WriteRawFloat(ARC_ARGSF(decalOffset));
+	archiver->WriteBool(ARC_ARGS(decal2Sided));
+	archiver->WriteEnum(ARC_ARGSEW(decalAlphaFunc, "MAT_DEFAULT;NONE;BLEND;ADD;SUB;MUL;MUL2"));
+	archiver->WriteFloat(ARC_ARGS(decalTexAniFPS));
+
+	if (game >= GAME_GOTHIC2)
+	{
+		archiver->WriteByte(ARC_ARGS(decalAlphaWeight));
+		archiver->WriteBool(ARC_ARGS(ignoreDayLight));
+	}
+
+	return true;
 }
 
 bool zCDecal::Unarchive(zCArchiver* archiver)

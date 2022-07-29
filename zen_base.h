@@ -16,10 +16,11 @@ namespace GothicLib
 			Macros
 		*/
 
-#define ARC_ARGS(V)		#V, V
-#define ARC_ARGSE(V)	#V, (int&)V
-#define ARC_ARGSR(V)	#V, (char*)&V, sizeof(V)
-#define ARC_ARGSF(V)	#V, (float*)&V, sizeof(V) / 4
+#define ARC_ARGS(V)			#V, V
+#define ARC_ARGSE(V)		#V, (int&)V
+#define ARC_ARGSEW(V, C)	#V, C, (int&)V
+#define ARC_ARGSR(V)		#V, (char*)&V, sizeof(V)
+#define ARC_ARGSF(V)		#V, (float*)&V, sizeof(V) / 4
 
 		/*
 			Basic types
@@ -74,6 +75,13 @@ namespace GothicLib
 			uint16_t minute;
 			uint16_t second;
 		};
+
+		inline std::string FloatToString(float f)
+		{
+			char buffer[64];
+			sprintf_s(buffer, 64, "%.9g", f);
+			return std::string(buffer);
+		}
 
 		/*
 			Archiver (.zen reading/writing)
@@ -142,14 +150,32 @@ namespace GothicLib
 			bool Write(FileStream*, bool = false);
 			bool Read(FileStream*);
 
-			void Close() { file->Close(); }
+			void Close();
+
+			// Write functions
+			bool WriteInt		(std::string, int);
+			bool WriteByte		(std::string, unsigned char);
+			bool WriteWord		(std::string, unsigned short);
+			bool WriteFloat		(std::string, float);
+			bool WriteBool		(std::string, bool);
+			bool WriteString	(std::string, std::string);
+			bool WriteVec3		(std::string, zVEC3);
+			bool WriteColor		(std::string, zCOLOR);
+			bool WriteEnum		(std::string, std::string, int);
+			bool WriteRaw		(std::string, char*, size_t);
+			bool WriteRawFloat	(std::string, float*, size_t);
 
 			bool WriteObject(zCObject* o) { return WriteObject(std::string(), o); }
 			bool WriteObject(std::string, zCObject*);
 
+			bool WriteChunkStart(std::string name) { return WriteChunkStart(name, "", 0, 0); }
 			bool WriteChunkStart(std::string, std::string, uint16_t, uint32_t);
 			bool WriteChunkEnd();
 
+			bool WriteGroupBegin(std::string);
+			bool WriteGroupEnd(std::string);
+
+			// Read functions
 			bool ReadInt		(std::string, int&);
 			bool ReadByte		(std::string, unsigned char&);
 			bool ReadWord		(std::string, unsigned short&);
@@ -209,6 +235,9 @@ namespace GothicLib
 				BINSAFE_TYPE_HASH		= 0x12
 			};
 
+			bool WriteASCIIProperty(std::string, std::string, std::string);
+			bool WriteBinSafeProperty(BINSAFE_TYPE, void*, size_t = 0);
+
 			bool ReadASCIIProperty(std::string, std::string, std::string&);
 			bool ReadBinSafeProperty(BINSAFE_TYPE, void*, size_t = 0);
 
@@ -240,6 +269,8 @@ namespace GothicLib
 			std::vector<CHUNK>		chunkStack;
 
 			std::vector<zCObject*>	objectList;
+
+			uint64_t				objectCountPos = 0;
 
 	#pragma pack(push,1)
 			struct BinaryObjectHeader
