@@ -2276,7 +2276,7 @@ namespace GothicLib
 				{ GAME_GOTHIC2ADDON,		52224			},
 			};
 
-			ZEN_DECLARE_CLASS(zCZoneMusic, zCZone);
+			ZEN_DECLARE_CLASS_ABSTRACT(zCZoneMusic, zCZone);
 
 			zCZoneMusic()			{ }
 			virtual ~zCZoneMusic()	{ }

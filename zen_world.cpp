@@ -972,6 +972,13 @@ bool zCVobAnimate::Archive(zCArchiver* archiver)
 	if (!zCEffect::Archive(archiver))
 		return false;
 
+	archiver->WriteBool(ARC_ARGS(startOn));
+
+	if (archiver->IsSavegame())
+	{
+		archiver->WriteBool(ARC_ARGS(isRunning));
+	}
+
 	return true;
 }
 
@@ -1028,6 +1035,8 @@ bool zCVobLensFlare::Archive(zCArchiver* archiver)
 	if (!zCEffect::Archive(archiver))
 		return false;
 
+	archiver->WriteString(ARC_ARGS(lensflareFX));
+
 	return true;
 }
 
@@ -1075,6 +1084,14 @@ bool oCItem::Archive(zCArchiver* archiver)
 {
 	if (!oCVob::Archive(archiver))
 		return false;
+
+	archiver->WriteString(ARC_ARGS(itemInstance));
+
+	if (archiver->IsSavegame())
+	{
+		archiver->WriteInt(ARC_ARGS(amount));
+		archiver->WriteInt(ARC_ARGS(flags));
+	}
 
 	return true;
 }
@@ -1155,11 +1172,40 @@ bool oCItem::Load(FileStream* file)
 			oCMobWheel
 */
 
-
 bool oCMOB::Archive(zCArchiver* archiver)
 {
 	if (!oCVob::Archive(archiver))
 		return false;
+
+	archiver->WriteGroupBegin("MOB");
+
+	archiver->WriteString(ARC_ARGS(focusName));
+	archiver->WriteInt(ARC_ARGS(hitpoints));
+
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->WriteInt(ARC_ARGS(damage));
+	}
+
+	archiver->WriteBool(ARC_ARGS(moveable));
+	archiver->WriteBool(ARC_ARGS(takeable));
+
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->WriteBool(ARC_ARGS(focusOverride));
+	}
+
+	archiver->WriteEnum(ARC_ARGSEW(soundMaterial, "WOOD;STONE;METAL;LEATHER;CLAY;GLAS"));
+	archiver->WriteString(ARC_ARGS(visualDestroyed));
+	archiver->WriteString(ARC_ARGS(owner));
+	archiver->WriteString(ARC_ARGS(ownerGuild));
+
+	archiver->WriteGroupEnd("MOB");
+
+	if (!archiver->IsProperties())
+	{
+		archiver->WriteBool(ARC_ARGS(isDestroyed));
+	}
 
 	return true;
 }
@@ -1203,6 +1249,32 @@ bool oCMobInter::Archive(zCArchiver* archiver)
 	if (!oCMOB::Archive(archiver))
 		return false;
 
+	if (!archiver->IsProperties())
+	{
+		if (game <= GAME_CHRISTMASEDITION)
+		{
+			archiver->WriteInt(ARC_ARGS(state));
+			archiver->WriteInt(ARC_ARGS(stateTarget));
+		}
+
+		archiver->WriteInt(ARC_ARGS(stateNum));
+
+		if (game <= GAME_DEMO5)
+		{
+			archiver->WriteBool(ARC_ARGS(interact));
+		}
+	}
+
+	archiver->WriteString(ARC_ARGS(triggerTarget));
+
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->WriteString(ARC_ARGS(useWithItem));
+		archiver->WriteString(ARC_ARGS(conditionFunc));
+		archiver->WriteString(ARC_ARGS(onStateFunc));
+		archiver->WriteBool(ARC_ARGS(rewind));
+	}
+
 	return true;
 }
 
@@ -1245,6 +1317,13 @@ bool oCMobFire::Archive(zCArchiver* archiver)
 	if (!oCMobInter::Archive(archiver))
 		return false;
 
+	archiver->WriteGroupBegin("Fire");
+
+	archiver->WriteString(ARC_ARGS(fireSlot));
+	archiver->WriteString(ARC_ARGS(fireVobtreeName));
+
+	archiver->WriteGroupEnd("Fire");
+
 	return true;
 }
 
@@ -1263,6 +1342,17 @@ bool oCMobLockable::Archive(zCArchiver* archiver)
 {
 	if (!oCMobInter::Archive(archiver))
 		return false;
+	
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->WriteGroupBegin("Lockable");
+
+		archiver->WriteBool(ARC_ARGS(locked));
+		archiver->WriteString(ARC_ARGS(keyInstance));
+		archiver->WriteString(ARC_ARGS(pickLockStr));
+
+		archiver->WriteGroupEnd("Lockable");
+	}
 
 	return true;
 }
@@ -1286,6 +1376,23 @@ bool oCMobContainer::Archive(zCArchiver* archiver)
 {
 	if (!oCMobLockable::Archive(archiver))
 		return false;
+
+	archiver->WriteGroupBegin("Container");
+
+	archiver->WriteString(ARC_ARGS(contains));
+
+	if (game <= GAME_SEPTEMBERDEMO)
+	{
+		archiver->WriteBool(ARC_ARGS(locked));
+		archiver->WriteString(ARC_ARGS(keyInstance));
+
+		if (game == GAME_SEPTEMBERDEMO)
+		{
+			archiver->WriteString(ARC_ARGS(pickLockStr));
+		}
+	}
+
+	archiver->WriteGroupEnd("Container");
 
 	return true;
 }
@@ -1495,11 +1602,15 @@ bool oCNpc::Load(FileStream* file)
 		zCTriggerWorldStart
 */
 
-
 bool zCTriggerBase::Archive(zCArchiver* archiver)
 {
 	if (!zCVob::Archive(archiver))
 		return false;
+
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->WriteString(ARC_ARGS(triggerTarget));
+	}
 
 	return true;
 }
@@ -1612,6 +1723,89 @@ bool zCTrigger::Archive(zCArchiver* archiver)
 	if (!zCTriggerBase::Archive(archiver))
 		return false;
 
+	archiver->WriteGroupBegin("Trigger");
+
+	archiver->WriteGroupBegin("ActivationFilter");
+
+	if (!archiver->IsProperties())
+	{
+		if (game >= GAME_SEPTEMBERDEMO)
+		{
+			archiver->WriteRaw(ARC_ARGSR(flags));
+		}
+
+		archiver->WriteRaw(ARC_ARGSR(filterFlags));
+	}
+	else
+	{
+		bool reactToOnTrigger = filterFlags.reactToOnTrigger;
+		archiver->WriteBool(ARC_ARGS(reactToOnTrigger));
+
+		bool reactToOnTouch = filterFlags.reactToOnTouch;
+		archiver->WriteBool(ARC_ARGS(reactToOnTouch));
+
+		bool reactToOnDamage = filterFlags.reactToOnDamage;
+		archiver->WriteBool(ARC_ARGS(reactToOnDamage));
+
+		bool respondToObject = filterFlags.respondToObject;
+		archiver->WriteBool(ARC_ARGS(respondToObject));
+
+		bool respondToPC = filterFlags.respondToPC;
+		archiver->WriteBool(ARC_ARGS(respondToPC));
+
+		bool respondToNPC = filterFlags.respondToNPC;
+		archiver->WriteBool(ARC_ARGS(respondToNPC));
+
+		bool startEnabled = flags.startEnabled;
+		archiver->WriteBool(ARC_ARGS(startEnabled));
+	}
+
+	archiver->WriteString(ARC_ARGS(respondToVobName));
+
+	if (game <= GAME_DEMO5)
+	{
+		archiver->WriteInt(ARC_ARGS(numTriggerToActivate));
+	}
+
+	archiver->WriteInt(ARC_ARGS(numCanBeActivated));
+	archiver->WriteFloat(ARC_ARGS(retriggerWaitSec));
+	archiver->WriteFloat(ARC_ARGS(damageThreshold));
+
+	archiver->WriteGroupEnd("ActivationFilter");
+
+	archiver->WriteGroupBegin("FireBehavior");
+
+	if (game <= GAME_DEMO5)
+	{
+		archiver->WriteString(ARC_ARGS(triggerTarget));
+	}
+
+	archiver->WriteFloat(ARC_ARGS(fireDelaySec));
+
+	if (game <= GAME_DEMO5)
+	{
+		archiver->WriteEnum(ARC_ARGSEW(repeatTrigger, "RT_NONE;RT_REPEAT;RT_REPEAT_TOUCHING"));
+	}
+
+	if (archiver->IsProperties())
+	{
+		archiver->WriteBool(ARC_ARGS(sendUntrigger));
+	}
+
+	archiver->WriteGroupEnd("FireBehavior");
+
+	if (archiver->IsSavegame())
+	{
+		archiver->WriteFloat(ARC_ARGS(nextTimeTriggerable));
+		archiver->WriteObject("savedOtherVob", savedOtherVobPtr);
+		archiver->WriteInt(ARC_ARGS(countCanBeActivated));
+
+		bool isEnabled = flags.isEnabled;
+		archiver->WriteBool(ARC_ARGS(isEnabled));
+	}
+
+	archiver->WriteGroupEnd("Trigger");
+
 	return true;
 }
 
@@ -1710,6 +1904,76 @@ bool zCMover::Archive(zCArchiver* archiver)
 {
 	if (!zCTrigger::Archive(archiver))
 		return false;
+	
+	archiver->WriteGroupBegin("Mover");
+
+	archiver->WriteEnum(ARC_ARGSEW(moverBehavior, "2STATE_TOGGLE;2STATE_TRIGGER_CTRL;2STATE_OPEN_TIME;NSTATE_LOOP;NSTATE_SINGLE_KEYS"));
+	archiver->WriteFloat(ARC_ARGS(touchBlockerDamage));
+	archiver->WriteFloat(ARC_ARGS(stayOpenTimeSec));
+	archiver->WriteBool(ARC_ARGS(moverLocked));
+	
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->WriteBool(ARC_ARGS(autoLinkEnabled));
+	}
+
+	if (game >= GAME_GOTHIC2)
+	{
+		archiver->WriteBool(ARC_ARGS(autoRotate));
+	}
+
+	if (game <= GAME_DEMO5)
+	{
+		archiver->WriteString(ARC_ARGS(vobChainName));
+	}
+
+	archiver->WriteGroupBegin("Keyframe");
+
+	unsigned short numKeyframes = keyframeList.size();
+	archiver->WriteWord(ARC_ARGS(numKeyframes));
+
+	if (numKeyframes > 0)
+	{
+		archiver->WriteFloat(ARC_ARGS(moveSpeed));
+		archiver->WriteEnum(ARC_ARGSEW(posLerpType, "LINEAR;CURVE"));
+		archiver->WriteEnum(ARC_ARGSEW(speedType, "CONST;SLOW_START_END;SLOW_START;SLOW_END;SEG_SLOW_START_END;SEG_SLOW_START;SEG_SLOW_END"));
+
+		if (!archiver->IsProperties())
+		{
+			archiver->WriteRaw("keyframes", (char*)&keyframeList[0],
+				numKeyframes * sizeof(zTMov_Keyframe));
+		}
+	}
+
+	archiver->WriteGroupEnd("Keyframe");
+
+	if (archiver->IsSavegame())
+	{
+		archiver->WriteVec3(ARC_ARGS(actKeyPosDelta));
+		archiver->WriteFloat(ARC_ARGS(actKeyframeF));
+		archiver->WriteInt(ARC_ARGS(actKeyframe));
+		archiver->WriteInt(ARC_ARGS(nextKeyframe));
+		archiver->WriteFloat(ARC_ARGS(moveSpeedUnit));
+		archiver->WriteFloat(ARC_ARGS(advanceDir));
+		archiver->WriteEnum(ARC_ARGSEW(moverState, ""));
+		archiver->WriteInt(ARC_ARGS(numTriggerEvents));
+		archiver->WriteFloat(ARC_ARGS(stayOpenTimeDest));
+	}
+
+	archiver->WriteGroupBegin("Sound");
+
+	archiver->WriteString(ARC_ARGS(sfxOpenStart));
+	archiver->WriteString(ARC_ARGS(sfxOpenEnd));
+	archiver->WriteString(ARC_ARGS(sfxMoving));
+	archiver->WriteString(ARC_ARGS(sfxCloseStart));
+	archiver->WriteString(ARC_ARGS(sfxCloseEnd));
+	archiver->WriteString(ARC_ARGS(sfxLock));
+	archiver->WriteString(ARC_ARGS(sfxUnlock));
+	archiver->WriteString(ARC_ARGS(sfxUseLocked));
+
+	archiver->WriteGroupEnd("Sound");
+
+	archiver->WriteGroupEnd("Mover");
 
 	return true;
 }
@@ -1786,6 +2050,9 @@ bool oCTriggerChangeLevel::Archive(zCArchiver* archiver)
 {
 	if (!zCTrigger::Archive(archiver))
 		return false;
+
+	archiver->WriteString(ARC_ARGS(levelName));
+	archiver->WriteString(ARC_ARGS(startVobName));
 
 	return true;
 }
@@ -1921,6 +2188,63 @@ bool zCVobLight::Archive(zCArchiver* archiver)
 {
 	if (!zCVob::Archive(archiver))
 		return false;
+
+	archiver->WriteGroupBegin("VobLight");
+
+	archiver->WriteString(ARC_ARGS(lightPresetInUse));
+
+	// start of zCVobLightData::Unarchive
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->WriteEnum(ARC_ARGSEW(lightType, "POINT;SPOT;_RES_;_RES_"));
+	}
+
+	archiver->WriteFloat(ARC_ARGS(range));
+	archiver->WriteColor(ARC_ARGS(color));
+
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->WriteFloat(ARC_ARGS(spotConeAngle));
+	}
+
+	archiver->WriteBool(ARC_ARGS(lightStatic));
+	archiver->WriteEnum(ARC_ARGSEW(lightQuality, "HIGH;MEDIUM;LOW_FASTEST"));
+
+	if (game <= GAME_DEMO5)
+	{
+		archiver->WriteInt(ARC_ARGS(lensflareFXNo));
+	}
+
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->WriteString(ARC_ARGS(lensflareFX));
+	}
+
+	if (archiver->IsProperties() || !lightStatic || game <= GAME_DEMO5)
+	{
+		archiver->WriteGroupBegin("Dynamic Light");
+
+		if (game >= GAME_SEPTEMBERDEMO)
+		{
+			archiver->WriteBool(ARC_ARGS(turnedOn));
+		}
+
+		archiver->WriteString(ARC_ARGS(rangeAniScale));
+		archiver->WriteFloat(ARC_ARGS(rangeAniFPS));
+		archiver->WriteBool(ARC_ARGS(rangeAniSmooth));
+		archiver->WriteString(ARC_ARGS(colorAniList));
+		archiver->WriteFloat(ARC_ARGS(colorAniFPS));
+		archiver->WriteBool(ARC_ARGS(colorAniSmooth));
+
+		if (game >= GAME_GOTHIC2)
+		{
+			archiver->WriteBool(ARC_ARGS(canMove));
+		}
+
+		archiver->WriteGroupEnd("Dynamic Light");
+	}
+
+	archiver->WriteGroupEnd("VobLight");
 
 	return true;
 }
@@ -2114,6 +2438,38 @@ bool zCVobSound::Archive(zCArchiver* archiver)
 	if (!zCZone::Archive(archiver))
 		return false;
 
+	archiver->WriteGroupBegin("Sound");
+
+	if (game <= GAME_DEMO5)
+	{
+		archiver->WriteFloat(ARC_ARGS(sndRadius));
+	}
+
+	archiver->WriteFloat(ARC_ARGS(sndVolume));
+	archiver->WriteEnum(ARC_ARGSEW(sndMode, "LOOPING;ONCE;RANDOM"));
+	archiver->WriteFloat(ARC_ARGS(sndRandDelay));
+	archiver->WriteFloat(ARC_ARGS(sndRandDelayVar));
+	archiver->WriteBool(ARC_ARGS(sndStartOn));
+
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->WriteBool(ARC_ARGS(sndAmbient3D));
+		archiver->WriteBool(ARC_ARGS(sndObstruction));
+		archiver->WriteFloat(ARC_ARGS(sndConeAngle));
+		archiver->WriteEnum(ARC_ARGSEW(sndVolType, "SPHERE;ELLIPSOID"));
+		archiver->WriteFloat(ARC_ARGS(sndRadius));
+	}
+
+	archiver->WriteString(ARC_ARGS(sndName));
+
+	archiver->WriteGroupEnd("Sound");
+
+	if (archiver->IsSavegame())
+	{
+		archiver->WriteBool(ARC_ARGS(soundIsRunning));
+		archiver->WriteBool(ARC_ARGS(soundAllowedToRun));
+	}
+
 	return true;
 }
 
@@ -2163,6 +2519,14 @@ bool zCVobSoundDaytime::Archive(zCArchiver* archiver)
 	if (!zCVobSound::Archive(archiver))
 		return false;
 
+	archiver->WriteGroupBegin("SoundDaytime");
+
+	archiver->WriteFloat(ARC_ARGS(sndStartTime));
+	archiver->WriteFloat(ARC_ARGS(sndEndTime));
+	archiver->WriteString(ARC_ARGS(sndName2));
+
+	archiver->WriteGroupEnd("SoundDaytime");
+
 	return true;
 }
 
@@ -2182,6 +2546,24 @@ bool oCZoneMusic::Archive(zCArchiver* archiver)
 {
 	if (!zCZoneMusic::Archive(archiver))
 		return false;
+
+	archiver->WriteGroupBegin("DynaMusic");
+	
+	archiver->WriteBool(ARC_ARGS(enabled));
+	archiver->WriteInt(ARC_ARGS(priority));
+	archiver->WriteBool(ARC_ARGS(ellipsoid));
+	archiver->WriteFloat(ARC_ARGS(reverbLevel));
+	archiver->WriteFloat(ARC_ARGS(volumeLevel));
+	archiver->WriteBool(ARC_ARGS(loop));
+
+	archiver->WriteGroupEnd("DynaMusic");
+
+	if (archiver->IsSavegame())
+	{
+		archiver->WriteBool(ARC_ARGS(local_enabled));
+		archiver->WriteBool(ARC_ARGS(dayEntranceDone));
+		archiver->WriteBool(ARC_ARGS(nightEntranceDone));
+	}
 
 	return true;
 }
