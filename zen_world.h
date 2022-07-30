@@ -314,8 +314,8 @@ namespace GothicLib
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
 
-			virtual bool Save(FileStream*);
-			virtual bool Load(FileStream*);
+			bool SaveVob(FileStream*);
+			bool LoadVob(FileStream*);
 
 			std::vector<zCVob*> children;
 

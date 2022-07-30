@@ -68,6 +68,36 @@ bool zCDecal::Unarchive(zCArchiver* archiver)
 
 bool zCDecal::Save(FileStream* file)
 {
+	file->WriteLine("zCDecal ()", "\n");
+	file->WriteLine("{", "\n");
+
+	char buff[256];
+
+	sprintf_s(buff, 256, "%.8g %.8g", decalDim.x, decalDim.y);
+	file->WriteLine("decalDim (" + std::string(buff) + ")", "\n");
+
+	sprintf_s(buff, 256, "%.8g %.8g", decalOffset.x, decalOffset.y);
+	file->WriteLine("decalOffset (" + std::string(buff) + ")", "\n");
+
+	file->WriteLine("decal2Sided (" + std::to_string(decal2Sided) + ")", "\n");
+
+	if (decalAlphaFunc == zRND_ALPHA_FUNC_MAT_DEFAULT)
+		file->WriteLine("decalAlphaFunc (MAT_DEFAULT)", "\n");
+	else if (decalAlphaFunc == zRND_ALPHA_FUNC_NONE)
+		file->WriteLine("decalAlphaFunc (NONE)", "\n");
+	else if (decalAlphaFunc == zRND_ALPHA_FUNC_BLEND)
+		file->WriteLine("decalAlphaFunc (BLEND)", "\n");
+	else if (decalAlphaFunc == zRND_ALPHA_FUNC_ADD)
+		file->WriteLine("decalAlphaFunc (ADD)", "\n");
+	else if (decalAlphaFunc == zRND_ALPHA_FUNC_SUB)
+		file->WriteLine("decalAlphaFunc (SUB)", "\n");
+	else if (decalAlphaFunc == zRND_ALPHA_FUNC_MUL)
+		file->WriteLine("decalAlphaFunc (MUL)", "\n");
+
+	file->WriteLine("decalTexAniFPS (" + FloatToString(decalTexAniFPS) + ")", "\n");
+
+	file->WriteLine("}", "\n");
+
 	return true;
 }
 

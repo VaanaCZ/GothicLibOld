@@ -46,6 +46,8 @@ bool zCWorld::SaveWorld(FileStream* file)
 		{
 			return false;
 		}
+
+		file->Close();
 	}
 	else if (game >= GAME_DEMO5)
 	{
@@ -274,7 +276,35 @@ bool zCWorld::LoadWorldFile(FileStream* file)
 
 bool zCWorld::SaveWorldFile(FileStream* file)
 {
-	return false;
+	// These versions are not read by the game
+	// but they should still be implemented
+	// correctly.
+	file->WriteLine("// *** Zengin WorldFile v0.01, meshVers: 2, bspVers:0, lmVers:0 ***", "\n");
+
+	file->WriteLine("", "\n");
+	file->WriteLine("ZenWorldFile", "\n");
+	file->WriteLine("{", "\n");
+
+	if (vobTree)
+	{
+		file->WriteLine("VobHierarchy", "\n");
+		file->WriteLine("{", "\n");
+
+		if (!SaveVobTree(file, vobTree))
+			return false;
+
+		file->WriteLine("}", "\n");
+	}
+
+	file->WriteLine("}", "\n");
+
+	if (wayNet)
+	{
+		if (!wayNet->SaveWaynet(file))
+			return false;
+	}
+
+	return true;
 }
 
 bool zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
@@ -324,7 +354,7 @@ bool zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 		{
 			if (line == "{")
 			{
-				if (!vob->Load(file))
+				if (!vob->LoadVob(file))
 				{
 					return false;
 				}
@@ -366,7 +396,22 @@ bool zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 
 bool zCWorld::SaveVobTree(FileStream* file, zCVob* parentVob)
 {
-	return false;
+	if (parentVob != vobTree)
+	{
+		if (!parentVob->SaveVob(file))
+			return false;
+	}
+
+	file->WriteLine("childs (" + std::to_string(parentVob->children.size()) + ")", "\n");
+	file->WriteLine("", "\n");
+
+	for (size_t i = 0; i < parentVob->children.size(); i++)
+	{
+		if (!SaveVobTree(file, parentVob->children[i]))
+			return false;
+	}
+
+	return true;
 }
 
 bool oCWorld::Archive(zCArchiver* archiver)
@@ -662,12 +707,84 @@ bool zCVob::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCVob::Save(FileStream* file)
+bool zCVob::SaveVob(FileStream* file)
 {
-	return false;
+	file->WriteLine("zCVob (" + std::to_string(vobID) + " " +
+								std::to_string(vobType) + ")", "\n");
+
+	file->WriteLine("{", "\n");
+
+	file->WriteLine("{", "\n");
+
+	file->WriteLine("vobType (" + std::to_string(vobType) + ")", "\n");
+	
+	if (!visual.empty())
+	{
+		file->WriteLine("visual (" + visual + ")", "\n");
+	}
+
+	file->WriteLine("vobName (" + vobName + ")", "\n");
+
+	if (visualCamAlign == zVISUAL_CAMALIGN_NONE)
+		file->WriteLine("visualCamAlign (NONE)", "\n");
+	else if (visualCamAlign == zVISUAL_CAMALIGN_YAW)
+		file->WriteLine("visualCamAlign (YAW)", "\n");
+	else if (visualCamAlign == zVISUAL_CAMALIGN_FULL)
+		file->WriteLine("visualCamAlign (FULL)", "\n");
+
+	file->WriteLine("showVisual (" + std::to_string(showVisual) + ")", "\n");
+	file->WriteLine("drawBBox3D (" + std::to_string(drawBBox3D) + ")", "\n");
+	file->WriteLine("cdStatic (" + std::to_string(cdStatic) + ")", "\n");
+	file->WriteLine("cdDyn (" + std::to_string(cdDyn) + ")", "\n");
+	file->WriteLine("staticVob (" + std::to_string(staticVob) + ")", "\n");
+
+	char buff[256];
+
+	sprintf_s(buff, 256, "%.8g %.8g %.8g %.8g %.8g %.8g",
+		bbox3DWS.min.x, bbox3DWS.min.y, bbox3DWS.min.z,
+		bbox3DWS.max.x, bbox3DWS.max.y, bbox3DWS.max.z);
+	file->WriteLine("bbox3DWSpace (" + std::string(buff) + ")", "\n");
+
+	sprintf_s(buff, 256, "%.8g %.8g %.8g %.8g %.8g %.8g %.8g %.8g %.8g",
+		trafoRot.x.x, trafoRot.x.y, trafoRot.x.z,
+		trafoRot.y.x, trafoRot.y.y, trafoRot.y.z,
+		trafoRot.z.x, trafoRot.z.y, trafoRot.z.z);
+	file->WriteLine("trafoRot (" + std::string(buff) + " )", "\n");
+	
+	sprintf_s(buff, 256, "%.8g %.8g %.8g",
+		trafoPos.x, trafoPos.y, trafoPos.z);
+	file->WriteLine("trafoPos (" + std::string(buff) + " )", "\n");
+
+	sprintf_s(buff, 256, "%.8g %.8g %.8g %.8g %.8g %.8g %.8g %.8g %.8g",
+		trafoOSToWSRot.x.x, trafoOSToWSRot.x.y, trafoOSToWSRot.x.z,
+		trafoOSToWSRot.y.x, trafoOSToWSRot.y.y, trafoOSToWSRot.y.z,
+		trafoOSToWSRot.z.x, trafoOSToWSRot.z.y, trafoOSToWSRot.z.z);
+	file->WriteLine("trafoOSToWSRot (" + std::string(buff) + " )", "\n");
+
+	sprintf_s(buff, 256, "%.8g %.8g %.8g",
+		trafoOSToWSPos.x, trafoOSToWSPos.y, trafoOSToWSPos.z);
+	file->WriteLine("trafoOSToWSPos (" + std::string(buff) + " )", "\n");
+
+	file->WriteLine("}", "\n");
+
+	// Derived classes
+	if (!Save(file))
+		return false;
+
+	// Decal
+	zCDecal* decal = dynamic_cast<zCDecal*>(visualPtr);
+	if (decal)
+	{
+		if (!decal->Save(file))
+			return false;
+	}
+
+	file->WriteLine("}", "\n");
+
+	return true;
 }
 
-bool zCVob::Load(FileStream* file)
+bool zCVob::LoadVob(FileStream* file)
 {
 	bool inVob = false;
 
@@ -687,6 +804,10 @@ bool zCVob::Load(FileStream* file)
 			if (line == "}")
 			{
 				inVob = false;
+
+				if (!Load(file))
+					return false;
+
 				return true;
 			}
 			else if (ParseFileLine(line, key, value))
@@ -1229,6 +1350,12 @@ bool oCItem::Save(FileStream* file)
 	if (!zCVob::Save(file))
 		return false;
 
+	file->WriteLine("{", "\n");
+
+	file->WriteLine("INSTANCE (" + itemInstance + ")", "\n");
+
+	file->WriteLine("}", "\n");
+
 	return true;
 }
 
@@ -1562,7 +1689,13 @@ bool oCMob::Save(FileStream* file)
 	if (!zCVob::Save(file))
 		return false;
 
-	return false;
+	file->WriteLine("{", "\n");
+
+	file->WriteLine("INSTANCE (" + mobInstance + ")", "\n");
+
+	file->WriteLine("}", "\n");
+
+	return true;
 }
 
 bool oCMob::Load(FileStream* file)
@@ -1658,7 +1791,13 @@ bool oCNpc::Save(FileStream* file)
 	if (!zCVob::Save(file))
 		return false;
 
-	return false;
+	file->WriteLine("{", "\n");
+
+	file->WriteLine("INSTANCE (" + npcInstance + ")", "\n");
+
+	file->WriteLine("}", "\n");
+
+	return true;
 }
 
 bool oCNpc::Load(FileStream* file)
@@ -2517,7 +2656,29 @@ bool zCVobLight::Save(FileStream* file)
 	if (!zCVob::Save(file))
 		return false;
 
-	return false;
+	file->WriteLine("{", "\n");
+
+	file->WriteLine(" range (" + FloatToString(range) + ")", "\n");
+
+	file->WriteLine(" colorRGBA (" +
+					FloatToString(color.r) + " " +
+					FloatToString(color.g) + " " +
+					FloatToString(color.b) + " " +
+					FloatToString(color.a) + ")", "\n");
+
+	file->WriteLine(" lightStatic (" + std::to_string(lightStatic) + ")", "\n");
+	file->WriteLine(" lightQual (" + std::to_string(lightQuality) + ")", "\n");
+	file->WriteLine(" lensflareFX (" + std::to_string(lensflareFXNo) + ")", "\n");
+	file->WriteLine(" rangeAniScale (" + rangeAniScale + ")", "\n");
+	file->WriteLine(" rangeAniFPS (" + FloatToString(rangeAniFPS) + ")", "\n");
+	file->WriteLine(" rangeAniSmooth (" + std::to_string(rangeAniSmooth) + ")", "\n");
+	file->WriteLine(" colorAniList (" + colorAniList + ")", "\n");
+	file->WriteLine(" colorAniFPS (" + FloatToString(colorAniFPS) + ")", "\n");
+	file->WriteLine(" colorAniSmooth (" + std::to_string(colorAniSmooth) + ")", "\n");
+
+	file->WriteLine("}", "\n");
+
+	return true;
 }
 
 bool zCVobLight::Load(FileStream* file)
@@ -2575,7 +2736,7 @@ bool zCVobLight::Load(FileStream* file)
 				}
 				else if (key == "lensflareFX")
 				{
-					lensflareFX = value; // todo: fix
+					lensflareFXNo = std::stoi(value); // todo: fix
 				}
 				else if (key == "rangeAniScale")
 				{
@@ -3113,7 +3274,21 @@ bool zCWayNet::Unarchive(zCArchiver* archiver)
 
 bool zCWayNet::SaveWaynet(FileStream* file)
 {
-	return false;
+	file->WriteLine("Waynet {", "\n");
+
+	for (size_t i = 0; i < oldWaypointList.size(); i++)
+	{
+		file->WriteLine("Waypoint (" + oldWaypointList[i] + ") ");
+	}
+
+	for (size_t i = 0; i < oldWayList.size(); i++)
+	{
+		file->WriteLine("Way (" + oldWayList[i] + ")");
+	}
+
+	file->WriteLine("}", "\n");
+
+	return true;
 }
 
 bool zCWayNet::LoadWaynet(FileStream* file)
