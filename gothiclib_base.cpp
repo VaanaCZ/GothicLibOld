@@ -431,10 +431,7 @@ bool FileStream::ReadLine(std::string& line)
 
 	char lineCache[LINE_CACHE_SIZE];
 
-	uint64_t readSize = iTotalSize - iPosition;
-
-	if (LINE_CACHE_SIZE < readSize)
-		readSize = LINE_CACHE_SIZE;
+	uint64_t readSize = LINE_CACHE_SIZE;
 
 	char c = 0;
 	bool result = false;
@@ -448,8 +445,19 @@ bool FileStream::ReadLine(std::string& line)
 
 	uint64_t startPos = Tell();
 
-	while (Read(&lineCache, readSize))
+	while (true)
 	{
+		readSize = iTotalSize - iPosition;
+
+		if (LINE_CACHE_SIZE < readSize)
+			readSize = LINE_CACHE_SIZE;
+
+		if (readSize == 0)
+			break;
+
+		if (!Read(&lineCache, readSize))
+			break;
+
 		result = true;
 
 		size_t length = 0;

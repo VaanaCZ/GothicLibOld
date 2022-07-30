@@ -98,11 +98,11 @@ namespace GothicLib
 			std::string				name;
 			zVEC2					decalDim			= { 25, 25 };
 			zVEC2					decalOffset			= {};
-			bool					decal2Sided			= false;
+			zBOOL					decal2Sided			= false;
 			zTRnd_AlphaBlendFunc	decalAlphaFunc		= zRND_ALPHA_FUNC_MAT_DEFAULT;
 			float					decalTexAniFPS		= 0.0f;
 			unsigned char			decalAlphaWeight	= 255;							// Gothic 2
-			bool					ignoreDayLight		= false;						// Gothic 2
+			zBOOL					ignoreDayLight		= false;						// Gothic 2
 
 		private:
 

@@ -326,7 +326,7 @@ namespace GothicLib
 			zTVobType			vobType					= zVOB_TYPE_NORMAL;		// Legacy
 			int					vobID;											// Legacy
 			std::string			presetName;
-			bool				drawBBox3D				= false;				// Legacy
+			zBOOL				drawBBox3D				= false;				// Legacy
 			zTBBox3D			bbox3DWS				= {};
 			zMAT3				trafoRot				= {};					// Legacy
 			zVEC3				trafoPos				= {};					// Legacy
@@ -334,18 +334,18 @@ namespace GothicLib
 			zVEC3				trafoOSToWSPos			= {};
 			std::string			vobName;
 			std::string			visual;
-			bool				showVisual				= true;
+			zBOOL				showVisual				= true;
 			zTVisualCamAlign	visualCamAlign			= zVISUAL_CAMALIGN_NONE;
 			zTAnimationMode		visualAniMode			= zVISUAL_ANIMODE_NONE;	// Gothic 2
 			float				visualAniModeStrength	= 0;					// Gothic 2
 			float				vobFarClipZScale		= 0;					// Gothic 2
-			bool				cdStatic				= false;
-			bool				cdDyn					= false;
-			bool				staticVob				= false;
+			zBOOL				cdStatic				= false;
+			zBOOL				cdDyn					= false;
+			zBOOL				staticVob				= false;
 			zTDynShadowType		dynShadow				= zDYN_SHADOW_TYPE_NONE;
 			int					zbias					= 0;					// Gothic 2
-			bool				isAmbient				= false;				// Gothic 2
-			bool				physicsEnabled			= false;				// Savegame
+			zBOOL				isAmbient				= false;				// Gothic 2
+			zBOOL				physicsEnabled			= false;				// Savegame
 			zTVobSleepingMode	sleepMode				= zVOB_SLEEPING;		// Savegame
 			float				nextOnTimer				= 0.0f;					// Savegame
 
@@ -437,19 +437,19 @@ namespace GothicLib
 			zTCamTrj_FOR		targetTrjFOR					= zCAMTRJ_KEY_FOR_WORLD;
 			zTCamTrj_LoopMode	loopMode						= zCAMTRJ_LOOPMODE_NONE;
 			zTSplLerpMode		splLerpMode						= zTSPL_LERP_PATH;
-			bool				ignoreFORVobRotCam				= false;
-			bool				ignoreFORVobRotTarget			= false;
-			bool				adaptToSurroundings				= true;
-			bool				easeToFirstKey					= false;
-			bool				easeFromLastKey					= false;
+			zBOOL				ignoreFORVobRotCam				= false;
+			zBOOL				ignoreFORVobRotTarget			= false;
+			zBOOL				adaptToSurroundings				= true;
+			zBOOL				easeToFirstKey					= false;
+			zBOOL				easeFromLastKey					= false;
 			float				totalTime						= 10.0f;
 			std::string			autoCamFocusVobName;
-			bool				autoCamPlayerMovable			= true;
-			bool				autoCamUntriggerOnLastKey		= true;
+			zBOOL				autoCamPlayerMovable			= true;
+			zBOOL				autoCamUntriggerOnLastKey		= true;
 			float				autoCamUntriggerOnLastKeyDelay	= 0.0f;
-			bool				paused							= false;	// Savegame
-			bool				started							= false;	// Savegame
-			bool				gotoTimeMode					= false;	// Savegame
+			zBOOL				paused							= false;	// Savegame
+			zBOOL				started							= false;	// Savegame
+			zBOOL				gotoTimeMode					= false;	// Savegame
 			float				csTime							= 0.0f;		// Savegame
 
 			std::vector<zCCamTrj_KeyFrame*> positions;
@@ -513,7 +513,7 @@ namespace GothicLib
 			float					bias				= 0.0f;
 			float					continuity			= 0.0f;
 			float					timeScale			= 1.0f;
-			bool					timeIsFixed			= false;
+			zBOOL					timeIsFixed			= false;
 			zMAT4					originalPose		= { };							// Savegame
 
 		private:
@@ -653,8 +653,8 @@ namespace GothicLib
 			*/
 
 			std::string pfxName;
-			bool killVobWhenDone	= true;
-			bool pfxStartOn			= true;
+			zBOOL killVobWhenDone	= true;
+			zBOOL pfxStartOn			= true;
 
 		private:
 
@@ -686,8 +686,8 @@ namespace GothicLib
 				Properties
 			*/
 
-			bool startOn	= true;
-			bool isRunning	= false; // Savegame
+			zBOOL startOn	= true;
+			zBOOL isRunning	= false; // Savegame
 
 		private:
 
@@ -727,14 +727,14 @@ namespace GothicLib
 			};
 
 			float				damage					= 0.0f;
-			bool				Barrier					= false;
-			bool				Blunt					= false;
-			bool				Edge					= false;
-			bool				Fire					= false;
-			bool				Fly						= false;
-			bool				Magic					= false;
-			bool				Point					= false;
-			bool				Fall					= false;
+			zBOOL				Barrier					= false;
+			zBOOL				Blunt					= false;
+			zBOOL				Edge					= false;
+			zBOOL				Fire					= false;
+			zBOOL				Fly						= false;
+			zBOOL				Magic					= false;
+			zBOOL				Point					= false;
+			zBOOL				Fall					= false;
 			float				damageRepeatDelaySec	= 0.0f;
 			float				damageVolDownScale		= 1.0f;
 			zTDamageCollType	damageCollType			= CT_BOX;
@@ -932,14 +932,14 @@ namespace GothicLib
 			std::string		focusName;
 			int				hitpoints		= 0;
 			int				damage			= 0;
-			bool			moveable		= false;
-			bool			takeable		= false;
-			bool			focusOverride	= false;
+			zBOOL			moveable		= false;
+			zBOOL			takeable		= false;
+			zBOOL			focusOverride	= false;
 			oTSndMaterial	soundMaterial	= SND_MAT_WOOD;
 			std::string		visualDestroyed;
 			std::string		owner;
 			std::string		ownerGuild;
-			bool			isDestroyed		= false;	// Props
+			zBOOL			isDestroyed		= false;	// Props
 
 		private:
 
@@ -976,12 +976,12 @@ namespace GothicLib
 			int			state			= 0;		// Legacy
 			int			stateTarget		= 0;		// Legacy
 			int			stateNum		= 0;
-			bool		interact		= false;	// Legacy
+			zBOOL		interact		= false;	// Legacy
 			std::string	triggerTarget;
 			std::string	useWithItem;
 			std::string	conditionFunc;
 			std::string	onStateFunc;
-			bool		rewind			= false;
+			zBOOL		rewind			= false;
 
 		private:
 
@@ -1094,7 +1094,7 @@ namespace GothicLib
 				Properties
 			*/
 
-			bool		locked		= false;
+			zBOOL		locked		= false;
 			std::string	keyInstance;
 			std::string	pickLockStr;
 
@@ -1402,10 +1402,10 @@ namespace GothicLib
 				Properties
 			*/
 
-			bool		orderRelevant			= false;
-			bool		firstFalseIsFailure		= false;
+			zBOOL		orderRelevant			= false;
+			zBOOL		firstFalseIsFailure		= false;
 			std::string	triggerTargetFailure;
-			bool		untriggerCancels		= false;
+			zBOOL		untriggerCancels		= false;
 
 			std::vector<std::string>	slaveVobNameList;
 			std::vector<zCVob*>			slaveTriggeredList;
@@ -1558,7 +1558,7 @@ namespace GothicLib
 			float			damageThreshold			= 0.0f;
 			float			fireDelaySec			= 0.0f;
 			zTRepeatTrigger	repeatTrigger			= RT_NONE;	// Legacy
-			bool			sendUntrigger			= false;	// Props
+			zBOOL			sendUntrigger			= false;	// Props
 			float			nextTimeTriggerable		= 0.0f;		// Savegame
 			zCVob*			savedOtherVobPtr		= nullptr;	// Savegame
 			int				countCanBeActivated		= 0;		// Savegame	
@@ -1660,9 +1660,9 @@ namespace GothicLib
 			zTMoverBehavior				moverBehavior		= MB_2STATE_TOGGLE;
 			float						touchBlockerDamage	= 0.0f;
 			float						stayOpenTimeSec		= 2.0f;
-			bool						moverLocked			= false;
-			bool						autoLinkEnabled		= false;
-			bool						autoRotate			= false;				// Gothic 2
+			zBOOL						moverLocked			= false;
+			zBOOL						autoLinkEnabled		= false;
+			zBOOL						autoRotate			= false;				// Gothic 2
 			std::string					vobChainName;								// Legacy
 			float						moveSpeed			= 0.3f;
 			zTPosLerpType				posLerpType			= PL_CURVE;
@@ -1761,7 +1761,7 @@ namespace GothicLib
 			std::vector<std::string>	triggerTargetList;
 			std::vector<float>			fireDelayList;
 			unsigned char				actTarget		= 0;	// Savegame
-			bool						sendOnTrigger	= true;	// Savegame
+			zBOOL						sendOnTrigger	= true;	// Savegame
 
 		private:
 
@@ -1883,8 +1883,8 @@ namespace GothicLib
 				Properties
 			*/
 
-			bool fireOnlyFirstTime	= false;
-			bool hasFired			= false; // Savegame
+			zBOOL fireOnlyFirstTime	= false;
+			zBOOL hasFired			= false; // Savegame
 
 		private:
 
@@ -1974,18 +1974,18 @@ namespace GothicLib
 			float				range				= 2000;
 			zCOLOR				color				= { };
 			float				spotConeAngle		= 0;
-			bool				lightStatic			= 0;
+			zBOOL				lightStatic			= 0;
 			zTVobLightQuality	lightQuality		= zVOBLIGHT_QUAL_FASTEST;
 			int					lensflareFXNo		= -1;						// Legacy
 			std::string			lensflareFX;
-			bool				turnedOn			= true;
+			zBOOL				turnedOn			= true;
 			std::string			rangeAniScale;
 			float				rangeAniFPS			= 0;
-			bool				rangeAniSmooth		= 0;
+			zBOOL				rangeAniSmooth		= 0;
 			std::string			colorAniList;
 			float				colorAniFPS			= 0;
-			bool				colorAniSmooth		= 0;
-			bool				canMove				= 0;						// Gothic 2
+			zBOOL				colorAniSmooth		= 0;
+			zBOOL				canMove				= 0;						// Gothic 2
 
 		private:
 
@@ -2213,15 +2213,15 @@ namespace GothicLib
 			zTSoundMode		sndMode				= SM_LOOPING;
 			float			sndRandDelay		= 5;
 			float			sndRandDelayVar		= 2;
-			bool			sndStartOn			= 1;
-			bool			sndAmbient3D		= 0;
-			bool			sndObstruction		= 0;
+			zBOOL			sndStartOn			= 1;
+			zBOOL			sndAmbient3D		= 0;
+			zBOOL			sndObstruction		= 0;
 			float			sndConeAngle		= 0;
 			zTSoundVolType	sndVolType			= SV_SPHERE;
 			float			sndRadius			= 1500;
 			std::string		sndName;
-			bool			soundIsRunning		= 0; // Savegame
-			bool			soundAllowedToRun	= 0; // Savegame
+			zBOOL			soundIsRunning		= 0; // Savegame
+			zBOOL			soundAllowedToRun	= 0; // Savegame
 
 		private:
 
@@ -2311,15 +2311,15 @@ namespace GothicLib
 				Properties
 			*/
 
-			bool	enabled				= true;
+			zBOOL	enabled				= true;
 			int		priority			= 1;
-			bool	ellipsoid			= false;
+			zBOOL	ellipsoid			= false;
 			float	reverbLevel			= -3.219f;
 			float	volumeLevel			= 1.0f;
-			bool	loop				= true;
-			bool	local_enabled		= true;		// Savegame
-			bool	dayEntranceDone		= false;	// Savegame
-			bool	nightEntranceDone	= false;	// Savegame
+			zBOOL	loop				= true;
+			zBOOL	local_enabled		= true;		// Savegame
+			zBOOL	dayEntranceDone		= false;	// Savegame
+			zBOOL	nightEntranceDone	= false;	// Savegame
 
 		private:
 
@@ -2433,8 +2433,8 @@ namespace GothicLib
 			float	fogRangeCenter	= 3000.0f;
 			float	innerRangePerc	= 0.7f;
 			zCOLOR	fogColor		= { };
-			bool	fadeOutSky		= false;	// Gothic 2
-			bool	overrideColor	= false;	// Gothic 2
+			zBOOL	fadeOutSky = false;	// Gothic 2
+			zBOOL	overrideColor	= false;	// Gothic 2
 
 		private:
 
@@ -2482,7 +2482,7 @@ namespace GothicLib
 				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
-			ZEN_DECLARE_CLASS(zCAIBase, zCObject);
+			ZEN_DECLARE_CLASS_ABSTRACT(zCAIBase, zCObject);
 
 			zCAIBase()			{ }
 			virtual ~zCAIBase()	{ }
@@ -2588,7 +2588,7 @@ namespace GothicLib
 			int		weaponMode		= 0;
 			int		wmodeLast		= 0;
 			int		wmodeSelect		= 0;
-			bool	changeWeapon	= false;
+			zBOOL	changeWeapon	= false;
 			int		actionMode		= 0;
 
 		private:
@@ -2619,7 +2619,7 @@ namespace GothicLib
 
 		};
 
-		class oCAIHuman_Stand : public zCObject
+		class oCAIHuman_Stand : public zCAIBase
 		{
 		public:
 			
@@ -2634,7 +2634,7 @@ namespace GothicLib
 				{ GAME_GOTHIC2ADDON,		0 },
 			};
 
-			ZEN_DECLARE_CLASS(oCAIHuman_Stand, zCObject);
+			ZEN_DECLARE_CLASS(oCAIHuman_Stand, zCAIBase);
 
 			oCAIHuman_Stand()			{ }
 			virtual ~oCAIHuman_Stand()	{ }
@@ -2673,8 +2673,8 @@ namespace GothicLib
 				Properties
 			*/
 			
-			bool cleared;
-			bool active;
+			zBOOL cleared;
+			zBOOL active;
 
 			//bool active;
 
@@ -2715,7 +2715,7 @@ namespace GothicLib
 			
 			std::string	wpName;
 			int			waterDepth		= 0;
-			bool		underWater		= false;
+			zBOOL		underWater		= false;
 			zVEC3		position		= {};
 			zVEC3		direction		= {};
 

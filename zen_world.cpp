@@ -790,6 +790,52 @@ bool zCCSCamera::Archive(zCArchiver* archiver)
 	if (!zCVob::Archive(archiver))
 		return false;
 
+	archiver->WriteEnum(ARC_ARGSEW(camTrjFOR, "WORLD;OBJECT"));
+	archiver->WriteEnum(ARC_ARGSEW(targetTrjFOR, "WORLD;OBJECT"));
+	archiver->WriteEnum(ARC_ARGSEW(loopMode, "NONE;RESTART;PINGPONG"));
+	archiver->WriteEnum(ARC_ARGSEW(splLerpMode, "UNDEF;PATH;PATH_IGNOREROLL;PATH_ROT_SAMPLES"));
+	archiver->WriteBool(ARC_ARGS(ignoreFORVobRotCam));
+	archiver->WriteBool(ARC_ARGS(ignoreFORVobRotTarget));
+	archiver->WriteBool(ARC_ARGS(adaptToSurroundings));
+	archiver->WriteBool(ARC_ARGS(easeToFirstKey));
+	archiver->WriteBool(ARC_ARGS(easeFromLastKey));
+	archiver->WriteFloat(ARC_ARGS(totalTime));
+	archiver->WriteString(ARC_ARGS(autoCamFocusVobName));
+	archiver->WriteBool(ARC_ARGS(autoCamPlayerMovable));
+	archiver->WriteBool(ARC_ARGS(autoCamUntriggerOnLastKey));
+	
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->WriteFloat(ARC_ARGS(autoCamUntriggerOnLastKeyDelay));
+	}
+
+	if (!archiver->IsProperties())
+	{
+		int numPos		= positions.size();
+		int numTargets	= targets.size();
+
+		archiver->WriteInt(ARC_ARGS(numPos));
+		archiver->WriteInt(ARC_ARGS(numTargets));
+
+		for (size_t i = 0; i < numPos; i++)
+		{
+			archiver->WriteObject(positions[i]);
+		}
+
+		for (size_t i = 0; i < numTargets; i++)
+		{
+			archiver->WriteObject(targets[i]);
+		}
+	}
+
+	if (archiver->IsSavegame())
+	{
+		archiver->WriteBool(ARC_ARGS(paused));
+		archiver->WriteBool(ARC_ARGS(started));
+		archiver->WriteBool(ARC_ARGS(gotoTimeMode));
+		archiver->WriteFloat(ARC_ARGS(csTime));
+	}
+
 	return true;
 }
 
@@ -864,6 +910,38 @@ bool zCCamTrj_KeyFrame::Archive(zCArchiver* archiver)
 {
 	if (!zCVob::Archive(archiver))
 		return false;
+	
+	archiver->WriteFloat(ARC_ARGS(time));
+	archiver->WriteFloat(ARC_ARGS(angleRollDeg));
+	archiver->WriteFloat(ARC_ARGS(camFOVScale));
+	archiver->WriteEnum(ARC_ARGSEW(motionType, "UNDEF;SMOOTH;LINEAR;STEP;SLOW;FAST;CUSTOM"));
+	archiver->WriteEnum(ARC_ARGSEW(motionTypeFOV, "UNDEF;SMOOTH;LINEAR;STEP;SLOW;FAST;CUSTOM"));
+	archiver->WriteEnum(ARC_ARGSEW(motionTypeRoll, "UNDEF;SMOOTH;LINEAR;STEP;SLOW;FAST;CUSTOM"));
+
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->WriteEnum(ARC_ARGSEW(motionTypeTimeScale, "UNDEF;SMOOTH;LINEAR;STEP;SLOW;FAST;CUSTOM"));
+	}
+
+	archiver->WriteGroupBegin("Details");
+
+	archiver->WriteFloat(ARC_ARGS(tension));
+	archiver->WriteFloat(ARC_ARGS(bias));
+	archiver->WriteFloat(ARC_ARGS(continuity));
+
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->WriteFloat(ARC_ARGS(timeScale));
+	}
+
+	archiver->WriteBool(ARC_ARGS(timeIsFixed));
+
+	archiver->WriteGroupEnd("Details");
+
+	if (!archiver->IsProperties())
+	{
+		archiver->WriteRaw(ARC_ARGSR(originalPose));
+	}
 
 	return true;
 }
@@ -904,7 +982,6 @@ bool zCCamTrj_KeyFrame::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-
 /*
 	oCDummyVobGenerator
 */
@@ -932,6 +1009,14 @@ bool zCEarthquake::Archive(zCArchiver* archiver)
 	if (!zCEffect::Archive(archiver))
 		return false;
 
+	archiver->WriteGroupBegin("Earthquake");
+
+	archiver->WriteFloat(ARC_ARGS(radius));
+	archiver->WriteFloat(ARC_ARGS(timeSec));
+	archiver->WriteVec3(ARC_ARGS(amplitudeCM));
+
+	archiver->WriteGroupEnd("Earthquake");
+
 	return true;
 }
 
@@ -951,6 +1036,10 @@ bool zCPFXControler::Archive(zCArchiver* archiver)
 {
 	if (!zCEffect::Archive(archiver))
 		return false;
+
+	archiver->WriteString(ARC_ARGS(pfxName));
+	archiver->WriteBool(ARC_ARGS(killVobWhenDone));
+	archiver->WriteBool(ARC_ARGS(pfxStartOn));
 
 	return true;
 }
@@ -1005,6 +1094,29 @@ bool zCTouchDamage::Archive(zCArchiver* archiver)
 {
 	if (!zCEffect::Archive(archiver))
 		return false;
+
+	archiver->WriteGroupBegin("TouchDamage");
+
+	archiver->WriteFloat(ARC_ARGS(damage));
+
+	archiver->WriteGroupBegin("DamageType");
+
+	archiver->WriteBool(ARC_ARGS(Barrier));
+	archiver->WriteBool(ARC_ARGS(Blunt));
+	archiver->WriteBool(ARC_ARGS(Edge));
+	archiver->WriteBool(ARC_ARGS(Fire));
+	archiver->WriteBool(ARC_ARGS(Fly));
+	archiver->WriteBool(ARC_ARGS(Magic));
+	archiver->WriteBool(ARC_ARGS(Point));
+	archiver->WriteBool(ARC_ARGS(Fall));
+
+	archiver->WriteGroupEnd("DamageType");
+
+	archiver->WriteFloat(ARC_ARGS(damageRepeatDelaySec));
+	archiver->WriteFloat(ARC_ARGS(damageVolDownScale));
+	archiver->WriteEnum(ARC_ARGSEW(damageCollType, "NONE;BOX;POINT"));
+
+	archiver->WriteGroupEnd("TouchDamage");
 
 	return true;
 }
@@ -1430,6 +1542,8 @@ bool oCMob::Archive(zCArchiver* archiver)
 	if (!oCVob::Archive(archiver))
 		return false;
 
+	archiver->WriteString(ARC_ARGS(mobInstance));
+
 	return true;
 }
 
@@ -1497,6 +1611,10 @@ bool oCNpc::Archive(zCArchiver* archiver)
 {
 	if (!oCVob::Archive(archiver))
 		return false;
+
+	archiver->WriteString(ARC_ARGS(npcInstance));
+
+	// todo: savegame
 
 	return true;
 }
@@ -1633,6 +1751,49 @@ bool zCCodeMaster::Archive(zCArchiver* archiver)
 	if (!zCTriggerBase::Archive(archiver))
 		return false;
 
+	archiver->WriteGroupBegin("CodeMaster");
+
+	archiver->WriteBool(ARC_ARGS(orderRelevant));
+
+	archiver->WriteGroupBegin("OrderRelevant");
+
+	archiver->WriteBool(ARC_ARGS(firstFalseIsFailure));
+	archiver->WriteString(ARC_ARGS(triggerTargetFailure));
+
+	archiver->WriteGroupEnd("OrderRelevant");
+
+	archiver->WriteGroupBegin("OrderNotRelevant");
+
+	archiver->WriteBool(ARC_ARGS(untriggerCancels));
+
+	archiver->WriteGroupEnd("OrderNotRelevant");
+
+	if (!archiver->IsProperties())
+	{
+		unsigned char numSlaves = slaveVobNameList.size();
+		archiver->WriteByte(ARC_ARGS(numSlaves));
+
+		for (size_t i = 0; i < numSlaves; i++)
+		{
+			std::string slaveVobNameKey = "slaveVobName" + std::to_string(i);
+			archiver->WriteString(slaveVobNameKey, slaveVobNameList[i]);
+		}
+	}
+
+	if (archiver->IsSavegame())
+	{
+		unsigned char numSlavesTriggered = slaveTriggeredList.size();
+		archiver->WriteByte(ARC_ARGS(numSlavesTriggered));
+
+		for (size_t i = 0; i < numSlavesTriggered; i++)
+		{
+			std::string slaveTriggeredKey = "slaveTriggered" + std::to_string(i);
+			archiver->WriteObject(slaveTriggeredKey, slaveTriggeredList[i]);
+		}
+	}
+
+	archiver->WriteGroupEnd("CodeMaster");
+
 	return true;
 }
 
@@ -1685,6 +1846,9 @@ bool zCMessageFilter::Archive(zCArchiver* archiver)
 	if (!zCTriggerBase::Archive(archiver))
 		return false;
 
+	archiver->WriteEnum(ARC_ARGSEW(onTrigger, "MT_NONE;MT_TRIGGER;MT_UNTRIGGER;MT_ENABLE;MT_DISABLE;MT_TOGGLE_ENABLED"));
+	archiver->WriteEnum(ARC_ARGSEW(onUntrigger, "MT_NONE;MT_TRIGGER;MT_UNTRIGGER;MT_ENABLE;MT_DISABLE;MT_TOGGLE_ENABLED"));
+
 	return true;
 }
 
@@ -1703,6 +1867,9 @@ bool zCMoverControler::Archive(zCArchiver* archiver)
 {
 	if (!zCTriggerBase::Archive(archiver))
 		return false;
+
+	archiver->WriteEnum(ARC_ARGSEW(moverMessage, "GOTO_KEY_FIXED_DIRECTLY;_DISABLED_;GOTO_KEY_NEXT;GOTO_KEY_PREV"));
+	archiver->WriteInt(ARC_ARGS(gotoFixedKey));
 
 	return true;
 }
@@ -1825,31 +1992,31 @@ bool zCTrigger::Unarchive(zCArchiver* archiver)
 	}
 	else
 	{
-		bool reactToOnTrigger;
+		zBOOL reactToOnTrigger;
 		archiver->ReadBool(ARC_ARGS(reactToOnTrigger));
 		filterFlags.reactToOnTrigger = reactToOnTrigger;
 
-		bool reactToOnTouch;
+		zBOOL reactToOnTouch;
 		archiver->ReadBool(ARC_ARGS(reactToOnTouch));
 		filterFlags.reactToOnTouch = reactToOnTouch;
 
-		bool reactToOnDamage;
+		zBOOL reactToOnDamage;
 		archiver->ReadBool(ARC_ARGS(reactToOnDamage));
 		filterFlags.reactToOnDamage = reactToOnDamage;
 
-		bool respondToObject;
+		zBOOL respondToObject;
 		archiver->ReadBool(ARC_ARGS(respondToObject));
 		filterFlags.respondToObject = respondToObject;
 
-		bool respondToPC;
+		zBOOL respondToPC;
 		archiver->ReadBool(ARC_ARGS(respondToPC));
 		filterFlags.respondToPC = respondToPC;
 
-		bool respondToNPC;
+		zBOOL respondToNPC;
 		archiver->ReadBool(ARC_ARGS(respondToNPC));
 		filterFlags.respondToNPC = respondToNPC;
 
-		bool startEnabled;
+		zBOOL startEnabled;
 		archiver->ReadBool(ARC_ARGS(startEnabled));
 		flags.startEnabled = startEnabled;
 	}
@@ -1888,7 +2055,7 @@ bool zCTrigger::Unarchive(zCArchiver* archiver)
 		savedOtherVobPtr = archiver->ReadObjectAs<zCVob*>("savedOtherVob");
 		archiver->ReadInt(ARC_ARGS(countCanBeActivated));
 
-		bool isEnabled;
+		zBOOL isEnabled;
 		archiver->ReadBool(ARC_ARGS(isEnabled));
 		flags.isEnabled = isEnabled;
 	}
@@ -2073,6 +2240,34 @@ bool zCTriggerList::Archive(zCArchiver* archiver)
 	if (!zCTrigger::Archive(archiver))
 		return false;
 
+	archiver->WriteGroupBegin("TriggerList");
+	
+	archiver->WriteEnum(ARC_ARGSEW(listProcess, "LP_ALL;LP_NEXT_ONE;LP_RAND_ONE"));
+
+	unsigned char numTarget = triggerTargetList.size();
+
+	if (!archiver->IsProperties())
+	{
+		archiver->WriteByte(ARC_ARGS(numTarget));
+	}
+
+	for (size_t i = 0; i < numTarget; i++)
+	{
+		std::string currTriggerTargetKey	= "triggerTarget" + std::to_string(i);
+		std::string currFireDelayKey		= "fireDelay" + std::to_string(i);
+
+		archiver->WriteString(currTriggerTargetKey, triggerTargetList[i]);
+		archiver->WriteFloat(currFireDelayKey, fireDelayList[i]);
+	}
+
+	if (archiver->IsSavegame())
+	{
+		archiver->WriteByte(ARC_ARGS(actTarget));
+		archiver->WriteBool(ARC_ARGS(sendOnTrigger));
+	}
+
+	archiver->WriteGroupEnd("TriggerList");
+
 	return true;
 }
 
@@ -2122,6 +2317,8 @@ bool oCTriggerScript::Archive(zCArchiver* archiver)
 	if (!zCTrigger::Archive(archiver))
 		return false;
 
+	archiver->WriteString(ARC_ARGS(scriptFunc));
+
 	return true;
 }
 
@@ -2140,6 +2337,8 @@ bool zCTriggerTeleport::Archive(zCArchiver* archiver)
 	if (!zCTrigger::Archive(archiver))
 		return false;
 
+	archiver->WriteString(ARC_ARGS(sfxTeleport));
+
 	return true;
 }
 
@@ -2157,6 +2356,13 @@ bool zCTriggerWorldStart::Archive(zCArchiver* archiver)
 {
 	if (!zCTriggerBase::Archive(archiver))
 		return false;
+
+	archiver->WriteBool(ARC_ARGS(fireOnlyFirstTime));
+
+	if (archiver->IsSavegame())
+	{
+		archiver->WriteBool(ARC_ARGS(hasFired));
+	}
 
 	return true;
 }
@@ -2599,6 +2805,13 @@ bool zCZoneVobFarPlane::Archive(zCArchiver* archiver)
 	if (!zCZone::Archive(archiver))
 		return false;
 
+	archiver->WriteGroupBegin("ZoneVobFarPlane");
+
+	archiver->WriteFloat(ARC_ARGS(vobFarPlaneZ));
+	archiver->WriteFloat(ARC_ARGS(innerRangePerc));
+
+	archiver->WriteGroupEnd("ZoneVobFarPlane");
+
 	return true;
 }
 
@@ -2617,6 +2830,20 @@ bool zCZoneZFog::Archive(zCArchiver* archiver)
 {
 	if (!zCZone::Archive(archiver))
 		return false;
+
+	archiver->WriteGroupBegin("ZoneZFog");
+
+	archiver->WriteFloat(ARC_ARGS(fogRangeCenter));
+	archiver->WriteFloat(ARC_ARGS(innerRangePerc));
+	archiver->WriteColor(ARC_ARGS(fogColor));
+
+	if (game >= GAME_GOTHIC2)
+	{
+		archiver->WriteBool(ARC_ARGS(fadeOutSky));
+		archiver->WriteBool(ARC_ARGS(overrideColor));
+	}
+
+	archiver->WriteGroupEnd("ZoneZFog");
 
 	return true;
 }
@@ -2736,15 +2963,23 @@ bool zCWayNet::Archive(zCArchiver* archiver)
 	// Waypoints
 	if (waynetVersion == 0)
 	{
-		int numWaypoints = oldWaypointList.size();
-		archiver->WriteInt(ARC_ARGS(numWaypoints));
-
-		for (size_t i = 0; i < numWaypoints; i++)
+		int numWaypoints = 1;
+			
+		if (game >= GAME_SEPTEMBERDEMO)
 		{
-			std::string waypointKey = "waypoint" + std::to_string(i);
-			archiver->WriteString(waypointKey, oldWaypointList[i]);
+			numWaypoints = oldWaypointList.size();
 		}
 
+		archiver->WriteInt(ARC_ARGS(numWaypoints));
+
+		if (game >= GAME_SEPTEMBERDEMO)
+		{
+			for (size_t i = 0; i < numWaypoints; i++)
+			{
+				std::string waypointKey = "waypoint" + std::to_string(i);
+				archiver->WriteString(waypointKey, oldWaypointList[i]);
+			}
+		}
 	}
 	else if (waynetVersion == 1)
 	{

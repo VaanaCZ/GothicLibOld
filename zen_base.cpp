@@ -8,7 +8,8 @@ using namespace GothicLib::ZenGin;
 bool zCArchiver::Write(FileStream* _file, bool briefHeader)
 {
 	mode = ARCHIVER_MODE_ASCII; // temp
-	version = 1;
+	//version = 1;
+	version = 0;
 
 	file = _file;
 
@@ -99,20 +100,23 @@ bool zCArchiver::Write(FileStream* _file, bool briefHeader)
 	*/
 	file->WriteLine("END", "\n");
 
-	if (mode != ARCHIVER_MODE_BIN_SAFE &&
-		version == 1)
+	if (mode != ARCHIVER_MODE_BIN_SAFE)
 	{
-		objectCountPos = file->Tell() + 8; // "objects "
+		if (version == 1)
+		{
+			objectCountPos = file->Tell() + 8; // "objects "
 
-		/*
-			objects n
-		*/
-		file->WriteLine("objects          ", "\n");
+			/*
+				objects n
+			*/
+			file->WriteLine("objects          ", "\n");
 
-		/*
-				END
-		*/
-		file->WriteLine("END", "\n");
+			/*
+					END
+			*/
+			file->WriteLine("END", "\n");
+		}
+
 		file->WriteLine("", "\n");
 	}
 
@@ -204,7 +208,7 @@ bool zCArchiver::Read(FileStream* _file)
 		*/
 		if (line == "END")
 		{
-			if (first &&
+			if (first && version == 1 &&
 				mode != ARCHIVER_MODE_BIN_SAFE)
 			{
 				first = false;
@@ -414,7 +418,7 @@ bool zCArchiver::WriteFloat(std::string name, float floatVal)
 	return false;
 }
 
-bool zCArchiver::WriteBool(std::string name, bool boolVal)
+bool zCArchiver::WriteBool(std::string name, zBOOL boolVal)
 {
 	if (error)
 		return false;
@@ -878,7 +882,7 @@ bool zCArchiver::ReadFloat(std::string name, float& floatVal)
 	return false;
 }
 
-bool zCArchiver::ReadBool(std::string name, bool& boolVal)
+bool zCArchiver::ReadBool(std::string name, zBOOL& boolVal)
 {
 	if (error)
 		return false;

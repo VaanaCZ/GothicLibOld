@@ -26,6 +26,8 @@ namespace GothicLib
 			Basic types
 		*/
 
+		typedef int zBOOL;
+
 		struct zVEC2
 		{
 			float x, y;
@@ -76,10 +78,20 @@ namespace GothicLib
 			uint16_t second;
 		};
 
+		inline double roundDecimals(const double d, const int p)
+		{
+			if (d == 0.0)
+				return 0.0;
+
+			double r = 0.5 / pow(10.0, p);
+			if (d < 0.) return d - r;
+			return d + r;
+		}
+
 		inline std::string FloatToString(float f)
 		{
 			char buffer[64];
-			sprintf_s(buffer, 64, "%.9g", f);
+			sprintf_s(buffer, 64, "%.9g", roundDecimals(f, 11));
 			return std::string(buffer);
 		}
 
@@ -157,7 +169,7 @@ namespace GothicLib
 			bool WriteByte		(std::string, unsigned char);
 			bool WriteWord		(std::string, unsigned short);
 			bool WriteFloat		(std::string, float);
-			bool WriteBool		(std::string, bool);
+			bool WriteBool		(std::string, zBOOL);
 			bool WriteString	(std::string, std::string);
 			bool WriteVec3		(std::string, zVEC3);
 			bool WriteColor		(std::string, zCOLOR);
@@ -180,7 +192,7 @@ namespace GothicLib
 			bool ReadByte		(std::string, unsigned char&);
 			bool ReadWord		(std::string, unsigned short&);
 			bool ReadFloat		(std::string, float&);
-			bool ReadBool		(std::string, bool&);
+			bool ReadBool		(std::string, zBOOL&);
 			bool ReadString		(std::string, std::string&);
 			bool ReadVec3		(std::string, zVEC3&);
 			bool ReadColor		(std::string, zCOLOR&);

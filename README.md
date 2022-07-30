@@ -74,7 +74,7 @@ This section includes the current progress on loading and saving the engine's fi
 		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
 	</tr>
@@ -92,7 +92,7 @@ This section includes the current progress on loading and saving the engine's fi
 		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
 	</tr>
@@ -110,7 +110,7 @@ This section includes the current progress on loading and saving the engine's fi
 		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
 	</tr>
@@ -128,7 +128,7 @@ This section includes the current progress on loading and saving the engine's fi
 		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
 	</tr>
@@ -137,7 +137,7 @@ This section includes the current progress on loading and saving the engine's fi
 		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
 	</tr>
@@ -155,7 +155,7 @@ This section includes the current progress on loading and saving the engine's fi
 		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>✖</td>
 		<td>✖</td>
 	</tr>
@@ -164,7 +164,7 @@ This section includes the current progress on loading and saving the engine's fi
 		<td>✔</td>
 		<td>✖</td>
 		<td>-</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>✖</td>
 		<td>-</td>
 	</tr>
