@@ -290,7 +290,9 @@ bool zCWorld::SaveWorldFile(FileStream* file)
 		file->WriteLine("VobHierarchy", "\n");
 		file->WriteLine("{", "\n");
 
-		if (!SaveVobTree(file, vobTree))
+		size_t vobCount = 0;
+
+		if (!SaveVobTree(file, vobTree, vobCount))
 			return false;
 
 		file->WriteLine("}", "\n");
@@ -394,20 +396,22 @@ bool zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 	}
 }
 
-bool zCWorld::SaveVobTree(FileStream* file, zCVob* parentVob)
+bool zCWorld::SaveVobTree(FileStream* file, zCVob* parentVob, size_t& vobCount)
 {
-	if (parentVob != vobTree)
+	if (vobCount != 0)
 	{
 		if (!parentVob->SaveVob(file))
 			return false;
 	}
+
+	vobCount++;
 
 	file->WriteLine("childs (" + std::to_string(parentVob->children.size()) + ")", "\n");
 	file->WriteLine("", "\n");
 
 	for (size_t i = 0; i < parentVob->children.size(); i++)
 	{
-		if (!SaveVobTree(file, parentVob->children[i]))
+		if (!SaveVobTree(file, parentVob->children[i], vobCount))
 			return false;
 	}
 
@@ -832,23 +836,23 @@ bool zCVob::LoadVob(FileStream* file)
 				}
 				else if (key == "showVisual")
 				{
-					showVisual = (value == "1");
+					showVisual = std::stoi(value);
 				}
 				else if (key == "drawBBox3D")
 				{
-					drawBBox3D = (value == "1");
+					drawBBox3D = std::stoi(value);
 				}
 				else if (key == "cdStatic")
 				{
-					cdStatic = (value == "1");
+					cdStatic = std::stoi(value);
 				}
 				else if (key == "cdDyn")
 				{
-					cdDyn = (value == "1");
+					cdDyn = std::stoi(value);
 				}
 				else if (key == "staticVob")
 				{
-					staticVob = (value == "1");
+					staticVob = std::stoi(value);
 				}
 				else if (key == "bbox3DWSpace")
 				{
@@ -2574,10 +2578,41 @@ bool zCVobLight::Archive(zCArchiver* archiver)
 			archiver->WriteBool(ARC_ARGS(turnedOn));
 		}
 
-		archiver->WriteString(ARC_ARGS(rangeAniScale));
+
+		std::string rangeAniScaleStr = "";
+
+		for (size_t i = 0; i < rangeAniScaleList.size(); i++)
+		{
+			rangeAniScaleStr += FloatToString(rangeAniScaleList[i]) + " ";
+		}
+
+		archiver->WriteString("rangeAniScale", rangeAniScaleStr);
+
+
 		archiver->WriteFloat(ARC_ARGS(rangeAniFPS));
 		archiver->WriteBool(ARC_ARGS(rangeAniSmooth));
-		archiver->WriteString(ARC_ARGS(colorAniList));
+
+
+		std::string colorAniListStr = "";
+
+		for (size_t i = 0; i < colorAniList.size(); i++)
+		{
+			if (colorAniList[i].r == colorAniList[i].g &&
+				colorAniList[i].r == colorAniList[i].b)
+			{
+				colorAniListStr += FloatToString(colorAniList[i].r) + " ";
+			}
+			else
+			{
+				colorAniListStr += "(" + FloatToString(colorAniList[i].r) + " " +
+					FloatToString(colorAniList[i].g) + " " +
+					FloatToString(colorAniList[i].b) + ") ";
+			}
+		}
+
+		archiver->WriteString("colorAniList", colorAniListStr);
+
+
 		archiver->WriteFloat(ARC_ARGS(colorAniFPS));
 		archiver->WriteBool(ARC_ARGS(colorAniSmooth));
 
@@ -2635,10 +2670,74 @@ bool zCVobLight::Unarchive(zCArchiver* archiver)
 			archiver->ReadBool(ARC_ARGS(turnedOn));
 		}
 
-		archiver->ReadString(ARC_ARGS(rangeAniScale));
+		// Range ani scale list parsing
+		std::string rangeAniScaleStr;
+		archiver->ReadString("rangeAniScale", rangeAniScaleStr);
+
+		if (!rangeAniScaleStr.empty())
+		{
+			size_t pos = 0;
+
+			while (true)
+			{
+				if (pos == rangeAniScaleStr.size())
+					break;
+
+				rangeAniScaleList.push_back(atof(&rangeAniScaleStr[pos]));
+
+				pos = rangeAniScaleStr.find(" ", pos);
+				if (pos == std::string::npos)
+					break;
+				pos++;
+
+			}
+		}
+
 		archiver->ReadFloat(ARC_ARGS(rangeAniFPS));
 		archiver->ReadBool(ARC_ARGS(rangeAniSmooth));
-		archiver->ReadString(ARC_ARGS(colorAniList));
+
+		// Color ani list parsing
+		std::string colorAniListStr;
+		archiver->ReadString("colorAniList", colorAniListStr);
+
+		if (!colorAniListStr.empty())
+		{
+			size_t pos = 0;
+
+			while (true)
+			{
+				if (pos == colorAniListStr.size())
+					break;
+
+				float r, g, b;
+
+				if (colorAniListStr[pos] == '(')
+				{
+					r = atof(&colorAniListStr[pos + 1]);
+					pos = colorAniListStr.find(" ", pos) + 1;
+					g = atof(&colorAniListStr[pos]);
+					pos = colorAniListStr.find(" ", pos) + 1;
+					b = atof(&colorAniListStr[pos]);
+				}
+				else
+				{
+					r = g = b = atof(&colorAniListStr[pos]);
+				}
+
+				zCOLOR colorAni;
+				colorAni.r = r;
+				colorAni.g = g;
+				colorAni.b = b;
+				colorAni.a = 255;
+				colorAniList.push_back(colorAni);
+
+				pos = colorAniListStr.find(" ", pos);
+				if (pos == std::string::npos)
+					break;
+				pos++;
+			}
+		}
+
 		archiver->ReadFloat(ARC_ARGS(colorAniFPS));
 		archiver->ReadBool(ARC_ARGS(colorAniSmooth));
 
@@ -2669,10 +2768,38 @@ bool zCVobLight::Save(FileStream* file)
 	file->WriteLine(" lightStatic (" + std::to_string(lightStatic) + ")", "\n");
 	file->WriteLine(" lightQual (" + std::to_string(lightQuality) + ")", "\n");
 	file->WriteLine(" lensflareFX (" + std::to_string(lensflareFXNo) + ")", "\n");
-	file->WriteLine(" rangeAniScale (" + rangeAniScale + ")", "\n");
+
+	std::string rangeAniScaleStr = "";
+
+	for (size_t i = 0; i < rangeAniScaleList.size(); i++)
+	{
+		rangeAniScaleStr += FloatToString(rangeAniScaleList[i]) + " ";
+	}
+
+	file->WriteLine(" rangeAniScale (" + rangeAniScaleStr + ")", "\n");
+
 	file->WriteLine(" rangeAniFPS (" + FloatToString(rangeAniFPS) + ")", "\n");
 	file->WriteLine(" rangeAniSmooth (" + std::to_string(rangeAniSmooth) + ")", "\n");
-	file->WriteLine(" colorAniList (" + colorAniList + ")", "\n");
+
+	std::string colorAniListStr = "";
+
+	for (size_t i = 0; i < colorAniList.size(); i++)
+	{
+		if (colorAniList[i].r == colorAniList[i].g &&
+			colorAniList[i].r == colorAniList[i].b)
+		{
+			colorAniListStr += FloatToString(colorAniList[i].r) + " ";
+		}
+		else
+		{
+			colorAniListStr += "[" + FloatToString(colorAniList[i].r) + " " +
+				FloatToString(colorAniList[i].g) + " " +
+				FloatToString(colorAniList[i].b) + "] ";
+		}
+	}
+
+	file->WriteLine(" colorAniList (" + colorAniListStr + ")", "\n");
+
 	file->WriteLine(" colorAniFPS (" + FloatToString(colorAniFPS) + ")", "\n");
 	file->WriteLine(" colorAniSmooth (" + std::to_string(colorAniSmooth) + ")", "\n");
 
@@ -2728,7 +2855,7 @@ bool zCVobLight::Load(FileStream* file)
 				}
 				else if (key == "lightStatic")
 				{
-					lightStatic = (value == "1");
+					lightStatic = std::stoi(value);
 				}
 				else if (key == "lightQual")
 				{
@@ -2736,11 +2863,30 @@ bool zCVobLight::Load(FileStream* file)
 				}
 				else if (key == "lensflareFX")
 				{
-					lensflareFXNo = std::stoi(value); // todo: fix
+					lensflareFXNo = std::stoi(value);
 				}
 				else if (key == "rangeAniScale")
 				{
-					rangeAniScale = value;
+					std::string rangeAniScaleStr = value;
+
+					if (!rangeAniScaleStr.empty())
+					{
+						size_t pos = 0;
+
+						while (true)
+						{
+							if (pos == rangeAniScaleStr.size())
+								break;
+
+							rangeAniScaleList.push_back(atof(&rangeAniScaleStr[pos]));
+
+							pos = rangeAniScaleStr.find(" ", pos);
+							if (pos == std::string::npos)
+								break;
+							pos++;
+
+						}
+					}
 				}
 				else if (key == "rangeAniFPS")
 				{
@@ -2748,11 +2894,49 @@ bool zCVobLight::Load(FileStream* file)
 				}
 				else if (key == "rangeAniSmooth")
 				{
-					rangeAniSmooth = (value == "1");
+					rangeAniSmooth = std::stoi(value);
 				}
 				else if (key == "colorAniList")
 				{
-					colorAniList = value; // todo: parse array
+					std::string colorAniListStr = value;
+
+					if (!colorAniListStr.empty())
+					{
+						size_t pos = 0;
+
+						while (true)
+						{
+							if (pos == colorAniListStr.size())
+								break;
+
+							float r, g, b;
+
+							if (colorAniListStr[pos] == '[')
+							{
+								r = atof(&colorAniListStr[pos + 1]);
+								pos = colorAniListStr.find(" ", pos) + 1;
+								g = atof(&colorAniListStr[pos]);
+								pos = colorAniListStr.find(" ", pos) + 1;
+								b = atof(&colorAniListStr[pos]);
+							}
+							else
+							{
+								r = g = b = atof(&colorAniListStr[pos]);
+							}
+
+							zCOLOR colorAni;
+							colorAni.r = r;
+							colorAni.g = g;
+							colorAni.b = b;
+							colorAni.a = 255;
+							colorAniList.push_back(colorAni);
+
+							pos = colorAniListStr.find(" ", pos);
+							if (pos == std::string::npos)
+								break;
+							pos++;
+						}
+					}
 				}
 				else if (key == "colorAniFPS")
 				{
@@ -2760,7 +2944,7 @@ bool zCVobLight::Load(FileStream* file)
 				}
 				else if (key == "colorAniSmooth")
 				{
-					colorAniSmooth = (value == "1");
+					colorAniSmooth = std::stoi(value);
 				}
 			}
 		}

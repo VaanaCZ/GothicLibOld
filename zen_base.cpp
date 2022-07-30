@@ -8,8 +8,8 @@ using namespace GothicLib::ZenGin;
 bool zCArchiver::Write(FileStream* _file, bool briefHeader)
 {
 	mode = ARCHIVER_MODE_ASCII; // temp
-	//version = 1;
-	version = 0;
+	version = 1;
+	//version = 0;
 
 	file = _file;
 

@@ -61,7 +61,7 @@ namespace GothicLib
 			bool SaveWorldFile(FileStream*);
 
 			bool LoadVobTree(FileStream*, zCVob*);
-			bool SaveVobTree(FileStream*, zCVob*);
+			bool SaveVobTree(FileStream*, zCVob*, size_t&);
 
 		};
 
@@ -1979,10 +1979,10 @@ namespace GothicLib
 			int					lensflareFXNo		= -1;						// Legacy
 			std::string			lensflareFX;
 			zBOOL				turnedOn			= true;
-			std::string			rangeAniScale;
+			std::vector<float>	rangeAniScaleList;
 			float				rangeAniFPS			= 0;
 			zBOOL				rangeAniSmooth		= 0;
-			std::string			colorAniList;
+			std::vector<zCOLOR>	colorAniList;
 			float				colorAniFPS			= 0;
 			zBOOL				colorAniSmooth		= 0;
 			zBOOL				canMove				= 0;						// Gothic 2
