@@ -472,10 +472,11 @@ bool zCBspTree::LoadBIN(FileStream* file)
 		return false;
 	}
 
-	file->Seek(file->Tell() + length); // temp
-	return true; // temp
+	//file->Seek(file->Tell() + length); // temp
+	//return true; // temp
 
 	// Mesh
+	mesh.game = game;
 	if (!mesh.LoadMSH(file))
 	{
 		return false;

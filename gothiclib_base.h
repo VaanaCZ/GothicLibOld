@@ -145,7 +145,6 @@ namespace GothicLib
 					// a factor of about 50%. (4s -> 6s)
 
 					//// Attempt expansion
-					//// todo: see if this slows things down
 					//const size_t oldSize = allocation.size;
 					//
 					//size_t newAllocSize = allocSize;

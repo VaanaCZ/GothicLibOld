@@ -7,6 +7,51 @@ using namespace GothicLib::ZenGin;
 */
 
 /*
+	zCMaterial
+*/
+
+bool zCMaterial::Archive(zCArchiver* archiver)
+{
+	if (!zCObject::Unarchive(archiver))
+		return false;
+
+	return true;
+}
+
+bool zCMaterial::Unarchive(zCArchiver* archiver)
+{
+	if (!zCObject::Unarchive(archiver))
+		return false;
+
+	archiver->ReadString(ARC_ARGS(name));
+	archiver->ReadEnum(ARC_ARGSE(matGroup));
+	archiver->ReadColor(ARC_ARGS(color));
+	archiver->ReadFloat(ARC_ARGS(smoothAngle));
+	archiver->ReadString(ARC_ARGS(texture));
+	archiver->ReadString(ARC_ARGS(texScale));
+	archiver->ReadFloat(ARC_ARGS(texAniFPS));
+	archiver->ReadEnum(ARC_ARGSE(texAniMapMode));
+	archiver->ReadString(ARC_ARGS(texAniMapDir));
+	archiver->ReadBool(ARC_ARGS(noCollDet));
+	archiver->ReadBool(ARC_ARGS(noLightmap));
+	archiver->ReadBool(ARC_ARGS(lodDontCollapse));
+	archiver->ReadString(ARC_ARGS(detailObject));
+	archiver->ReadFloat(ARC_ARGS(detailObjectScale));
+	archiver->ReadBool(ARC_ARGS(forceOccluder));
+	archiver->ReadBool(ARC_ARGS(environmentalMapping));
+	archiver->ReadFloat(ARC_ARGS(environmentalMappingStrength));
+	archiver->ReadEnum(ARC_ARGSE(waveMode));
+	archiver->ReadEnum(ARC_ARGSE(waveSpeed));
+	archiver->ReadFloat(ARC_ARGS(waveMaxAmplitude));
+	archiver->ReadFloat(ARC_ARGS(waveGridSize));
+	archiver->ReadBool(ARC_ARGS(ignoreSunLight));
+	archiver->ReadEnum(ARC_ARGSE(alphaFunc));
+	archiver->ReadRawFloat(ARC_ARGSF(defaultMapping));
+
+	return true;
+}
+
+/*
 	zCVisual
 		zCDecal
 		zCFlash
@@ -165,6 +210,33 @@ bool zCDecal::Load(FileStream* file)
 	return false;
 }
 
+bool zCOBBox3D::LoadBIN(FileStream* file)
+{
+	file->Read(&center, sizeof(center));
+	file->Read(&axis, sizeof(axis));
+	file->Read(&extent, sizeof(extent));
+
+	uint16_t childCount;
+	file->Read(&childCount, sizeof(childCount));
+
+	if (childCount > 0)
+	{
+		childs.resize(childCount);
+
+		for (size_t i = 0; i < childCount; i++)
+		{
+			childs[i].LoadBIN(file);
+		}
+	}
+
+	return true;
+}
+
+bool zCOBBox3D::SaveBIN(FileStream* file)
+{
+	return false;
+}
+
 bool zCMesh::SaveMSH(FileStream* file)
 {
 	return false;
@@ -197,6 +269,78 @@ bool zCMesh::LoadMSH(FileStream* file)
 			uint16_t	version;
 			zDATE		date;
 			std::string	name;
+
+			file->Read(&version, sizeof(version));
+			file->Read(&date, sizeof(date));
+			file->ReadLine(name);
+
+			break;
+		}
+
+		case CHUNK_BBOX3D:
+		{
+			zTBBox3D bbox;
+			zCOBBox3D obbox;
+
+			file->Read(&bbox, sizeof(bbox));
+			obbox.LoadBIN(file);
+
+			break;
+		}
+
+		case CHUNK_MATLIST:
+		{
+			zCArchiver archiver;
+			archiver.Read(file);
+			archiver.game = game;
+
+			int materialCount = 0;
+			archiver.ReadInt("", materialCount);
+
+			if (materialCount > 0)
+			{
+				materials.resize(materialCount);
+
+				for (size_t i = 0; i < materialCount; i++)
+				{
+					std::string materialName;
+					archiver.ReadString("", materialName);
+
+					archiver.ReadObjectAs<zCMaterial*>(&materials[i]);
+				}
+			}
+
+			zBOOL alphaTestingEnabled;
+			archiver.ReadBool("", alphaTestingEnabled);
+
+			//archiver.Close();
+
+			break;
+		}
+
+		case CHUNK_LIGHTMAPLIST:
+		{
+			break;
+		}
+
+		case CHUNK_LIGHTMAPLIST_SHARED:
+		{
+			break;
+		}
+
+		case CHUNK_VERTLIST:
+		{
+			break;
+		}
+
+		case CHUNK_FEATLIST:
+		{
+			break;
+		}
+
+		case CHUNK_POLYLIST:
+		{
+			break;
 		}
 
 		case CHUNK_END:

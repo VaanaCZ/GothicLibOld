@@ -281,6 +281,14 @@ bool zCArchiver::Read(FileStream* _file)
 				LOG_ERROR("Unexpected end of file while reading a BinSafe hash table!");
 				return false;
 			}
+			
+			
+			std::string t = std::string(text, textLength);
+
+			if (t.find("childs") != 0)
+			{
+				LOG_DEBUG(t);
+			}
 
 			// Todo: save values
 		}
@@ -429,7 +437,9 @@ bool zCArchiver::WriteBool(std::string name, zBOOL boolVal)
 	}
 	else if (mode == ARCHIVER_MODE_BINARY)
 	{
-		return file->Write(&boolVal, sizeof(boolVal));
+		char byteVal = boolVal;
+
+		return file->Write(&byteVal, sizeof(byteVal));
 	}
 	else if (mode == ARCHIVER_MODE_BIN_SAFE)
 	{
@@ -603,7 +613,9 @@ bool zCArchiver::WriteEnum(std::string name, std::string choices, int enumVal)
 	}
 	else if (mode == ARCHIVER_MODE_BINARY)
 	{
-		return file->Write(&enumVal, sizeof(enumVal));
+		char byteVal = enumVal;
+
+		return file->Write(&byteVal, sizeof(byteVal));
 	}
 	else if (mode == ARCHIVER_MODE_BIN_SAFE)
 	{
@@ -789,9 +801,6 @@ bool zCArchiver::ReadInt(std::string name, int& intVal)
 		return ReadBinSafeProperty(BINSAFE_TYPE_INTEGER, &intVal);
 	}
 
-	if (mode != ARCHIVER_MODE_ASCII)
-		error = true;
-
 	return false;
 }
 
@@ -817,9 +826,6 @@ bool zCArchiver::ReadByte(std::string name, unsigned char& byteVal)
 	{
 		return ReadBinSafeProperty(BINSAFE_TYPE_BYTE, &byteVal);
 	}
-
-	if (mode != ARCHIVER_MODE_ASCII)
-		error = true;
 
 	return false;
 }
@@ -847,9 +853,6 @@ bool zCArchiver::ReadWord(std::string name, unsigned short& wordVal)
 		return ReadBinSafeProperty(BINSAFE_TYPE_WORD, &wordVal);
 	}
 
-	if (mode != ARCHIVER_MODE_ASCII)
-		error = true;
-
 	return false;
 }
 
@@ -876,9 +879,6 @@ bool zCArchiver::ReadFloat(std::string name, float& floatVal)
 		return ReadBinSafeProperty(BINSAFE_TYPE_FLOAT, &floatVal);
 	}
 
-	if (mode != ARCHIVER_MODE_ASCII)
-		error = true;
-
 	return false;
 }
 
@@ -898,15 +898,19 @@ bool zCArchiver::ReadBool(std::string name, zBOOL& boolVal)
 	}
 	else if (mode == ARCHIVER_MODE_BINARY)
 	{
-		return file->Read(&boolVal, sizeof(boolVal));
+		char byteVal;
+		
+		if (!file->Read(&byteVal, sizeof(byteVal)))
+			return false;
+
+		boolVal = byteVal;
+
+		return true;
 	}
 	else if (mode == ARCHIVER_MODE_BIN_SAFE)
 	{
 		return ReadBinSafeProperty(BINSAFE_TYPE_BOOL, &boolVal);
 	}
-
-	if (mode != ARCHIVER_MODE_ASCII)
-		error = true;
 
 	return false;
 }
@@ -934,9 +938,6 @@ bool zCArchiver::ReadString(std::string name, std::string& strVal)
 		return ReadBinSafeProperty(BINSAFE_TYPE_STRING, &strVal);
 	}
 
-	if (mode != ARCHIVER_MODE_ASCII)
-		error = true;
-
 	return false;
 }
 
@@ -963,9 +964,6 @@ bool zCArchiver::ReadVec3(std::string name, zVEC3& vecVal)
 	{
 		return ReadBinSafeProperty(BINSAFE_TYPE_VEC3, &vecVal);
 	}
-
-	if (mode != ARCHIVER_MODE_ASCII)
-		error = true;
 
 	return false;
 }
@@ -999,9 +997,6 @@ bool zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
 	{
 		return ReadBinSafeProperty(BINSAFE_TYPE_COLOR, &colorVal);
 	}
-
-	if (mode != ARCHIVER_MODE_ASCII)
-		error = true;
 
 	return false;
 }
@@ -1042,9 +1037,6 @@ bool zCArchiver::ReadRaw(std::string name, char* buffer, size_t bufferSize)
 	{
 		return ReadBinSafeProperty(BINSAFE_TYPE_RAW, buffer, bufferSize);
 	}
-
-	if (mode != ARCHIVER_MODE_ASCII)
-		error = true;
 
 	return false;
 }
@@ -1096,9 +1088,6 @@ bool zCArchiver::ReadRawFloat(std::string name, float* floatVals, size_t floatCo
 		return ReadBinSafeProperty(BINSAFE_TYPE_RAWFLOAT, floatVals, floatCount * sizeof(float));
 	}
 
-	if (mode != ARCHIVER_MODE_ASCII)
-		error = true;
-
 	return false;
 }
 
@@ -1118,15 +1107,19 @@ bool zCArchiver::ReadEnum(std::string name, int& enumVal)
 	}
 	else if (mode == ARCHIVER_MODE_BINARY)
 	{
-		return file->Read(&enumVal, sizeof(enumVal));
+		char byteVal;
+		
+		if (!file->Read(&byteVal, sizeof(byteVal)))
+			return false;
+
+		enumVal = byteVal;
+
+		return true;
 	}
 	else if (mode == ARCHIVER_MODE_BIN_SAFE)
 	{
 		return ReadBinSafeProperty(BINSAFE_TYPE_ENUM, &enumVal);
 	}
-
-	if (mode != ARCHIVER_MODE_ASCII)
-		error = true;
 
 	return false;
 }
@@ -1250,6 +1243,12 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 			error = true;
 			return nullptr;
 		}
+
+		if (error)
+		{
+			LOG_ERROR("Error while reading class \"" + className +"\"");
+			return nullptr;
+		}
 	}
 
 	if (!ReadChunkEnd())
@@ -1272,6 +1271,8 @@ bool zCArchiver::ReadChunkStart(std::string* _objectName, std::string* _classNam
 	std::string className; 
 	uint16_t classVersion;
 	uint32_t objectIndex;
+
+	uint64_t startPos = 0;
 
 	if (mode == ARCHIVER_MODE_ASCII ||
 		mode == ARCHIVER_MODE_BIN_SAFE)
@@ -1392,9 +1393,13 @@ bool zCArchiver::ReadChunkStart(std::string* _objectName, std::string* _classNam
 		className		= line.substr(p2 + 1, p3 - p2 - 1);
 		classVersion	= atoi(&line[p3]);
 		objectIndex		= atoi(&line[p4]);
+
+		startPos = file->Tell();
 	}
 	else if (mode == ARCHIVER_MODE_BINARY)
 	{
+		startPos = file->Tell();
+
 		if (!file->Read(&binHeader, sizeof(binHeader)))
 			return false;
 
@@ -1422,7 +1427,7 @@ bool zCArchiver::ReadChunkStart(std::string* _objectName, std::string* _classNam
 	chunk.objectName	= objectName;
 	chunk.className		= className;
 	chunk.objectIndex	= objectIndex;
-	chunk.objectOffset	= file->Tell();
+	chunk.objectOffset	= startPos;
 	
 	if (mode == ARCHIVER_MODE_BINARY)
 	{
@@ -1512,6 +1517,19 @@ bool zCArchiver::ReadChunkEnd()
 				LOG_ERROR("End of the file reached, but the chunk remains open. This archive is invalid!");
 				return false;
 			}
+		}
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		CHUNK& chunk = chunkStack[chunkStack.size() - 1];
+
+		if ((chunk.objectOffset + chunk.binObjectSize) != file->Tell())
+		{
+			uint64_t wrongSize = file->Tell() - chunk.objectOffset;
+
+			LOG_ERROR("Incorrect chunk size! Expected " + std::to_string(chunk.binObjectSize) +
+				", got " + std::to_string(wrongSize) + " instead!");
+			return false;
 		}
 	}
 
@@ -1768,107 +1786,94 @@ bool zCArchiver::ReadASCIIProperty(std::string name, std::string type, std::stri
 
 bool zCArchiver::ReadBinSafeProperty(BINSAFE_TYPE type, void* data, size_t size)
 {
-	// First read the type
-	char readType;
-	if (!file->Read(&readType, sizeof(readType)))
-		return false;
-
-	if (readType != type)
-		return false;
-
-	// Proceed based on type
-	switch (readType)
+	while (true)
 	{
-	case BINSAFE_TYPE_STRING:
-	{
-		std::string* strVal = (std::string*)data;
-
-		if (!file->ReadString(*strVal))
+		// First read the type
+		char readType;
+		if (!file->Read(&readType, sizeof(readType)))
 			return false;
 
-		break;
-	}
+		if (readType != type)
+		{
+			if (readType == BINSAFE_TYPE_HASH)
+			{
+				uint32_t key;
+				file->Read(&key, sizeof(key));
+				continue;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		// Proceed based on type
+		switch (readType)
+		{
+		case BINSAFE_TYPE_STRING:
+		{
+			std::string* strVal = (std::string*)data;
+
+			return file->ReadString(*strVal);
+		}
 		
-	case BINSAFE_TYPE_INTEGER:
-	{
-		if (!file->Read(data, sizeof(int)))
-			return false;
+		case BINSAFE_TYPE_INTEGER:
+		{
+			return file->Read(data, sizeof(int));
+		}
 
-		break;
-	}
+		case BINSAFE_TYPE_FLOAT:
+		{
+			return file->Read(data, sizeof(float));
+		}
 
-	case BINSAFE_TYPE_FLOAT:
-	{
-		if (!file->Read(data, sizeof(float)))
-			return false;
+		case BINSAFE_TYPE_BOOL:
+		{
+			return file->Read(data, sizeof(bool));
+		}
 
-		break;
-	}
+		case BINSAFE_TYPE_VEC3:
+		{
+			return file->Read(data, sizeof(zVEC3));
+		}
 
-	case BINSAFE_TYPE_BOOL:
-	{
-		if (!file->Read(data, sizeof(bool)))
-			return false;
+		case BINSAFE_TYPE_COLOR:
+		{
+			return file->Read(data, sizeof(zCOLOR));
+		}
 
-		break;
-	}
+		case BINSAFE_TYPE_RAW:
+		{
+			uint16_t length;
+			if (!file->Read(&length, sizeof(length)))
+				return false;
 
-	case BINSAFE_TYPE_VEC3:
-	{
-		if (!file->Read(data, sizeof(zVEC3)))
-			return false;
+			if (length != size)
+				return false;
 
-		break;
-	}
+			return file->Read(data, length);
+		}
 
-	case BINSAFE_TYPE_COLOR:
-	{
-		if (!file->Read(data, sizeof(zCOLOR)))
-			return false;
+		case BINSAFE_TYPE_RAWFLOAT:
+		{
+			uint16_t length;
+			if (!file->Read(&length, sizeof(length)))
+				return false;
 
-		break;
-	}
+			if (length != size)
+				return false;
 
-	case BINSAFE_TYPE_RAW:
-	{
-		uint16_t length;
-		if (!file->Read(&length, sizeof(length)))
-			return false;
+			return file->Read(data, length);
+		}
 
-		if (length != size)
-			return false;
+		case BINSAFE_TYPE_ENUM:
+		{
+			return file->Read(data, sizeof(int));
+		}
 
-		if (!file->Read(data, length))
-			return false;
-
-		break;
-	}
-
-	case BINSAFE_TYPE_RAWFLOAT:
-	{
-		uint16_t length;
-		if (!file->Read(&length, sizeof(length)))
-			return false;
-
-		if (length != size)
-			return false;
-
-		if (!file->Read(data, length))
-			return false;
-
-		break;
-	}
-
-	case BINSAFE_TYPE_ENUM:
-	{
-		if (!file->Read(data, sizeof(int)))
-			return false;
-
-		break;
-	}
-
-	default:
-		break;
+		default:
+			break;
+		}
 	}
 
 	return true;

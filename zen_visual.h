@@ -11,6 +11,111 @@ namespace GothicLib
 		*/
 
 		/*
+			zCMaterial
+		*/
+
+		enum zTMat_Group
+		{
+			zMAT_GROUP_UNDEF,
+			zMAT_GROUP_METAL,
+			zMAT_GROUP_STONE,
+			zMAT_GROUP_WOOD,
+			zMAT_GROUP_EARTH,
+			zMAT_GROUP_WATER,
+			zMAT_GROUP_SNOW,
+			zMAT_NUM_MAT_GROUP
+		};
+
+		enum zTWaveAniMode
+		{
+			zWAVEANI_NONE,
+			zWAVEANI_GROUND_AMBIENT,
+			zWAVEANI_GROUND,
+			zWAVEANI_WALL_AMBIENT,
+			zWAVEANI_WALL,
+			zWAVEANI_ENV,
+			zWAVEANI_WIND_AMBIENT,
+			zWAVEANI_WIND
+		};
+
+		enum zTFFT
+		{
+			zTFFT_NONE,
+			zTFFT_SLOW,
+			zTFFT_NORMAL,
+			zTFFT_FAST
+		};
+
+		enum zTRnd_AlphaBlendFunc
+		{
+			zRND_ALPHA_FUNC_MAT_DEFAULT,
+			zRND_ALPHA_FUNC_NONE,
+			zRND_ALPHA_FUNC_BLEND,
+			zRND_ALPHA_FUNC_ADD,
+			zRND_ALPHA_FUNC_SUB,
+			zRND_ALPHA_FUNC_MUL,
+			zRND_ALPHA_FUNC_MUL2,
+			zRND_ALPHA_FUNC_TEST,
+			zRND_ALPHA_FUNC_BLEND_TEST
+		};
+
+		class zCMaterial : public zCObject
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_DEMO5,				0				},
+				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_CHRISTMASEDITION,	17408			},
+				{ GAME_GOTHIC1,				17408			},
+				{ GAME_GOTHICSEQUEL,		17408			},
+				{ GAME_GOTHIC2,				39939			},
+				{ GAME_GOTHIC2ADDON,		39939			},
+			};
+
+			ZEN_DECLARE_CLASS(zCMaterial, zCObject);
+		
+			zCMaterial()			{ }
+			virtual ~zCMaterial()	{ }
+
+			virtual bool Archive(zCArchiver*);
+			virtual bool Unarchive(zCArchiver*);
+
+			/*
+				Properties
+			*/
+
+			std::string				name;
+			zTMat_Group				matGroup						= zMAT_GROUP_UNDEF;
+			zCOLOR					color;
+			float					smoothAngle						= 60.0f;
+			std::string				texture;
+			std::string				texScale;
+			float					texAniFPS						= 0.0f;
+			zBOOL					texAniMapMode					= false;
+			std::string				texAniMapDir;
+			zBOOL					noCollDet						= false;
+			zBOOL					noLightmap						= false;
+			zBOOL					lodDontCollapse					= false;
+			std::string				detailObject;
+			float					detailObjectScale				= 1.0f;
+			zBOOL					forceOccluder					= false;
+			zBOOL					environmentalMapping			= false;
+			float					environmentalMappingStrength	= 1.0f;
+			zTWaveAniMode			waveMode						= zWAVEANI_NONE;
+			zTFFT					waveSpeed						= zTFFT_NORMAL;
+			float					waveMaxAmplitude				= 30.0f;
+			float					waveGridSize					= 100.0f;
+			zBOOL					ignoreSunLight					= false;
+			zTRnd_AlphaBlendFunc	alphaFunc						= zRND_ALPHA_FUNC_NONE;
+			zVEC2					defaultMapping					= {};
+
+		private:
+
+		};
+
+		/*
 			zCVisual
 				zCDecal
 				zCFlash
@@ -50,19 +155,6 @@ namespace GothicLib
 
 		private:
 
-		};
-
-		enum zTRnd_AlphaBlendFunc
-		{
-			zRND_ALPHA_FUNC_MAT_DEFAULT,
-			zRND_ALPHA_FUNC_NONE,
-			zRND_ALPHA_FUNC_BLEND,
-			zRND_ALPHA_FUNC_ADD,
-			zRND_ALPHA_FUNC_SUB,
-			zRND_ALPHA_FUNC_MUL,
-			zRND_ALPHA_FUNC_MUL2,
-			zRND_ALPHA_FUNC_TEST,
-			zRND_ALPHA_FUNC_BLEND_TEST
 		};
 		
 		class zCDecal : public zCVisual
@@ -119,7 +211,25 @@ namespace GothicLib
 			CHUNK_FEATLIST				= 0xB040,
 			CHUNK_POLYLIST				= 0xB050,
 			CHUNK_END					= 0xB060
-		};	
+		};
+
+		class zCOBBox3D
+		{
+		public:
+
+			zCOBBox3D()		{}
+			~zCOBBox3D()	{}
+
+			bool LoadBIN(FileStream*);
+			bool SaveBIN(FileStream*);
+
+			zVEC3 center;
+			zVEC3 axis[3];
+			zVEC3 extent;
+
+			std::vector<zCOBBox3D> childs;
+
+		};
 
 		class zCMesh : public zCVisual
 		{
@@ -143,6 +253,8 @@ namespace GothicLib
 
 			bool SaveMSH(FileStream*);
 			bool LoadMSH(FileStream*);
+
+			std::vector<zCMaterial> materials;
 
 		private:
 
