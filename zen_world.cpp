@@ -6,38 +6,6 @@ using namespace GothicLib::ZenGin;
 	World classes
 */
 
-bool zCWorld::LoadWorld(FileStream* file)
-{
-	if (game == GAME_DEMO3)
-	{
-		if (!LoadWorldFile(file))
-		{
-			return false;
-		}
-	}
-	else if (game >= GAME_DEMO5)
-	{
-		zCArchiver archiver;
-		archiver.game = game;
-		if (!archiver.Read(file))
-		{
-			return false;
-		}
-
-		if (!archiver.ReadObject(this))
-		{
-			return false;
-		}
-
-		archiver.Close();
-	}
-	else
-	{
-		LOG_ERROR("Game not specified. Please specify a game to use before loading a world!");
-		return false;
-	}
-}
-
 bool zCWorld::SaveWorld(FileStream* file)
 {
 	if (game == GAME_DEMO3)
@@ -59,6 +27,38 @@ bool zCWorld::SaveWorld(FileStream* file)
 		}
 
 		if (!archiver.WriteObject(this))
+		{
+			return false;
+		}
+
+		archiver.Close();
+	}
+	else
+	{
+		LOG_ERROR("Game not specified. Please specify a game to use before loading a world!");
+		return false;
+	}
+}
+
+bool zCWorld::LoadWorld(FileStream* file)
+{
+	if (game == GAME_DEMO3)
+	{
+		if (!LoadWorldFile(file))
+		{
+			return false;
+		}
+	}
+	else if (game >= GAME_DEMO5)
+	{
+		zCArchiver archiver;
+		archiver.game = game;
+		if (!archiver.Read(file))
+		{
+			return false;
+		}
+
+		if (!archiver.ReadObject(this))
 		{
 			return false;
 		}
@@ -148,8 +148,11 @@ bool zCWorld::Unarchive(zCArchiver* archiver)
 		}
 		else if (objectName == "WayNet")
 		{
-			wayNet = archiver->ReadObjectAs<zCWayNet*>();
-			wayNet->game = game;
+			wayNet = new zCWayNet();
+			wayNet->game	= game;
+			wayNet->world	= this;
+
+			wayNet = archiver->ReadObjectAs<zCWayNet*>(wayNet);
 
 			if (!wayNet)
 			{
@@ -171,8 +174,11 @@ bool zCWorld::Unarchive(zCArchiver* archiver)
 
 	if (!wayNet && game <= GAME_DEMO5)
 	{
-		wayNet = archiver->ReadObjectAs<zCWayNet*>();
-		wayNet->game = game;
+		wayNet = new zCWayNet();
+		wayNet->game	= game;
+		wayNet->world	= this;
+
+		wayNet = archiver->ReadObjectAs<zCWayNet*>(wayNet);
 
 		if (!wayNet)
 		{
@@ -219,6 +225,9 @@ bool zCWorld::UnarcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vobCount)
 		if (!nextVob)
 			return false;
 
+		if (!nextVob->vobName.empty())
+			vobTable[nextVob->vobName] = nextVob;
+
 		vob->children.push_back(nextVob);
 	}
 	else
@@ -237,38 +246,6 @@ bool zCWorld::UnarcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vobCount)
 	{
 		if (!UnarcVobTree(archiver, nextVob, vobCount))
 			return false;
-	}
-
-	return true;
-}
-
-bool zCWorld::LoadWorldFile(FileStream* file)
-{
-	std::string line;
-
-	while (file->ReadLine(line))
-	{
-		// Check if we entered the right chunk
-		if (line.find("VobHierarchy") == 0)
-		{
-			vobTree = new zCVob();
-			vobTree->game = game;
-
-			if (!LoadVobTree(file, vobTree))
-			{
-				return false;
-			}
-		}
-		else if (line.find("Waynet") == 0)
-		{
-			wayNet = new zCWayNet();
-			wayNet->game = game;
-
-			if (!wayNet->LoadWaynet(file))
-			{
-				return false;
-			}
-		}
 	}
 
 	return true;
@@ -303,6 +280,61 @@ bool zCWorld::SaveWorldFile(FileStream* file)
 	if (wayNet)
 	{
 		if (!wayNet->SaveWaynet(file))
+			return false;
+	}
+
+	return true;
+}
+
+bool zCWorld::LoadWorldFile(FileStream* file)
+{
+	std::string line;
+
+	while (file->ReadLine(line))
+	{
+		// Check if we entered the right chunk
+		if (line.find("VobHierarchy") == 0)
+		{
+			vobTree = new zCVob();
+			vobTree->game = game;
+
+			if (!LoadVobTree(file, vobTree))
+			{
+				return false;
+			}
+		}
+		else if (line.find("Waynet") == 0)
+		{
+			wayNet = new zCWayNet();
+			wayNet->game	= game;
+			wayNet->world	= this;
+
+			if (!wayNet->LoadWaynet(file))
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+bool zCWorld::SaveVobTree(FileStream* file, zCVob* parentVob, size_t& vobCount)
+{
+	if (vobCount != 0)
+	{
+		if (!parentVob->SaveVob(file))
+			return false;
+	}
+
+	vobCount++;
+
+	file->WriteLine("childs (" + std::to_string(parentVob->children.size()) + ")", "\n");
+	file->WriteLine("", "\n");
+
+	for (size_t i = 0; i < parentVob->children.size(); i++)
+	{
+		if (!SaveVobTree(file, parentVob->children[i], vobCount))
 			return false;
 	}
 
@@ -360,6 +392,9 @@ bool zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 				{
 					return false;
 				}
+
+				if (!vob->vobName.empty())
+					vobTable[vob->vobName] = vob;
 			}
 			else if (line == "}")
 			{
@@ -394,28 +429,6 @@ bool zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 			return true;
 		}
 	}
-}
-
-bool zCWorld::SaveVobTree(FileStream* file, zCVob* parentVob, size_t& vobCount)
-{
-	if (vobCount != 0)
-	{
-		if (!parentVob->SaveVob(file))
-			return false;
-	}
-
-	vobCount++;
-
-	file->WriteLine("childs (" + std::to_string(parentVob->children.size()) + ")", "\n");
-	file->WriteLine("", "\n");
-
-	for (size_t i = 0; i < parentVob->children.size(); i++)
-	{
-		if (!SaveVobTree(file, parentVob->children[i], vobCount))
-			return false;
-	}
-
-	return true;
 }
 
 bool oCWorld::Archive(zCArchiver* archiver)
@@ -3321,8 +3334,38 @@ bool zCWayNet::Archive(zCArchiver* archiver)
 		{
 			for (size_t i = 0; i < numWaypoints; i++)
 			{
+				zCVob* waypoint = oldWaypointList[i];
+
 				std::string waypointKey = "waypoint" + std::to_string(i);
-				archiver->WriteString(waypointKey, oldWaypointList[i]);
+
+				std::string waypointLine = waypoint->vobName;
+
+				if (dynamic_cast<zCVobWaypoint*>(waypoint) &&
+					((zCVobWaypoint*)waypoint)->wayProp != 0)
+				{
+					waypointLine += " [";
+
+					int wayProp = ((zCVobWaypoint*)waypoint)->wayProp;
+
+					if (wayProp & WAYPROP_JUMP)
+						waypointLine += "J";
+
+					if (wayProp & WAYPROP_CLIMB)
+						waypointLine += "C";
+
+					if (wayProp & WAYPROP_SWIM)
+						waypointLine += "S";
+
+					if (wayProp & WAYPROP_DIVE)
+						waypointLine += "D";
+
+					if (wayProp & WAYPROP_FREE)
+						waypointLine += "F";
+
+					waypointLine += "]";
+				}
+
+				archiver->WriteString(waypointKey, waypointLine);
 			}
 		}
 	}
@@ -3346,8 +3389,14 @@ bool zCWayNet::Archive(zCArchiver* archiver)
 
 		for (size_t i = 0; i < numWays; i++)
 		{
+			zCOldWay way = oldWayList[i];
+
 			std::string wayKey = "way" + std::to_string(i);
-			archiver->WriteString(wayKey, oldWayList[i]);
+
+			if (way.left != nullptr && way.right != nullptr)
+			{
+				archiver->WriteString(wayKey, way.left->vobName + "/" + way.right->vobName);
+			}
 		}
 	}
 	else if (waynetVersion == 1)
@@ -3393,12 +3442,52 @@ bool zCWayNet::Unarchive(zCArchiver* archiver)
 			for (size_t i = 0; i < numWaypoints; i++)
 			{
 				std::string waypointKey = "waypoint" + std::to_string(i);
-				std::string waypoint;
-				archiver->ReadString(waypointKey, waypoint);
+
+				std::string waypointLine;
+				archiver->ReadString(waypointKey, waypointLine);
+
+				std::string waypointName = waypointLine;
+				if (waypointName.find(" ") != std::string::npos)
+					waypointName = waypointName.substr(0, waypointName.find(" "));
+
+				if (world->vobTable.find(waypointName) == world->vobTable.end())
+				{
+					LOG_WARN("Waypoint \"" + waypointName + "\" not found, skipping...");
+					continue;
+				}
+
+				zCVob* waypoint = world->vobTable[waypointName]; // Sometimes it is a zCVob
+
+				// Wayprop
+				size_t sPos = waypointLine.find(" [");
+				if (dynamic_cast<zCVobWaypoint*>(waypoint) &&
+					sPos != std::string::npos)
+				{
+					std::string wayPropStr = waypointLine.substr(sPos + 2, waypointLine.find("]") - sPos - 2);
+
+					int wayProp = 0;
+
+					for (size_t i = 0; i < wayPropStr.size(); i++)
+					{
+						char wayPropC = wayPropStr[i];
+
+						if (wayPropC == 'J')
+							wayProp |= WAYPROP_JUMP;
+						else if (wayPropC == 'C')
+							wayProp |= WAYPROP_CLIMB;
+						else if (wayPropC == 'S')
+							wayProp |= WAYPROP_SWIM;
+						else if (wayPropC == 'D')
+							wayProp |= WAYPROP_DIVE;
+						else if (wayPropC == 'F')
+							wayProp |= WAYPROP_FREE;
+					}
+
+					((zCVobWaypoint*)waypoint)->wayProp = (WAYPROP)wayProp;
+				}
 
 				oldWaypointList[i] = waypoint;
 			}
-
 		}
 		else if (waynetVersion == 1)
 		{
@@ -3427,9 +3516,39 @@ bool zCWayNet::Unarchive(zCArchiver* archiver)
 			for (size_t i = 0; i < numWays; i++)
 			{
 				std::string wayKey = "way" + std::to_string(i);
-				std::string way;
-				archiver->ReadString(wayKey, way);
+				std::string wayLine;
+				archiver->ReadString(wayKey, wayLine);
 
+				size_t sPos = wayLine.find("/");
+
+				if (sPos == std::string::npos)
+				{
+					LOG_WARN("Invalid way format \"" + wayLine + "\"");
+					continue;
+				}
+
+				std::string waylName = wayLine.substr(0, sPos);
+				std::string wayrName = wayLine.substr(sPos + 1);
+
+				// Find the waypoints
+				if (world->vobTable.find(waylName) == world->vobTable.end())
+				{
+					LOG_WARN("Waypoint \"" + waylName + "\" not found, skipping...");
+					continue;
+				}
+
+				if (world->vobTable.find(wayrName) == world->vobTable.end())
+				{
+					LOG_WARN("Waypoint \"" + wayrName + "\" not found, skipping...");
+					continue;
+				}
+
+				zCVob* wayl = world->vobTable[waylName];
+				zCVob* wayr = world->vobTable[wayrName];
+
+				zCOldWay way;
+				way.left	= wayl;
+				way.right	= wayr;
 				oldWayList[i] = way;
 			}
 		}
@@ -3446,8 +3565,8 @@ bool zCWayNet::Unarchive(zCArchiver* archiver)
 				zCWaypoint* wayr = archiver->ReadObjectAs<zCWaypoint*>(wayrKey);
 
 				zCWay way;
-				way.left = wayl;
-				way.right = wayr;
+				way.left	= wayl;
+				way.right	= wayr;
 				wayList[i] = way;
 			}
 		}
@@ -3462,12 +3581,46 @@ bool zCWayNet::SaveWaynet(FileStream* file)
 
 	for (size_t i = 0; i < oldWaypointList.size(); i++)
 	{
-		file->WriteLine("Waypoint (" + oldWaypointList[i] + ") ");
+		zCVob* waypoint = oldWaypointList[i];
+
+		std::string line = "Waypoint (" + waypoint->vobName + ") ";
+
+		if (dynamic_cast<zCVobWaypoint*>(waypoint) && 
+			((zCVobWaypoint*)waypoint)->wayProp != 0)
+		{
+			line += " [";
+
+			int wayProp = ((zCVobWaypoint*)waypoint)->wayProp;
+
+			if (wayProp & WAYPROP_JUMP)
+				line += "J";
+
+			if (wayProp & WAYPROP_CLIMB)
+				line += "C";
+
+			if (wayProp & WAYPROP_SWIM)
+				line += "S";
+
+			if (wayProp & WAYPROP_DIVE)
+				line += "D";
+
+			if (wayProp & WAYPROP_FREE)
+				line += "F";
+
+			line += "]";
+		}
+
+		file->WriteLine(line, "\n");
 	}
 
 	for (size_t i = 0; i < oldWayList.size(); i++)
 	{
-		file->WriteLine("Way (" + oldWayList[i] + ")");
+		zCOldWay way = oldWayList[i];
+
+		if (way.left != nullptr && way.right != nullptr)
+		{
+			file->WriteLine("Way (" + way.left->vobName + ") (" + way.right->vobName + ")", "\n");
+		}
 	}
 
 	file->WriteLine("}", "\n");
@@ -3480,24 +3633,77 @@ bool zCWayNet::LoadWaynet(FileStream* file)
 	std::string line;
 
 	while (file->ReadLine(line))
-	{
-		std::string key;
-		std::string value;
-	
-		bool chunkStart = ParseFileLine(line, key, value);
-	
-		if (chunkStart)
+	{	
+		if (line.find("Waypoint (") == 0)
 		{
-			// todo: ways
-			// todo: wayProps
-			if (key == "Waypoint")
+			std::string waypointName = line.substr(10, line.find(")", 10) - 10);
+
+			if (world->vobTable.find(waypointName) == world->vobTable.end())
 			{
-				oldWaypointList.push_back(value);
+				LOG_WARN("Waypoint \"" + waypointName + "\" not found, skipping...");
+				continue;
 			}
-			else if (key == "Way")
+
+			zCVob* waypoint = world->vobTable[waypointName]; // Sometimes it is a zCVob
+
+			// Wayprop
+			size_t sPos = line.find(" [");
+			if (dynamic_cast<zCVobWaypoint*>(waypoint) && 
+				sPos != std::string::npos)
 			{
-				oldWayList.push_back(value);
+				std::string wayPropStr = line.substr(sPos + 2, line.find("]") - sPos - 2);
+
+				int wayProp = 0;
+
+				for (size_t i = 0; i < wayPropStr.size(); i++)
+				{
+					char wayPropC = wayPropStr[i];
+
+					if (wayPropC == 'J')
+						wayProp |= WAYPROP_JUMP;
+					else if (wayPropC == 'C')
+						wayProp |= WAYPROP_CLIMB;
+					else if (wayPropC == 'S')
+						wayProp |= WAYPROP_SWIM;
+					else if (wayPropC == 'D')
+						wayProp |= WAYPROP_DIVE;
+					else if (wayPropC == 'F')
+						wayProp |= WAYPROP_FREE;
+				}
+
+				((zCVobWaypoint*)waypoint)->wayProp = (WAYPROP)wayProp;
 			}
+
+			oldWaypointList.push_back(waypoint);
+		}
+		else if (line.find("Way (") == 0)
+		{
+			size_t mPos = line.find(") (", 5);
+			std::string waylName = line.substr(5, mPos - 5);
+
+			mPos += 3;
+			std::string wayrName = line.substr(mPos, line.find(")", mPos) - mPos);
+
+			// Find the waypoints
+			if (world->vobTable.find(waylName) == world->vobTable.end())
+			{
+				LOG_WARN("Waypoint \"" + waylName + "\" not found, skipping...");
+				continue;
+			}
+
+			if (world->vobTable.find(wayrName) == world->vobTable.end())
+			{
+				LOG_WARN("Waypoint \"" + wayrName + "\" not found, skipping...");
+				continue;
+			}
+
+			zCVob* wayl = world->vobTable[waylName];
+			zCVob* wayr = world->vobTable[wayrName];
+
+			zCOldWay way;
+			way.left	= wayl;
+			way.right	= wayr;
+			oldWayList.push_back(way);
 		}
 		else
 		{

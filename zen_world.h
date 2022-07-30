@@ -39,9 +39,9 @@ namespace GothicLib
 
 			zCWorld()			{ }
 			virtual ~zCWorld()	{ }
-			
-			bool LoadWorld(FileStream*);
+
 			bool SaveWorld(FileStream*);
+			bool LoadWorld(FileStream*);
 
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
@@ -50,6 +50,8 @@ namespace GothicLib
 			zCVob*		vobTree;
 			zCWayNet*	wayNet;
 
+			std::unordered_map<std::string, zCVob*> vobTable;
+
 		private:
 
 			// .ZEN
@@ -57,11 +59,11 @@ namespace GothicLib
 			bool UnarcVobTree(zCArchiver*, zCVob*, size_t&);
 
 			// .PWF
-			bool LoadWorldFile(FileStream*);
 			bool SaveWorldFile(FileStream*);
+			bool LoadWorldFile(FileStream*);
 
-			bool LoadVobTree(FileStream*, zCVob*);
 			bool SaveVobTree(FileStream*, zCVob*, size_t&);
+			bool LoadVobTree(FileStream*, zCVob*);
 
 		};
 
@@ -2105,6 +2107,15 @@ namespace GothicLib
 			zCVobWaypoint
 		*/
 
+		enum WAYPROP
+		{
+			WAYPROP_JUMP	= 1,
+			WAYPROP_CLIMB	= 2,
+			WAYPROP_SWIM	= 4,
+			WAYPROP_DIVE	= 8,
+			WAYPROP_FREE	= 16
+		};
+
 		class zCVobWaypoint : public zCVob
 		{
 		public:
@@ -2125,6 +2136,8 @@ namespace GothicLib
 
 			zCVobWaypoint()				{ vobType = zVOB_TYPE_WAYPOINT; }
 			virtual ~zCVobWaypoint()	{ }
+
+			WAYPROP wayProp = (WAYPROP)0;
 
 		private:
 
@@ -2741,6 +2754,24 @@ namespace GothicLib
 
 		};
 
+		class zCOldWay
+		{
+		public:
+
+			zCOldWay()			{ }
+			virtual ~zCOldWay()	{ }
+
+			/*
+				Properties
+			*/
+
+			zCVob* left;
+			zCVob* right;
+
+		private:
+
+		};
+
 		class zCWayNet : public zCObject
 		{
 		public:
@@ -2768,6 +2799,8 @@ namespace GothicLib
 			bool SaveWaynet(FileStream*);
 			bool LoadWaynet(FileStream*);
 
+			zCWorld* world;
+
 			/*
 				Properties
 			*/
@@ -2775,8 +2808,8 @@ namespace GothicLib
 			int waynetVersion			= 1;
 			std::vector<zCWaypoint*>	waypointList;
 			std::vector<zCWay>			wayList;
-			std::vector<std::string>	oldWaypointList;	// Legacy
-			std::vector<std::string>	oldWayList;			// Legacy
+			std::vector<zCVob*>			oldWaypointList;	// Legacy
+			std::vector<zCOldWay>		oldWayList;			// Legacy
 
 		private:
 
