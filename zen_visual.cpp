@@ -28,27 +28,176 @@ bool zCMaterial::Unarchive(zCArchiver* archiver)
 	archiver->ReadColor(ARC_ARGS(color));
 	archiver->ReadFloat(ARC_ARGS(smoothAngle));
 	archiver->ReadString(ARC_ARGS(texture));
-	archiver->ReadString(ARC_ARGS(texScale));
+
+	std::string texScaleStr;
+	archiver->ReadString("texScale", texScaleStr);
+	if (texScaleStr.find(" ") != std::string::npos)
+	{
+		texScale.x = atof(&texScaleStr[0]);
+		texScale.y = atof(&texScaleStr[texScaleStr.find(" ") + 1]);
+	}
+	
 	archiver->ReadFloat(ARC_ARGS(texAniFPS));
 	archiver->ReadEnum(ARC_ARGSE(texAniMapMode));
-	archiver->ReadString(ARC_ARGS(texAniMapDir));
-	archiver->ReadBool(ARC_ARGS(noCollDet));
-	archiver->ReadBool(ARC_ARGS(noLightmap));
-	archiver->ReadBool(ARC_ARGS(lodDontCollapse));
-	archiver->ReadString(ARC_ARGS(detailObject));
-	archiver->ReadFloat(ARC_ARGS(detailObjectScale));
-	archiver->ReadBool(ARC_ARGS(forceOccluder));
-	archiver->ReadBool(ARC_ARGS(environmentalMapping));
-	archiver->ReadFloat(ARC_ARGS(environmentalMappingStrength));
-	archiver->ReadEnum(ARC_ARGSE(waveMode));
-	archiver->ReadEnum(ARC_ARGSE(waveSpeed));
-	archiver->ReadFloat(ARC_ARGS(waveMaxAmplitude));
-	archiver->ReadFloat(ARC_ARGS(waveGridSize));
-	archiver->ReadBool(ARC_ARGS(ignoreSunLight));
-	archiver->ReadEnum(ARC_ARGSE(alphaFunc));
+
+	std::string texAniMapDirStr;
+	archiver->ReadString("texAniMapDir", texAniMapDirStr);
+	if (texAniMapDirStr.find(" ") != std::string::npos)
+	{
+		texAniMapDir.x = atof(&texAniMapDirStr[0]);
+		texAniMapDir.y = atof(&texAniMapDirStr[texAniMapDirStr.find(" ") + 1]);
+	}
+
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->ReadBool(ARC_ARGS(noCollDet));
+		archiver->ReadBool(ARC_ARGS(noLightmap));
+		archiver->ReadBool(ARC_ARGS(lodDontCollapse));
+		archiver->ReadString(ARC_ARGS(detailObject));
+	}
+
+	if (game >= GAME_GOTHIC2)
+	{
+		archiver->ReadFloat(ARC_ARGS(detailObjectScale));
+		archiver->ReadBool(ARC_ARGS(forceOccluder));
+		archiver->ReadBool(ARC_ARGS(environmentalMapping));
+		archiver->ReadFloat(ARC_ARGS(environmentalMappingStrength));
+		archiver->ReadEnum(ARC_ARGSE(waveMode));
+		archiver->ReadEnum(ARC_ARGSE(waveSpeed));
+		archiver->ReadFloat(ARC_ARGS(waveMaxAmplitude));
+		archiver->ReadFloat(ARC_ARGS(waveGridSize));
+		archiver->ReadBool(ARC_ARGS(ignoreSunLight));
+		archiver->ReadEnum(ARC_ARGSE(alphaFunc));
+	}
+
+	if (game <= GAME_DEMO5)
+	{
+		archiver->ReadByte(ARC_ARGS(libFlag));
+	}
+
 	archiver->ReadRawFloat(ARC_ARGSF(defaultMapping));
 
 	return true;
+}
+
+bool zCMaterial::Save(FileStream* file)
+{
+	return false;
+}
+
+bool zCMaterial::Load(FileStream* file)
+{
+	std::string line, key, value;
+
+	file->ReadLine(line);
+	ParseFileLine(line, key, value);
+
+	if (key != "zCMaterial")
+	{
+		LOG_ERROR("Specified stream does not include a valid zCMaterial instance!");
+		return false;
+	}
+
+	name = value;
+
+	bool inMat = false;
+
+	while (file->ReadLine(line))
+	{
+		if (line == "{")
+		{
+			inMat = true;
+		}
+		else if (inMat)
+		{
+			std::string key;
+			std::string value;
+
+			if (line == "}")
+			{
+				inMat = false;
+				return true;
+			}
+			else if (ParseFileLine(line, key, value))
+			{
+				if (key == "matGroup")
+				{
+					if (value == "UNDEF")		matGroup = zMAT_GROUP_UNDEF;
+					else if (value == "METAL")	matGroup = zMAT_GROUP_METAL;
+					else if (value == "STONE")	matGroup = zMAT_GROUP_STONE;
+					else if (value == "WOOD")	matGroup = zMAT_GROUP_WOOD;
+					else if (value == "EARTH")	matGroup = zMAT_GROUP_EARTH;
+					else if (value == "WATER")	matGroup = zMAT_GROUP_WATER;
+				}
+				else if (key == "matLibFlag")
+				{
+					libFlag = std::stoi(value);
+				}
+				else if (key == "matDefaultMapping")
+				{
+					if (value.find(" ") != std::string::npos)
+					{
+						defaultMapping.x = atof(&value[0]);
+						defaultMapping.y = atof(&value[value.find(" ") + 1]);
+					}
+				}
+				else if (key == "texture")
+				{
+					texture = value;
+				}
+				else if (key == "texScale")
+				{
+					if (value.find(" ") != std::string::npos)
+					{
+						texScale.x = atof(&value[0]);
+						texScale.y = atof(&value[value.find(" ") + 1]);
+					}
+				}
+				else if (key == "texAniFPS")
+				{
+					texAniFPS = std::stof(value);
+				}
+				else if (key == "texAniMapMode")
+				{
+					texAniMapMode = std::stoi(value);
+				}
+				else if (key == "texAniMapDir")
+				{
+					if (value.find(" ") != std::string::npos)
+					{
+						texAniMapDir.x = atof(&value[0]);
+						texAniMapDir.y = atof(&value[value.find(" ") + 1]);
+					}
+				}
+				else if (key == "colorRGBA")
+				{
+					float r, g, b, a;
+
+					if (sscanf_s(value.c_str(), "%f %f %f %f", &r, &g, &b, &a) != 4)
+					{
+						return false;
+					}
+
+					color.r = r;
+					color.g = g;
+					color.b = b;
+					color.a = a;
+				}
+				else if (key == "smooth")
+				{
+					// ignore
+					// this will be calculated automatically
+					// if smoothAngle is larger that 0
+				}
+				else if (key == "smoothAngle")
+				{
+					smoothAngle = std::stof(value);
+				}
+			}
+		}
+	}
+
+	return false;
 }
 
 /*
@@ -216,16 +365,19 @@ bool zCOBBox3D::LoadBIN(FileStream* file)
 	file->Read(&axis, sizeof(axis));
 	file->Read(&extent, sizeof(extent));
 
-	uint16_t childCount;
-	file->Read(&childCount, sizeof(childCount));
-
-	if (childCount > 0)
+	if (readChilds)
 	{
-		childs.resize(childCount);
+		uint16_t childCount = 0;
+		file->Read(&childCount, sizeof(childCount));
 
-		for (size_t i = 0; i < childCount; i++)
+		if (childCount > 0)
 		{
-			childs[i].LoadBIN(file);
+			childs.resize(childCount);
+
+			for (size_t i = 0; i < childCount; i++)
+			{
+				childs[i].LoadBIN(file);
+			}
 		}
 	}
 
@@ -258,13 +410,15 @@ bool zCMesh::LoadMSH(FileStream* file)
 			return false;
 		}
 
+		LOG_DEBUG("Reading zCMesh chunk of id " + std::to_string(chunkId));
+
 		uint64_t skipPos = file->Tell() + chunkSize;
 
 		// Read chunk
 		switch (chunkId)
 		{
 
-		case CHUNK_MESH:
+		case CHUNK_MESHSTART:
 		{
 			uint16_t	version;
 			zDATE		date;
@@ -277,10 +431,15 @@ bool zCMesh::LoadMSH(FileStream* file)
 			break;
 		}
 
-		case CHUNK_BBOX3D:
+		case CHUNK_BBOX:
 		{
 			zTBBox3D bbox;
 			zCOBBox3D obbox;
+
+			if (game <= GAME_DEMO5)
+			{
+				obbox.readChilds = false;
+			}
 
 			file->Read(&bbox, sizeof(bbox));
 			obbox.LoadBIN(file);
@@ -288,14 +447,22 @@ bool zCMesh::LoadMSH(FileStream* file)
 			break;
 		}
 
-		case CHUNK_MATLIST:
+		case CHUNK_MATERIALS:
 		{
 			zCArchiver archiver;
-			archiver.Read(file);
-			archiver.game = game;
-
 			int materialCount = 0;
-			archiver.ReadInt("", materialCount);
+
+			if (game >= GAME_DEMO5)
+			{
+				archiver.Read(file);
+				archiver.game = game;
+
+				archiver.ReadInt("", materialCount);
+			}
+			else
+			{
+				file->Read(&materialCount, sizeof(materialCount));
+			}
 
 			if (materialCount > 0)
 			{
@@ -304,46 +471,59 @@ bool zCMesh::LoadMSH(FileStream* file)
 				for (size_t i = 0; i < materialCount; i++)
 				{
 					std::string materialName;
-					archiver.ReadString("", materialName);
+					materials[i].game = game;
 
-					archiver.ReadObjectAs<zCMaterial*>(&materials[i]);
+					if (game >= GAME_DEMO5)
+					{
+						archiver.ReadString("", materialName);
+						archiver.ReadObjectAs<zCMaterial*>(&materials[i]);
+					}
+					else
+					{
+						file->ReadLine(materialName);
+						materials[i].Load(file);
+					}
 				}
 			}
 
 			zBOOL alphaTestingEnabled;
-			archiver.ReadBool("", alphaTestingEnabled);
+			
+			if (game >= GAME_GOTHIC2)
+			{
+				archiver.ReadBool("", alphaTestingEnabled);
+			}
 
 			//archiver.Close();
 
 			break;
 		}
 
-		case CHUNK_LIGHTMAPLIST:
+		case CHUNK_LIGHTMAPS_OLD:
 		{
 			break;
 		}
 
-		case CHUNK_LIGHTMAPLIST_SHARED:
+		case CHUNK_LIGHTMAPS_NEW:
 		{
 			break;
 		}
 
-		case CHUNK_VERTLIST:
+		case CHUNK_VERTS:
 		{
 			break;
 		}
 
-		case CHUNK_FEATLIST:
+		case CHUNK_FEATS:
 		{
 			break;
 		}
 
-		case CHUNK_POLYLIST:
+		case CHUNK_POLYS:
 		{
 			break;
 		}
 
-		case CHUNK_END:
+		case CHUNK_MESHEND:
 		{
 			end = true;
 			break;

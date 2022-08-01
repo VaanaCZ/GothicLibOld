@@ -293,7 +293,19 @@ bool zCWorld::LoadWorldFile(FileStream* file)
 	while (file->ReadLine(line))
 	{
 		// Check if we entered the right chunk
-		if (line.find("VobHierarchy") == 0)
+		if (line.find("MeshAndBsp") == 0)
+		{
+			file->ReadLine(line); // {
+
+			bsp = new zCBspTree();
+			bsp->game = game;
+
+			if (!bsp->LoadBIN(file))
+			{
+				//return false;
+			}
+		}
+		else if (line.find("VobHierarchy") == 0)
 		{
 			vobTree = new zCVob();
 			vobTree->game = game;

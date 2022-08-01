@@ -66,7 +66,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				0				},
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		17408			},
 				{ GAME_CHRISTMASEDITION,	17408			},
 				{ GAME_GOTHIC1,				17408			},
 				{ GAME_GOTHICSEQUEL,		17408			},
@@ -82,6 +82,9 @@ namespace GothicLib
 			virtual bool Archive(zCArchiver*);
 			virtual bool Unarchive(zCArchiver*);
 
+			virtual bool Save(FileStream*);
+			virtual bool Load(FileStream*);
+
 			/*
 				Properties
 			*/
@@ -91,10 +94,10 @@ namespace GothicLib
 			zCOLOR					color;
 			float					smoothAngle						= 60.0f;
 			std::string				texture;
-			std::string				texScale;
+			zVEC2					texScale						= {};
 			float					texAniFPS						= 0.0f;
 			zBOOL					texAniMapMode					= false;
-			std::string				texAniMapDir;
+			zVEC2					texAniMapDir					= {};
 			zBOOL					noCollDet						= false;
 			zBOOL					noLightmap						= false;
 			zBOOL					lodDontCollapse					= false;
@@ -109,6 +112,7 @@ namespace GothicLib
 			float					waveGridSize					= 100.0f;
 			zBOOL					ignoreSunLight					= false;
 			zTRnd_AlphaBlendFunc	alphaFunc						= zRND_ALPHA_FUNC_NONE;
+			unsigned char			libFlag							= 0;					// Legacy
 			zVEC2					defaultMapping					= {};
 
 		private:
@@ -202,15 +206,15 @@ namespace GothicLib
 
 		enum CHUNK_TYPE
 		{
-			CHUNK_MESH					= 0xB000,
-			CHUNK_BBOX3D				= 0xB010,
-			CHUNK_MATLIST				= 0xB020,
-			CHUNK_LIGHTMAPLIST			= 0xB025,
-			CHUNK_LIGHTMAPLIST_SHARED	= 0xB026,
-			CHUNK_VERTLIST				= 0xB030,
-			CHUNK_FEATLIST				= 0xB040,
-			CHUNK_POLYLIST				= 0xB050,
-			CHUNK_END					= 0xB060
+			CHUNK_MESHSTART			= 0xB000,
+			CHUNK_BBOX				= 0xB010,
+			CHUNK_MATERIALS			= 0xB020,
+			CHUNK_LIGHTMAPS_OLD		= 0xB025,
+			CHUNK_LIGHTMAPS_NEW		= 0xB026,
+			CHUNK_VERTS				= 0xB030,
+			CHUNK_FEATS				= 0xB040,
+			CHUNK_POLYS				= 0xB050,
+			CHUNK_MESHEND			= 0xB060
 		};
 
 		class zCOBBox3D
@@ -228,6 +232,8 @@ namespace GothicLib
 			zVEC3 extent;
 
 			std::vector<zCOBBox3D> childs;
+
+			bool readChilds = true;
 
 		};
 
