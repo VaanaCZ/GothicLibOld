@@ -15,6 +15,7 @@ namespace GothicLib
 		typedef std::string bCString;
 		template <typename T> using bTRefPtrArray = std::vector<T>;
 		template <typename T> using bTPOSmartPtr = std::shared_ptr<T>;
+		template <typename T> using bTPropertyContainer = int;
 
 		/*
 			File		
@@ -171,12 +172,14 @@ namespace GothicLib
 
 			inline std::string		GetName()			{ return name; };
 			inline std::string		GetBase()			{ return base; };
-			inline ClassDefinition*	GetBaseDef()		{ return baseDef; };
+			inline ClassDefinition*	GetBaseDef()		{ if (!baseDef) { baseDef = GetClassDef(base); } return baseDef; };
 			inline bCObjectBase*	CreateInstance()	{ return createFunc(); };
 			
 			inline std::vector<PropertyDefinition*>& GetProperties() { return properties; };
 
 			static ClassDefinition* GetClassDef(std::string);
+
+
 
 		private:
 

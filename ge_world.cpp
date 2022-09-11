@@ -293,3 +293,135 @@ bool gCSector::ReadData(FileStream* file)
 
 	return true;
 }
+
+/*
+	gCLayerBase
+		gCGeometryLayer
+		gCDynamicLayer
+*/
+
+bool gCGeometryLayer::OnWrite(FileStream* file)
+{
+	if (game >= GAME_RISEN1)
+	{
+		LOG_ERROR("Geometry layers are not supported in Risen!");
+		return false;
+	}
+
+	return bCObjectBase::OnWrite(file);
+}
+
+bool gCGeometryLayer::OnRead(FileStream* file)
+{
+	if (game >= GAME_RISEN1)
+	{
+		LOG_ERROR("Geometry layers are not supported in Risen!");
+		return false;
+	}
+
+	return bCObjectBase::OnRead(file);
+}
+
+bool gCGeometryLayer::DoLoadData(FileStream* file)
+{
+	if (game >= GAME_RISEN1)
+	{
+		LOG_ERROR("Geometry layers are not supported in Risen!");
+		return false;
+	}
+
+	// Loading code
+
+	return true;
+}
+
+bool gCGeometryLayer::DoSaveData(FileStream* file)
+{
+	if (game >= GAME_RISEN1)
+	{
+		LOG_ERROR("Geometry layers are not supported in Risen!");
+		return false;
+	}
+
+	// Saving code
+
+	return true;
+}
+
+bool gCDynamicLayer::OnWrite(FileStream* file)
+{
+	if (game >= GAME_RISEN1)
+	{
+		return WriteData(file);
+	}
+
+	return bCObjectBase::OnWrite(file);
+}
+
+bool gCDynamicLayer::OnRead(FileStream* file)
+{
+	if (game >= GAME_RISEN1)
+	{
+		return ReadData(file);
+	}
+
+	return bCObjectBase::OnRead(file);
+}
+
+bool gCDynamicLayer::DoLoadData(FileStream* file)
+{
+	if (game <= GAME_GOTHIC3)
+	{
+		return ReadData(file);
+	}
+
+	return true;
+}
+
+bool gCDynamicLayer::DoSaveData(FileStream* file)
+{
+	if (game <= GAME_GOTHIC3)
+	{
+		return WriteData(file);
+	}
+
+	return true;
+}
+
+bool gCDynamicLayer::WriteData(FileStream* file)
+{
+	uint64_t magic = 0x4C44454D4F4E4547;
+	file->Write(FILE_ARGS(magic));
+
+	uint16_t version = 83;
+
+	if (game >= GAME_RISEN1)
+	{
+		version = 200;
+	}
+
+	file->Read(FILE_ARGS(version));
+
+	// context
+
+	return true;
+}
+
+bool gCDynamicLayer::ReadData(FileStream* file)
+{
+	uint64_t magic;
+	file->Read(FILE_ARGS(magic));
+
+	if (magic != 0x4C44454D4F4E4547)
+	{
+		LOG_ERROR("Failed to read gCDynamicLayer, invalid magic bytes!");
+		return false;
+	}
+
+	uint16_t version;
+	file->Read(FILE_ARGS(version));
+
+	// context
+
+	return true;
+}

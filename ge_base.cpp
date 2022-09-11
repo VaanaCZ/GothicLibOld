@@ -304,6 +304,13 @@ bool bCAccessorPropertyObject::Write(FileStream* file)
 			}
 			else
 			{
+				// Temporary solution
+				if (type.find("bTPropertyContainer") == 0)
+				{
+					uint16_t ver = 1;
+					file->Write(&ver, sizeof(ver));
+				}
+
 				void* dest = (void*)((size_t)nativeObject + property->GetOffset());
 				if (!file->Write(dest, property->GetSize()))
 				{
@@ -551,6 +558,14 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 				}
 
 				// Read data
+
+				// Temporary solution
+				if (propertyType.find("bTPropertyContainer") == 0)
+				{
+					uint16_t ver;
+					file->Read(&ver, sizeof(ver));
+				}
+
 				void* dest = (void*)((size_t)nativeObject + property->GetOffset());
 				if (!file->Read(dest, property->GetSize()))
 				{

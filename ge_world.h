@@ -107,5 +107,73 @@ namespace GothicLib
 			bool ReadData(FileStream*);
 
 		};
+
+		/*
+			gCLayerBase
+				gCGeometryLayer
+				gCDynamicLayer
+		*/
+
+		class gCLayerBase : public eCProcessibleElement
+		{
+		public:
+
+			GE_DECLARE_CLASS(gCLayerBase, eCProcessibleElement);
+
+			gCLayerBase()			{ }
+			virtual ~gCLayerBase()	{ }
+			
+			GE_DECLARE_PROPERTY(gCLayerBase, GAME_GOTHIC3, bTPOSmartPtr<class gCSector>, SectorPtr);
+
+		private:
+
+		};
+
+		class gCGeometryLayer : public gCLayerBase
+		{
+		public:
+
+			GE_DECLARE_CLASS(gCGeometryLayer, gCLayerBase);
+
+			gCGeometryLayer()			{ }
+			virtual ~gCGeometryLayer()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			virtual bool DoLoadData(FileStream*);
+			virtual bool DoSaveData(FileStream*);
+			
+			GE_DECLARE_PROPERTY(gCGeometryLayer, GAME_GOTHIC3, bCString,									OriginImportName);
+			GE_DECLARE_PROPERTY(gCGeometryLayer, GAME_GOTHIC3, bTPropertyContainer<enum gEGeometryType>,	GeometryType);
+
+		private:
+
+		};
+
+		class gCDynamicLayer : public gCLayerBase
+		{
+		public:
+
+			GE_DECLARE_CLASS(gCDynamicLayer, gCLayerBase);
+
+			gCDynamicLayer()			{ }
+			virtual ~gCDynamicLayer()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			virtual bool DoLoadData(FileStream*);
+			virtual bool DoSaveData(FileStream*);
+			
+			GE_DECLARE_PROPERTY(gCDynamicLayer, GAME_ALL,		bTPropertyContainer<enum gEEntityType>,	EntityType);
+			GE_DECLARE_PROPERTY(gCDynamicLayer, GAME_RISEN1,	bCString,								OriginImportName);
+
+		private:
+
+			bool WriteData(FileStream*);
+			bool ReadData(FileStream*);
+
+		};
 	};
 };
