@@ -114,6 +114,8 @@ namespace GothicLib
 				gCDynamicLayer
 		*/
 
+		class eCContextBase;
+
 		class gCLayerBase : public eCProcessibleElement
 		{
 		public:
@@ -124,6 +126,8 @@ namespace GothicLib
 			virtual ~gCLayerBase()	{ }
 			
 			GE_DECLARE_PROPERTY(gCLayerBase, GAME_GOTHIC3, bTPOSmartPtr<class gCSector>, SectorPtr);
+
+			eCContextBase* context;
 
 		private:
 
@@ -175,5 +179,216 @@ namespace GothicLib
 			bool ReadData(FileStream*);
 
 		};
+
+		/*
+			eCContextBase
+				eCGeometrySpatialContext
+				eCEntityDynamicContext
+		*/
+
+		class eCContextBase : public bCObjectRefBase
+		{
+		public:
+
+			GE_DECLARE_CLASS(eCContextBase, bCObjectRefBase);
+
+			eCContextBase()				{ }
+			virtual ~eCContextBase()	{ }
+			
+			GE_DECLARE_PROPERTY(eCContextBase, GAME_ALL, bCGuid,	ID);
+			GE_DECLARE_PROPERTY(eCContextBase, GAME_ALL, bCBox,		ContextBox);
+
+			bool	enabled;
+			float	visualLoDFactor;
+			float	objectCullFactor;
+
+		private:
+
+		};
+
+		class eCGeometrySpatialContext : public eCContextBase
+		{
+		public:
+
+			GE_DECLARE_CLASS(eCGeometrySpatialContext, eCContextBase);
+
+			eCGeometrySpatialContext()			{ }
+			virtual ~eCGeometrySpatialContext()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			virtual bool WriteNodes(FileStream*);
+			virtual bool ReadNodes(FileStream*);
+
+			bool hybridContext;
+
+		private:
+
+		};
+
+		class eCEntityDynamicContext : public eCContextBase
+		{
+		public:
+
+			GE_DECLARE_CLASS(eCEntityDynamicContext, eCContextBase);
+
+			eCEntityDynamicContext()			{ }
+			virtual ~eCEntityDynamicContext()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+		private:
+
+		};
+
+		/*
+			eCEntityProxy
+			eCNode
+				eCEntity
+					eCGeometryEntity
+						eCSpatialEntity
+						eCDynamicEntity
+		*/
+
+		class eCEntityProxy
+		{
+		public:
+
+			eCEntityProxy()		{ }
+			~eCEntityProxy()	{ }
+
+			virtual bool Write(FileStream*);
+			virtual bool Read(FileStream*);
+
+			bCGuid id;
+
+		private:
+
+		};
+
+		class eCNode : public bCObjectRefBase
+		{
+		public:
+
+			GE_DECLARE_CLASS(eCNode, bCObjectRefBase);
+
+			eCNode()			{ }
+			virtual ~eCNode()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			bCGuid		id;
+						
+		private:
+
+		};
+
+		class eCEntity : public eCNode
+		{
+		public:
+
+			GE_DECLARE_CLASS(eCEntity, eCNode);
+
+			eCEntity()			{ }
+			virtual ~eCEntity()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			std::string	name;
+			bCMatrix	worldMatrix;
+			bCBox		worldNodeBoundary;
+			bCSphere	worldNodeSphere;
+
+			bool		enabled;
+			bool		renderingEnabled;
+			bool		processingDisabled;			// Gothic 3
+			bool		deactivationEnabled;		// Gothic 3
+			uint8_t		flags;
+			bool		pickingEnabled;
+			bool		collisionEnabled;
+			float		renderAlphaValue;			// Gothic 3
+			uint16_t	insertType;
+			uint8_t		lastRenderPriority;			// Gothic 3
+			bool		locked;
+			uint8_t		specialDepthTexPassEnabled;	// Gothic 3
+			bool		ignoreProcessingRange;
+			float		visualLodFactor;			// Gothic 3
+			float		objectCullFactor;			// Gothic 3
+			bCDateTime	dataChangedTimestamp;
+			float		uniformScaling;				// Gothic 3
+			bool		rangedObjectCulling;
+			bool		processingRangeOutFadingEnabled;
+			bool		forceOutdoor;
+			bool		saveGameRelevant;
+			
+		private:
+
+		};
+
+		class eCGeometryEntity : public eCEntity
+		{
+		public:
+
+			GE_DECLARE_CLASS(eCGeometryEntity, eCEntity);
+
+			eCGeometryEntity()			{ }
+			virtual ~eCGeometryEntity()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			float		renderAlphaValue;
+			float		viewRange;
+			float		cacheInRange;
+
+		private:
+
+		};
+
+		class eCSpatialEntity : public eCGeometryEntity
+		{
+		public:
+
+			GE_DECLARE_CLASS(eCSpatialEntity, eCGeometryEntity);
+
+			eCSpatialEntity()			{ }
+			virtual ~eCSpatialEntity()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+			
+		private:
+
+		};
+
+		class eCDynamicEntity : public eCGeometryEntity
+		{
+		public:
+
+			GE_DECLARE_CLASS(eCDynamicEntity, eCGeometryEntity);
+
+			eCDynamicEntity()			{ }
+			virtual ~eCDynamicEntity()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			bCMatrix		localMatrix;
+			bCBox			worldNodeBoundary;
+			bCSphere		worldNodeSphere;
+			bCBox			localNodeBoundary;
+			eCEntityProxy	creator;
+			
+		private:
+
+		};
+
+		/*
+			
+		*/
 	};
 };

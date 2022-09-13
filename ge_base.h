@@ -17,6 +17,57 @@ namespace GothicLib
 		template <typename T> using bTPOSmartPtr = std::shared_ptr<T>;
 		template <typename T> using bTPropertyContainer = int;
 
+		struct bCGuid
+		{
+			uint32_t	data1;
+			uint16_t	data2;
+			uint16_t	data3;
+			uint8_t		data4[8];
+			uint32_t	isValid;
+		};
+
+		struct bCVector2
+		{
+			float x, y;
+		};
+
+		struct bCVector
+		{
+			float x, y, z;
+		};
+
+		struct bCVector4
+		{
+			float x, y, z, w;
+		};
+
+		struct bCMatrix3
+		{
+			bCVector x, y, z;
+		};
+
+		struct bCMatrix
+		{
+			bCVector4 x, y, z, w;
+		};
+
+		struct bCBox
+		{
+			bCVector min;
+			bCVector max;
+		};
+
+		struct bCSphere
+		{
+			bCVector position;
+			float radius;
+		};
+
+		struct bCDateTime
+		{
+			uint64_t timestamp;
+		};
+		
 		/*
 			File		
 		*/
