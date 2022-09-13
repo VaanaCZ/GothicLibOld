@@ -360,6 +360,9 @@ namespace GothicLib
 
 			virtual bool OnWrite(FileStream*);
 			virtual bool OnRead(FileStream*);
+
+			bCBox			visualWorldNodeBoundary;
+			bCOrientedBox	visualWorldNodeOOBoundary;
 			
 		private:
 

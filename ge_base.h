@@ -57,6 +57,13 @@ namespace GothicLib
 			bCVector max;
 		};
 
+		struct bCOrientedBox
+		{
+			bCVector min;
+			bCVector max;
+			bCMatrix3 orientation;
+		};
+
 		struct bCSphere
 		{
 			bCVector position;

@@ -489,7 +489,21 @@ bool eCGeometrySpatialContext::ReadNodes(FileStream* file)
 	{
 		for (size_t i = 0; i < entityCount; i++)
 		{
+			bool hasCreator;
+			bool disablePatchWithTemplate;
 
+			file->Read(FILE_ARGS(hasCreator));
+			file->Read(FILE_ARGS(disablePatchWithTemplate));
+
+			if (hasCreator && !disablePatchWithTemplate)
+			{
+				bCGuid templateId;
+				file->Read(FILE_ARGS(templateId));
+			}
+
+			eCSpatialEntity entity;
+			entity.game = this->game;
+			entity.OnRead(file);
 		}
 	}	
 
@@ -609,11 +623,11 @@ bool eCEntity::OnRead(FileStream* file)
 		// highlighted, frozen, burned?
 
 		file->Read(FILE_ARGS(unknown));
-		assert(unknown == 0);
+		//assert(unknown == 1);
 		file->Read(FILE_ARGS(unknown));
-		assert(unknown == 0);
+		//assert(unknown == 1);
 		file->Read(FILE_ARGS(unknown));
-		assert(unknown == 0);
+		//assert(unknown == 1);
 	}
 
 	if (version < 214)
@@ -794,7 +808,29 @@ bool eCSpatialEntity::OnWrite(FileStream* file)
 
 bool eCSpatialEntity::OnRead(FileStream* file)
 {
-	return true;
+	uint16_t version;
+	file->Read(FILE_ARGS(version));
+
+	if (version == 30)
+	{
+		return eCGeometryEntity::OnRead(file);
+	}
+
+	bool hasId;
+	file->Read(FILE_ARGS(hasId));
+
+	if (hasId)
+	{
+		file->Read(FILE_ARGS(id));
+	}
+
+	if (version > 34)
+	{
+		file->Read(FILE_ARGS(visualWorldNodeBoundary));
+		file->Read(FILE_ARGS(visualWorldNodeOOBoundary));
+	}
+
+	return eCGeometryEntity::OnRead(file);
 }
 
 bool eCDynamicEntity::OnWrite(FileStream* file)
