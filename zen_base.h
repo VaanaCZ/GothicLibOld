@@ -417,5 +417,31 @@ namespace GothicLib
 		private:
 
 		};
+
+		/*
+			Resource
+		*/
+
+		class zCResource : public zCObject
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_CHRISTMASEDITION,	0	},
+				{ GAME_GOTHIC1,				0	},
+				{ GAME_GOTHICSEQUEL,		0	},
+				{ GAME_GOTHIC2,				0	},
+				{ GAME_GOTHIC2ADDON,		0	},
+			};
+
+			ZEN_DECLARE_CLASS_ABSTRACT(zCResource, zCObject);
+
+			zCResource()			{ }
+			virtual ~zCResource()	{ }
+
+		private:
+
+		};
 	};
 };

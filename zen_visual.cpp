@@ -498,18 +498,68 @@ bool zCMesh::LoadMSH(FileStream* file)
 			break;
 		}
 
-		//case MESHCHUNK_LIGHTMAPS_OLD:
-		//{
-		//	break;
-		//}
-		//
-		//case MESHCHUNK_LIGHTMAPS_NEW:
-		//{
-		//	uint32_t textureCount = 0;
-		//	file->Read(FILE_ARGS(textureCount));
-		//
-		//	break;
-		//}
+		case MESHCHUNK_LIGHTMAPS_OLD:
+		{
+			// Read textures
+			uint32_t textureCount = 0;
+			file->Read(FILE_ARGS(textureCount));
+			if (textureCount > 0)
+			{
+				textures.resize(textureCount);
+				lightmaps.resize(textureCount);
+
+				zVEC3 lmVectors[3];
+
+				for (size_t i = 0; i < textureCount; i++)
+				{
+					file->Read(FILE_ARGS(lmVectors));
+
+					lightmaps[i].lmVectors[0] = lmVectors[0];
+					lightmaps[i].lmVectors[1] = lmVectors[1];
+					lightmaps[i].lmVectors[2] = lmVectors[2];
+					lightmaps[i].texIndex = i;
+
+					if (!textures[i].LoadTexture(file))
+					{
+						return false;
+					}
+				}
+			}
+
+			break;
+		}
+		
+		case MESHCHUNK_LIGHTMAPS_NEW:
+		{
+			// Read textures
+			uint32_t textureCount = 0;
+			file->Read(FILE_ARGS(textureCount));
+		
+			if (textureCount > 0)
+			{
+				textures.resize(textureCount);
+
+				for (size_t i = 0; i < textureCount; i++)
+				{
+					if (!textures[i].LoadTexture(file))
+					{
+						return false;
+					}
+				}
+			}
+
+			// Read lightmaps
+			uint32_t lightmapCount = 0;
+			file->Read(FILE_ARGS(lightmapCount));
+
+			if (lightmapCount > 0)
+			{
+				lightmaps.resize(lightmapCount);
+				file->Read(&lightmaps[0], sizeof(LightmapChunk) * lightmapCount);
+			}
+
+			break;
+		}
 
 		case MESHCHUNK_VERTS:
 		{

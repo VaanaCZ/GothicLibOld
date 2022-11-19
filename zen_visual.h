@@ -1,6 +1,7 @@
 #pragma once
 
 #include "zen_base.h"
+#include "zen_texture.h"
 
 namespace GothicLib
 {
@@ -236,6 +237,12 @@ namespace GothicLib
 			bool readChilds = true;
 		};
 
+		struct LightmapChunk
+		{
+			zVEC3		lmVectors[3];
+			uint32_t	texIndex;
+		};
+
 		struct Feature
 		{
 			zVEC2	uv;
@@ -290,10 +297,12 @@ namespace GothicLib
 			bool SaveMSH(FileStream*);
 			bool LoadMSH(FileStream*);
 
-			std::vector<zCMaterial>	materials;
-			std::vector<zVEC3>		verts;
-			std::vector<Feature>	feats;
-			std::vector<Poly>		polys;
+			std::vector<zCMaterial>		materials;
+			std::vector<zCTexture>		textures;
+			std::vector<LightmapChunk>	lightmaps;
+			std::vector<zVEC3>			verts;
+			std::vector<Feature>		feats;
+			std::vector<Poly>			polys;
 
 		private:
 
