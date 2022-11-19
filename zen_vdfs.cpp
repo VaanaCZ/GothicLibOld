@@ -415,7 +415,7 @@ void ZenGin::FileSystem::TraverseDirectory(std::filesystem::path path, std::stri
 					header.version != 0x00000050)
 				{
 					// Invalid archive, ignore
-					volume.stream->Close();
+					//volume.stream->Close();
 					delete volume.stream;
 					continue;
 				}

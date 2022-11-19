@@ -403,8 +403,8 @@ bool zCMesh::LoadMSH(FileStream* file)
 		uint16_t chunkId;
 		uint32_t chunkSize;
 
-		if (!file->Read(&chunkId, sizeof(chunkId)) ||
-			!file->Read(&chunkSize, sizeof(chunkSize)))
+		if (!file->Read(FILE_ARGS(chunkId)) ||
+			!file->Read(FILE_ARGS(chunkSize)))
 		{
 			LOG_ERROR("Unexpected end of file while reading mesh chunk!");
 			return false;
@@ -418,20 +418,20 @@ bool zCMesh::LoadMSH(FileStream* file)
 		switch (chunkId)
 		{
 
-		case CHUNK_MESHSTART:
+		case MESHCHUNK_MESHSTART:
 		{
 			uint16_t	version;
 			zDATE		date;
 			std::string	name;
 
-			file->Read(&version, sizeof(version));
-			file->Read(&date, sizeof(date));
+			file->Read(FILE_ARGS(version));
+			file->Read(FILE_ARGS(date));
 			file->ReadLine(name);
 
 			break;
 		}
 
-		case CHUNK_BBOX:
+		case MESHCHUNK_BBOX:
 		{
 			zTBBox3D bbox;
 			zCOBBox3D obbox;
@@ -441,13 +441,13 @@ bool zCMesh::LoadMSH(FileStream* file)
 				obbox.readChilds = false;
 			}
 
-			file->Read(&bbox, sizeof(bbox));
+			file->Read(FILE_ARGS(bbox));
 			obbox.LoadBIN(file);
 
 			break;
 		}
 
-		case CHUNK_MATERIALS:
+		case MESHCHUNK_MATERIALS:
 		{
 			zCArchiver archiver;
 			int materialCount = 0;
@@ -461,7 +461,7 @@ bool zCMesh::LoadMSH(FileStream* file)
 			}
 			else
 			{
-				file->Read(&materialCount, sizeof(materialCount));
+				file->Read(FILE_ARGS(materialCount));
 			}
 
 			if (materialCount > 0)
@@ -498,32 +498,90 @@ bool zCMesh::LoadMSH(FileStream* file)
 			break;
 		}
 
-		case CHUNK_LIGHTMAPS_OLD:
+		//case MESHCHUNK_LIGHTMAPS_OLD:
+		//{
+		//	break;
+		//}
+		//
+		//case MESHCHUNK_LIGHTMAPS_NEW:
+		//{
+		//	uint32_t textureCount = 0;
+		//	file->Read(FILE_ARGS(textureCount));
+		//
+		//	break;
+		//}
+
+		case MESHCHUNK_VERTS:
 		{
+			uint32_t vertCount = 0;
+			file->Read(FILE_ARGS(vertCount));
+
+			if (vertCount > 0)
+			{
+				verts.resize(vertCount);
+				file->Read(&verts[0], sizeof(zVEC3) * vertCount);
+			}
+
 			break;
 		}
 
-		case CHUNK_LIGHTMAPS_NEW:
+		case MESHCHUNK_FEATS:
 		{
+			uint32_t featCount = 0;
+			file->Read(FILE_ARGS(featCount));
+
+			if (featCount > 0)
+			{
+				feats.resize(featCount);
+				file->Read(&feats[0], sizeof(Feature) * featCount);
+			}
+
 			break;
 		}
 
-		case CHUNK_VERTS:
+		case MESHCHUNK_POLYS:
 		{
+			uint32_t polyCount = 0;
+			file->Read(FILE_ARGS(polyCount));
+
+			if (polyCount > 0)
+			{
+				polys.resize(polyCount);
+
+				for (size_t i = 0; i < polyCount; i++)
+				{
+					file->Read(FILE_ARGS(polys[i].materialIndex));
+					file->Read(FILE_ARGS(polys[i].lightmapIndex));
+					file->Read(FILE_ARGS(polys[i].plane));
+					file->Read(FILE_ARGS(polys[i].flags));
+
+					uint8_t count;
+					file->Read(FILE_ARGS(count));
+
+					if (count > 0)
+					{
+						polys[i].verts.resize(count);
+						polys[i].feats.resize(count);
+
+						int32_t vertIndex;
+						uint32_t featIndex;
+
+						for (size_t j = 0; j < count; j++)
+						{
+							file->Read(FILE_ARGS(vertIndex));
+							polys[i].verts[j] = vertIndex;
+
+							file->Read(FILE_ARGS(featIndex));
+							polys[i].feats[j] = featIndex;
+						}
+					}
+				}
+			}
+
 			break;
 		}
 
-		case CHUNK_FEATS:
-		{
-			break;
-		}
-
-		case CHUNK_POLYS:
-		{
-			break;
-		}
-
-		case CHUNK_MESHEND:
+		case MESHCHUNK_MESHEND:
 		{
 			end = true;
 			break;
@@ -544,5 +602,5 @@ bool zCMesh::LoadMSH(FileStream* file)
 		}
 	}
 
-	return false;
+	return true;
 }

@@ -97,6 +97,71 @@ namespace GothicLib
 		/*
 			BSP
 		*/
+		enum BSPCHUNK_TYPE
+		{
+			BSPCHUNK_START				= 0xC000,
+			BSPCHUNK_POLYS				= 0xC010,
+			BSPCHUNK_TREE				= 0xC040,
+			BSPCHUNK_LIGHTS				= 0xC045,
+			BSPCHUNK_OUTDOOR_SECTORS	= 0xC050,
+			BSPCHUNK_END				= 0xC0FF
+		};
+
+		enum zTBspTreeMode
+		{
+			zBSP_MODE_INDOOR,
+			zBSP_MODE_OUTDOOR
+		};
+
+		class zCBspBase
+		{
+		public:
+
+			zCBspBase() { }
+
+			bool LoadBINRecursive(FileStream*);
+			virtual bool IsNode() = 0;
+
+			zTBBox3D	bbox;
+			uint32_t	polyOffset;
+			uint32_t	polyCount;
+		};
+
+		class zCBspNode : public zCBspBase
+		{
+		public:
+
+			zCBspNode() { }
+
+			virtual bool IsNode() { return true; }
+
+			zTPlane plane;
+			zCBspBase* front;
+			zCBspBase* back;
+
+		};
+
+		class zCBspLeaf : public zCBspBase
+		{
+		public:
+
+			zCBspLeaf() { }
+
+			virtual bool IsNode() { return false; }
+
+		};
+
+		class zCBspSector
+		{
+		public:
+
+			zCBspSector() {}
+
+			std::string				name;
+			std::vector<uint32_t>	nodes;
+			std::vector<uint32_t>	portalPolys;
+
+		};
 
 		class zCBspTree
 		{
@@ -110,7 +175,13 @@ namespace GothicLib
 
 			GAME game;
 
-			zCMesh mesh;
+			zCMesh						mesh;
+			zTBspTreeMode				mode;
+			std::vector<uint32_t>		polys;
+			zCBspBase*					root;
+			std::vector<zVEC3>			lightPositions;
+			std::vector<zCBspSector>	sectors;
+			std::vector<uint32_t>		portalPolys;
 
 		private:
 

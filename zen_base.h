@@ -78,6 +78,12 @@ namespace GothicLib
 			uint16_t second;
 		};
 
+		struct zTPlane
+		{
+			float distance;
+			zVEC3 normal;
+		};
+
 		inline double roundDecimals(const double d, const int p)
 		{
 			if (d == 0.0)

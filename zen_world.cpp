@@ -467,6 +467,59 @@ bool oCWorld::Unarchive(zCArchiver* archiver)
 	BSP
 */
 
+bool zCBspBase::LoadBINRecursive(FileStream* file)
+{
+	file->Read(FILE_ARGS(bbox));
+	file->Read(FILE_ARGS(polyOffset));
+	file->Read(FILE_ARGS(polyCount));
+
+	if (IsNode())
+	{
+		zCBspNode* node = (zCBspNode*)this;
+
+		uint8_t flag;
+		file->Read(FILE_ARGS(flag));
+		file->Read(FILE_ARGS(node->plane));
+
+
+		if ((flag & 1) != 0)
+		{
+			if ((flag & 4) != 0)
+			{
+				node->front = new zCBspLeaf();
+			}
+			else
+			{
+				node->front = new zCBspNode();
+			}
+
+			if (!node->front->LoadBINRecursive(file))
+			{
+				return false;
+			}
+		}
+
+		if ((flag & 2) != 0)
+		{
+			if ((flag & 8) != 0)
+			{
+				node->back = new zCBspLeaf();
+			}
+			else
+			{
+				node->back = new zCBspNode();
+			}
+
+			if (!node->back->LoadBINRecursive(file))
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
 bool zCBspTree::SaveBIN(FileStream* file)
 {
 	return false;
@@ -494,7 +547,157 @@ bool zCBspTree::LoadBIN(FileStream* file)
 		return false;
 	}
 
-	return false;
+	// Read BSP chunks
+	bool end = false;
+
+	uint32_t nodeCount, leafCount = 0;
+
+	while (true)
+	{
+		uint16_t chunkId;
+		uint32_t chunkSize;
+
+		if (!file->Read(FILE_ARGS(chunkId)) ||
+			!file->Read(FILE_ARGS(chunkSize)))
+		{
+			LOG_ERROR("Unexpected end of file while reading BSP chunk!");
+			return false;
+		}
+
+		LOG_DEBUG("Reading zCBspTree chunk of id " + std::to_string(chunkId));
+
+		uint64_t skipPos = file->Tell() + chunkSize;
+
+		switch (chunkId)
+		{
+
+		case BSPCHUNK_START:
+		{
+			uint16_t bspVersion;
+			file->Read(FILE_ARGS(bspVersion));
+
+			if (bspVersion != 3)
+			{
+				LOG_ERROR("Unknown BSP version \"" + std::to_string(bspVersion) + "\" found.");
+				return false;
+			}
+
+			file->Read(FILE_ARGS(mode));
+
+			break;
+		}
+
+		case BSPCHUNK_POLYS:
+		{
+			uint32_t polyCount = 0;
+			file->Read(FILE_ARGS(polyCount));
+
+			if (polyCount > 0)
+			{
+				polys.resize(polyCount);
+				file->Read(&polys[0], sizeof(uint32_t) * polyCount);
+			}
+
+			break;
+		}
+
+		case BSPCHUNK_TREE:
+		{
+			file->Read(FILE_ARGS(nodeCount));
+			file->Read(FILE_ARGS(leafCount));
+
+			root = new zCBspNode();
+			if (!root->LoadBINRecursive(file))
+			{
+				return false;
+			}
+
+			break;
+		}
+
+		case BSPCHUNK_LIGHTS:
+		{
+			if (leafCount > 0)
+			{
+				lightPositions.resize(leafCount);
+				file->Read(&lightPositions[0], sizeof(zVEC3) * leafCount);
+			}
+
+			break;
+		}
+
+		case BSPCHUNK_OUTDOOR_SECTORS:
+		{
+			// Sector
+			uint32_t sectorCount = 0;
+			file->Read(FILE_ARGS(sectorCount));
+			
+			if (sectorCount > 0)
+			{
+				sectors.resize(sectorCount);
+
+				for (size_t i = 0; i < sectorCount; i++)
+				{
+					zCBspSector& sector = sectors[i];
+
+					file->ReadTerminatedString(sector.name, '\n');
+
+					uint32_t nodeCount, portalCount = 0;
+					file->Read(FILE_ARGS(nodeCount));
+					file->Read(FILE_ARGS(portalCount));
+
+					if (nodeCount > 0)
+					{
+						sector.nodes.resize(nodeCount);
+						file->Read(&sector.nodes[0], sizeof(uint32_t) * nodeCount);
+					}
+
+					if (portalCount > 0)
+					{
+						sector.portalPolys.resize(portalCount);
+						file->Read(&sector.portalPolys[0], sizeof(uint32_t) * portalCount);
+					}
+				}
+			}
+
+			// Portals
+			uint32_t portalCount = 0;
+			file->Read(FILE_ARGS(portalCount));
+
+			if (portalCount > 0)
+			{
+				portalPolys.resize(portalCount);
+				file->Read(&portalPolys[0], sizeof(uint32_t) * portalCount);
+			}
+
+			break;
+		}
+
+		case BSPCHUNK_END:
+		{
+			uint8_t endMarker;
+			file->Read(FILE_ARGS(endMarker)); // B
+
+			end = true;
+			break;
+		}
+
+		default:
+		{
+			LOG_WARN("Unknown chunk type \"" + std::to_string(chunkId) + "\" in zCBspTree, skipping!");
+			file->Seek(skipPos);
+
+			break;
+		}
+		}
+
+		if (end)
+		{
+			break;
+		}
+	}
+
+	return true;
 }
 
 /*

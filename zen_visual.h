@@ -204,17 +204,17 @@ namespace GothicLib
 
 		};
 
-		enum CHUNK_TYPE
+		enum MESHCHUNK_TYPE
 		{
-			CHUNK_MESHSTART			= 0xB000,
-			CHUNK_BBOX				= 0xB010,
-			CHUNK_MATERIALS			= 0xB020,
-			CHUNK_LIGHTMAPS_OLD		= 0xB025,
-			CHUNK_LIGHTMAPS_NEW		= 0xB026,
-			CHUNK_VERTS				= 0xB030,
-			CHUNK_FEATS				= 0xB040,
-			CHUNK_POLYS				= 0xB050,
-			CHUNK_MESHEND			= 0xB060
+			MESHCHUNK_MESHSTART			= 0xB000,
+			MESHCHUNK_BBOX				= 0xB010,
+			MESHCHUNK_MATERIALS			= 0xB020,
+			MESHCHUNK_LIGHTMAPS_OLD		= 0xB025,
+			MESHCHUNK_LIGHTMAPS_NEW		= 0xB026,
+			MESHCHUNK_VERTS				= 0xB030,
+			MESHCHUNK_FEATS				= 0xB040,
+			MESHCHUNK_POLYS				= 0xB050,
+			MESHCHUNK_MESHEND			= 0xB060
 		};
 
 		class zCOBBox3D
@@ -234,7 +234,37 @@ namespace GothicLib
 			std::vector<zCOBBox3D> childs;
 
 			bool readChilds = true;
+		};
 
+		struct Feature
+		{
+			zVEC2	uv;
+			zCOLOR	light;
+			zVEC3	normal;
+		};
+
+#pragma pack( push, 1 )
+		struct PolygonFlags
+		{
+			unsigned char portalPoly : 2;
+			unsigned char occluder : 1;
+			unsigned char sectorPoly : 1;
+			unsigned char lodFlag : 1;
+			unsigned char portalIndoorOutdoor : 1;
+			unsigned char ghostOccluder : 1;
+			unsigned short sectorIndex : 16;
+		};
+#pragma pack( pop )
+
+		struct Poly
+		{
+			short			materialIndex;
+			short			lightmapIndex;
+			zTPlane			plane;
+			PolygonFlags	flags;
+
+			std::vector<int> verts;
+			std::vector<unsigned int> feats;
 		};
 
 		class zCMesh : public zCVisual
@@ -260,7 +290,10 @@ namespace GothicLib
 			bool SaveMSH(FileStream*);
 			bool LoadMSH(FileStream*);
 
-			std::vector<zCMaterial> materials;
+			std::vector<zCMaterial>	materials;
+			std::vector<zVEC3>		verts;
+			std::vector<Feature>	feats;
+			std::vector<Poly>		polys;
 
 		private:
 

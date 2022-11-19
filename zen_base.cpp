@@ -1192,7 +1192,7 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 
 			if (versionSum == VERSION_NONE)
 			{
-				LOG_ERROR("Class " + classDef->GetName() + " is not supported in the specified game version!");
+				LOG_ERROR("Class " + classDef->GetName() + " is not supported in the specified engine revision!");
 			}
 			else
 			{
