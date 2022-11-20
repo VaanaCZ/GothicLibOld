@@ -270,6 +270,7 @@ namespace GothicLib
 		bool			Read(void*, uint64_t);
 		virtual bool	ReadString(std::string&);
 		bool			ReadNullString(std::string&);
+		bool			ReadTerminatedString(std::string&, char);
 		bool			ReadLine(std::string&);
 
 		bool			Write(void*, uint64_t);

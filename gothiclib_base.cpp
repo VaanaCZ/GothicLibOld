@@ -380,6 +380,11 @@ bool GothicLib::FileStream::ReadString(std::string& str)
 
 bool FileStream::ReadNullString(std::string& str)
 {
+	return ReadTerminatedString(str, NULL);
+}
+
+bool FileStream::ReadTerminatedString(std::string& str, char terminator)
+{
 	if (error)
 	{
 		return false;
@@ -395,7 +400,7 @@ bool FileStream::ReadNullString(std::string& str)
 	{
 		result = true;
 
-		if (c == NULL)
+		if (c == terminator)
 		{
 			break;
 		}

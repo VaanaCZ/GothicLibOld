@@ -32,6 +32,9 @@
 #undef GOTHICLIB_GENOME
 #define GOTHICLIB_GENOME
 
+#undef GOTHICLIB_GENOME2
+#define GOTHICLIB_GENOME2
+
 #endif
 
 // Include ZenGin
@@ -48,6 +51,13 @@
 
 #include "ge_base.h"
 #include "ge_world.h"
+
+#endif // GOTHICLIB_GENOME
+
+#ifdef GOTHICLIB_GENOME2
+
+#include "ge2_base.h"
+#include "ge2_world.h"
 
 #endif // GOTHICLIB_GENOME
 
