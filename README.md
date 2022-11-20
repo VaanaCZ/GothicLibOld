@@ -72,10 +72,10 @@ This section includes the current progress on loading and saving the engine's fi
 	<tr>
 		<td>2.6</td>
 		<td>✔</td>
-		<td>✖</td>
-		<td>✖</td>
 		<td>✔</td>
 		<td>✖</td>
+		<td>✔</td>
+		<td>✔</td>
 		<td>✖</td>
 	</tr>
 	<tr>
@@ -90,10 +90,10 @@ This section includes the current progress on loading and saving the engine's fi
 	<tr>
 		<td>1.30</td>
 		<td>✔</td>
-		<td>✖</td>
-		<td>✖</td>
 		<td>✔</td>
 		<td>✖</td>
+		<td>✔</td>
+		<td>✔</td>
 		<td>✖</td>
 	</tr>
 	<tr>
@@ -108,10 +108,10 @@ This section includes the current progress on loading and saving the engine's fi
 	<tr>
 		<td>1.12f</td>
 		<td>✔</td>
-		<td>✖</td>
-		<td>✖</td>
 		<td>✔</td>
 		<td>✖</td>
+		<td>✔</td>
+		<td>✔</td>
 		<td>✖</td>
 	</tr>
 	<tr>
@@ -126,7 +126,7 @@ This section includes the current progress on loading and saving the engine's fi
 	<tr>
 		<td>1.08k_mod</td>
 		<td>✔</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>✖</td>
 		<td>✔</td>
 		<td>✖</td>
@@ -135,10 +135,10 @@ This section includes the current progress on loading and saving the engine's fi
 	<tr>
 		<td>1.01e_christmas_edition</td>
 		<td>✔</td>
-		<td>✖</td>
-		<td>✖</td>
 		<td>✔</td>
 		<td>✖</td>
+		<td>✔</td>
+		<td>✔</td>
 		<td>✖</td>
 	</tr>
 	<tr>
@@ -153,10 +153,10 @@ This section includes the current progress on loading and saving the engine's fi
 	<tr>
 		<td>0.94k</td>
 		<td>✔</td>
-		<td>✖</td>
-		<td>✖</td>
 		<td>✔</td>
 		<td>✖</td>
+		<td>✔</td>
+		<td>✔</td>
 		<td>✖</td>
 	</tr>
 	<tr>
