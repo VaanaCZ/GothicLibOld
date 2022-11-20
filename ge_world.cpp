@@ -487,6 +487,9 @@ bool eCGeometrySpatialContext::ReadNodes(FileStream* file)
 
 	if (entityCount > 0)
 	{
+		std::vector<eCSpatialEntity*> entityList;
+		entityList.resize(entityCount);
+
 		for (size_t i = 0; i < entityCount; i++)
 		{
 			bool hasCreator;
@@ -501,9 +504,12 @@ bool eCGeometrySpatialContext::ReadNodes(FileStream* file)
 				file->Read(FILE_ARGS(templateId));
 			}
 
-			eCSpatialEntity entity;
-			entity.game = this->game;
-			entity.OnRead(file);
+			entityList[i] = new eCSpatialEntity();
+			entityList[i]->game = this->game;
+			if (!entityList[i]->OnRead(file))
+			{
+				return false;
+			}
 		}
 	}	
 
@@ -541,11 +547,17 @@ bool eCEntityDynamicContext::OnRead(FileStream* file)
 
 	if (entityCount > 0)
 	{
+		std::vector<eCDynamicEntity*> entityList;
+		entityList.resize(entityCount);
+
 		for (size_t i = 0; i < entityCount; i++)
 		{
-			eCDynamicEntity entity;
-			entity.game = this->game;
-			entity.OnRead(file);
+			entityList[i] = new eCDynamicEntity();
+			entityList[i]->game = this->game;
+			if (!entityList[i]->OnRead(file))
+			{
+				return false;
+			}
 		}
 	}
 
@@ -744,23 +756,35 @@ bool eCEntity::OnRead(FileStream* file)
 
 	if (propertySetCount > 0)
 	{
-		uint16_t propertSetVersion;
-		file->Read(FILE_ARGS(propertSetVersion));
+		propertySets.resize(propertySetCount);
+
+		for (size_t i = 0; i < propertySetCount; i++)
+		{
+			uint16_t propertSetVersion;
+			file->Read(FILE_ARGS(propertSetVersion));
 		
-		bCAccessorPropertyObject accessor;
-		accessor.game = game;
-		if (!accessor.Read(file))
-		{
-			return false;
-		}
+			bCAccessorPropertyObject accessor;
+			accessor.game = game;
+			if (!accessor.Read(file))
+			{
+				return false;
+			}
 
-		uint32_t magic;
-		file->Read(FILE_ARGS(magic));
+			propertySets[i] = accessor.GetNativeObjectAs<eCEntityPropertySet*>();
+			if (propertySets[i] == nullptr)
+			{
+				LOG_ERROR("Invalid property set contained in entity!");
+				return false;
+			}
 
-		if (magic != 0xDEADC0DE)
-		{
-			LOG_ERROR("Invalid magic bytes after property set");
-			return false;
+			uint32_t magic;
+			file->Read(FILE_ARGS(magic));
+
+			if (magic != 0xDEADC0DE)
+			{
+				LOG_ERROR("Invalid magic bytes after property set");
+				return false;
+			}
 		}
 	}
 
@@ -880,4 +904,142 @@ bool eCDynamicEntity::OnRead(FileStream* file)
 	}
 
 	return eCGeometryEntity::OnRead(file);
+}
+
+/*
+	eCEntityPropertySet
+		eCCollisionShapeBase_PS
+			eCCollisionShape_PS
+		eCDynamicLight_PS
+			eCDirectionalLight_PS
+			eCHemisphere_PS
+		eCVisualMeshBase_PS [GOTHIC3]
+			eCVisualMeshStatic_PS [GOTHIC3]
+*/
+
+bool eCEntityPropertySet::OnWrite(FileStream* file)
+{
+	uint16_t version = 2;
+	file->Read(FILE_ARGS(version));
+
+	file->Write(FILE_ARGS(renderingEnabled));
+
+	return true;
+}
+
+bool eCEntityPropertySet::OnRead(FileStream* file)
+{
+	uint16_t version;
+	file->Read(FILE_ARGS(version));
+
+	if (version > 1)
+	{
+		file->Read(FILE_ARGS(renderingEnabled));
+	}
+	else
+	{
+		renderingEnabled = true;
+	}
+
+	return true;
+}
+
+bool eCCollisionShapeBase_PS::OnWrite(FileStream* file)
+{
+	return false;
+}
+
+bool eCCollisionShapeBase_PS::OnRead(FileStream* file)
+{
+	return false;
+}
+
+bool eCCollisionShape_PS::OnWrite(FileStream* file)
+{
+	return false;
+}
+
+bool eCCollisionShape_PS::OnRead(FileStream* file)
+{
+	return false;
+}
+
+bool eCDynamicLight_PS::OnWrite(FileStream* file)
+{
+	uint16_t version = 1;
+	file->Write(FILE_ARGS(version));
+
+	return true;
+}
+
+bool eCDynamicLight_PS::OnRead(FileStream* file)
+{
+	uint16_t version;
+	file->Read(FILE_ARGS(version));
+
+	return true;
+}
+
+bool eCDirectionalLight_PS::OnWrite(FileStream* file)
+{
+	uint16_t version = 1;
+	file->Write(FILE_ARGS(version));
+
+	return true;
+}
+
+bool eCDirectionalLight_PS::OnRead(FileStream* file)
+{
+	uint16_t version;
+	file->Read(FILE_ARGS(version));
+
+	return true;
+}
+
+bool eCHemisphere_PS::OnWrite(FileStream* file)
+{
+	uint16_t version = 1;
+	file->Write(FILE_ARGS(version));
+
+	return true;
+}
+
+bool eCHemisphere_PS::OnRead(FileStream* file)
+{
+	uint16_t version;
+	file->Read(FILE_ARGS(version));
+
+	return true;
+}
+
+bool eCVisualMeshBase_PS::OnWrite(FileStream* file)
+{
+	uint16_t version = 1;
+	file->Write(FILE_ARGS(version));
+
+	return eCEntityPropertySet::OnWrite(file);
+}
+
+bool eCVisualMeshBase_PS::OnRead(FileStream* file)
+{
+	uint16_t version;
+	file->Read(FILE_ARGS(version));
+
+	return eCEntityPropertySet::OnRead(file);
+}
+
+bool eCVisualMeshStatic_PS::OnWrite(FileStream* file)
+{
+	uint16_t version = 50;
+	file->Write(FILE_ARGS(version));
+
+	return eCVisualMeshBase_PS::OnWrite(file);
+}
+
+bool eCVisualMeshStatic_PS::OnRead(FileStream* file)
+{
+	uint16_t version;
+	file->Read(FILE_ARGS(version));
+
+	return eCVisualMeshBase_PS::OnRead(file);
 }

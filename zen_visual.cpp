@@ -501,7 +501,7 @@ bool zCMesh::LoadMSH(FileStream* file)
 		case MESHCHUNK_LIGHTMAPS_OLD:
 		{
 			// Read textures
-			uint32_t textureCount = 0;
+ 			uint32_t textureCount = 0;
 			file->Read(FILE_ARGS(textureCount));
 			if (textureCount > 0)
 			{
@@ -603,7 +603,24 @@ bool zCMesh::LoadMSH(FileStream* file)
 					file->Read(FILE_ARGS(polys[i].materialIndex));
 					file->Read(FILE_ARGS(polys[i].lightmapIndex));
 					file->Read(FILE_ARGS(polys[i].plane));
-					file->Read(FILE_ARGS(polys[i].flags));
+
+					if (game >= GAME_GOTHIC2)
+					{
+						file->Read(FILE_ARGS(polys[i].flags));
+					}
+					else
+					{
+						PolygonFlagsOld oldFlags;
+						file->Read(FILE_ARGS(oldFlags));
+
+						polys[i].flags.portalPoly			= oldFlags.portalPoly;
+						polys[i].flags.occluder				= oldFlags.occluder;
+						polys[i].flags.sectorPoly			= oldFlags.sectorPoly;
+						polys[i].flags.lodFlag				= oldFlags.lodFlag;
+						polys[i].flags.portalIndoorOutdoor	= oldFlags.portalIndoorOutdoor;
+						polys[i].flags.ghostOccluder		= oldFlags.ghostOccluder;
+						polys[i].flags.sectorIndex			= oldFlags.sectorIndex;
+					}
 
 					uint8_t count;
 					file->Read(FILE_ARGS(count));
@@ -614,12 +631,21 @@ bool zCMesh::LoadMSH(FileStream* file)
 						polys[i].feats.resize(count);
 
 						int32_t vertIndex;
+						int16_t oldvertIndex;
 						uint32_t featIndex;
 
 						for (size_t j = 0; j < count; j++)
 						{
-							file->Read(FILE_ARGS(vertIndex));
-							polys[i].verts[j] = vertIndex;
+							if (game >= GAME_GOTHIC2)
+							{
+								file->Read(FILE_ARGS(vertIndex));
+								polys[i].verts[j] = vertIndex;
+							}
+							else
+							{
+								file->Read(FILE_ARGS(oldvertIndex));
+								polys[i].verts[j] = oldvertIndex;
+							}
 
 							file->Read(FILE_ARGS(featIndex));
 							polys[i].feats[j] = featIndex;

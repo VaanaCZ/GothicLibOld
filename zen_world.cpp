@@ -132,7 +132,7 @@ bool zCWorld::Unarchive(zCArchiver* archiver)
 			
 			if (!bsp->LoadBIN(archiver->GetFile()))
 			{
-				//return false;
+				return false;
 			}
 		}
 		else if (objectName == "VobTree")
@@ -467,7 +467,7 @@ bool oCWorld::Unarchive(zCArchiver* archiver)
 	BSP
 */
 
-bool zCBspBase::LoadBINRecursive(FileStream* file)
+bool zCBspBase::LoadBINRecursive(FileStream* file, zCBspTree* tree)
 {
 	file->Read(FILE_ARGS(bbox));
 	file->Read(FILE_ARGS(polyOffset));
@@ -481,6 +481,10 @@ bool zCBspBase::LoadBINRecursive(FileStream* file)
 		file->Read(FILE_ARGS(flag));
 		file->Read(FILE_ARGS(node->plane));
 
+		if (tree->game <= GAME_GOTHICSEQUEL)
+		{
+			file->Read(FILE_ARGS(node->renderLod));
+		}
 
 		if ((flag & 1) != 0)
 		{
@@ -493,7 +497,7 @@ bool zCBspBase::LoadBINRecursive(FileStream* file)
 				node->front = new zCBspNode();
 			}
 
-			if (!node->front->LoadBINRecursive(file))
+			if (!node->front->LoadBINRecursive(file, tree))
 			{
 				return false;
 			}
@@ -510,7 +514,7 @@ bool zCBspBase::LoadBINRecursive(FileStream* file)
 				node->back = new zCBspNode();
 			}
 
-			if (!node->back->LoadBINRecursive(file))
+			if (!node->back->LoadBINRecursive(file, tree))
 			{
 				return false;
 			}
@@ -536,9 +540,6 @@ bool zCBspTree::LoadBIN(FileStream* file)
 		LOG_ERROR("Unexpected end of file when reading MeshAndBsp chunk");
 		return false;
 	}
-
-	//file->Seek(file->Tell() + length); // temp
-	//return true; // temp
 
 	// Mesh
 	mesh.game = game;
@@ -576,10 +577,29 @@ bool zCBspTree::LoadBIN(FileStream* file)
 			uint16_t bspVersion;
 			file->Read(FILE_ARGS(bspVersion));
 
-			if (bspVersion != 3)
+			if (game >= GAME_GOTHIC2)
 			{
-				LOG_ERROR("Unknown BSP version \"" + std::to_string(bspVersion) + "\" found.");
-				return false;
+				if (bspVersion != 3)
+				{
+					LOG_ERROR("Unknown BSP version \"" + std::to_string(bspVersion) + "\" found, expected version 3!");
+					return false;
+				}
+			}
+			else if (game >= GAME_GOTHIC1)
+			{
+				if (bspVersion != 2)
+				{
+					LOG_ERROR("Unknown BSP version \"" + std::to_string(bspVersion) + "\" found, expected version 2!");
+					return false;
+				}
+			}
+			else if (game >= GAME_CHRISTMASEDITION)
+			{
+				if (bspVersion != 1)
+				{
+					LOG_ERROR("Unknown BSP version \"" + std::to_string(bspVersion) + "\" found, expected version 1!");
+					return false;
+				}
 			}
 
 			file->Read(FILE_ARGS(mode));
@@ -607,7 +627,7 @@ bool zCBspTree::LoadBIN(FileStream* file)
 			file->Read(FILE_ARGS(leafCount));
 
 			root = new zCBspNode();
-			if (!root->LoadBINRecursive(file))
+			if (!root->LoadBINRecursive(file, this))
 			{
 				return false;
 			}

@@ -14,6 +14,12 @@ namespace GothicLib
 		{
 		public:
 
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	200	},
+			};
+
 			GE_DECLARE_CLASS(gCProject, eCProcessibleElement);
 
 			gCProject()				{ }
@@ -46,6 +52,12 @@ namespace GothicLib
 		{
 		public:
 
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	36	},
+				{ GAME_RISEN1,	200	},
+			};
+
 			GE_DECLARE_CLASS(gCWorld, eCProcessibleElement);
 
 			gCWorld()			{ }
@@ -73,6 +85,12 @@ namespace GothicLib
 		class gCSector : public eCProcessibleElement
 		{
 		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	27	},
+				{ GAME_RISEN1,	200	},
+			};
 
 			GE_DECLARE_CLASS(gCSector, eCProcessibleElement);
 
@@ -120,6 +138,12 @@ namespace GothicLib
 		{
 		public:
 
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	1	},
+			};
+
 			GE_DECLARE_CLASS(gCLayerBase, eCProcessibleElement);
 
 			gCLayerBase()			{ }
@@ -136,6 +160,11 @@ namespace GothicLib
 		class gCGeometryLayer : public gCLayerBase
 		{
 		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	1	},
+			};
 
 			GE_DECLARE_CLASS(gCGeometryLayer, gCLayerBase);
 
@@ -158,6 +187,12 @@ namespace GothicLib
 		class gCDynamicLayer : public gCLayerBase
 		{
 		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	83	},
+				{ GAME_RISEN1,	200	},
+			};
 
 			GE_DECLARE_CLASS(gCDynamicLayer, gCLayerBase);
 
@@ -186,9 +221,17 @@ namespace GothicLib
 				eCEntityDynamicContext
 		*/
 
+		class eCEntity;
+
 		class eCContextBase : public bCObjectRefBase
 		{
 		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	83	},
+				{ GAME_RISEN1,	83	},
+			};
 
 			GE_DECLARE_CLASS(eCContextBase, bCObjectRefBase);
 
@@ -202,6 +245,8 @@ namespace GothicLib
 			float	visualLoDFactor;
 			float	objectCullFactor;
 
+			eCEntity* rootEntity;
+
 		private:
 
 		};
@@ -209,6 +254,11 @@ namespace GothicLib
 		class eCGeometrySpatialContext : public eCContextBase
 		{
 		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	83	},
+			};
 
 			GE_DECLARE_CLASS(eCGeometrySpatialContext, eCContextBase);
 
@@ -230,6 +280,12 @@ namespace GothicLib
 		class eCEntityDynamicContext : public eCContextBase
 		{
 		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	212	},
+			};
 
 			GE_DECLARE_CLASS(eCEntityDynamicContext, eCContextBase);
 
@@ -272,6 +328,12 @@ namespace GothicLib
 		{
 		public:
 
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	210	},
+			};
+
 			GE_DECLARE_CLASS(eCNode, bCObjectRefBase);
 
 			eCNode()			{ }
@@ -286,9 +348,17 @@ namespace GothicLib
 
 		};
 
+		class eCEntityPropertySet;
+
 		class eCEntity : public eCNode
 		{
 		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	83	},
+				{ GAME_RISEN1,	217	},
+			};
 
 			GE_DECLARE_CLASS(eCEntity, eCNode);
 
@@ -325,6 +395,8 @@ namespace GothicLib
 			bool		forceOutdoor;
 			bool		saveGameRelevant;
 			
+			std::vector<eCEntityPropertySet*> propertySets;
+
 		private:
 
 		};
@@ -332,6 +404,11 @@ namespace GothicLib
 		class eCGeometryEntity : public eCEntity
 		{
 		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_RISEN1,	214	},
+			};
 
 			GE_DECLARE_CLASS(eCGeometryEntity, eCEntity);
 
@@ -353,6 +430,11 @@ namespace GothicLib
 		{
 		public:
 
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	35	},
+			};
+
 			GE_DECLARE_CLASS(eCSpatialEntity, eCGeometryEntity);
 
 			eCSpatialEntity()			{ }
@@ -371,6 +453,12 @@ namespace GothicLib
 		class eCDynamicEntity : public eCGeometryEntity
 		{
 		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	83	},
+				{ GAME_RISEN1,	214	},
+			};
 
 			GE_DECLARE_CLASS(eCDynamicEntity, eCGeometryEntity);
 
@@ -391,7 +479,220 @@ namespace GothicLib
 		};
 
 		/*
-			
+			eCEntityPropertySet
+				eCCollisionShapeBase_PS
+					eCCollisionShape_PS
+				eCDynamicLight_PS
+					eCDirectionalLight_PS
+					eCHemisphere_PS
+				eCVisualMeshBase_PS [GOTHIC3]
+					eCVisualMeshStatic_PS [GOTHIC3]
 		*/
+
+		class eCEntityPropertySet : public bCObjectRefBase
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	2	},
+				{ GAME_RISEN1,	2	},
+			};
+
+			GE_DECLARE_CLASS(eCEntityPropertySet, bCObjectRefBase);
+
+			eCEntityPropertySet()			{ }
+			virtual ~eCEntityPropertySet()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			bool renderingEnabled;
+
+		private:
+
+		};
+
+		class eCCollisionShapeBase_PS : public eCEntityPropertySet
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	1	},
+			};
+
+			GE_DECLARE_CLASS(eCCollisionShapeBase_PS, eCEntityPropertySet);
+
+			eCCollisionShapeBase_PS()			{ }
+			virtual ~eCCollisionShapeBase_PS()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+						
+		private:
+
+		};
+
+		class eCCollisionShape_PS : public eCCollisionShapeBase_PS
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	63	},
+				{ GAME_RISEN1,	63	},
+			};
+
+			GE_DECLARE_CLASS(eCCollisionShape_PS, eCCollisionShapeBase_PS);
+
+			eCCollisionShape_PS()			{ }
+			virtual ~eCCollisionShape_PS()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			GE_DECLARE_PROPERTY(eCCollisionShape_PS, GAME_GOTHIC3, bTPropertyContainer<enum eECollisionGroup>,	Group);
+			GE_DECLARE_PROPERTY(eCCollisionShape_PS, GAME_GOTHIC3, bTPropertyContainer<enum eEPhysicRangeType>,	Range);
+			GE_DECLARE_PROPERTY(eCCollisionShape_PS, GAME_GOTHIC3, bool,										DisableCollision);
+			GE_DECLARE_PROPERTY(eCCollisionShape_PS, GAME_GOTHIC3, bool,										DisableResponse);
+			GE_DECLARE_PROPERTY(eCCollisionShape_PS, GAME_GOTHIC3, bool,										IgnoredByTraceRay);
+			
+		private:
+
+		};
+
+		class eCDynamicLight_PS : public eCEntityPropertySet
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	1	},
+			};
+
+			GE_DECLARE_CLASS(eCDynamicLight_PS, eCEntityPropertySet);
+
+			eCDynamicLight_PS()			{ }
+			virtual ~eCDynamicLight_PS()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			GE_DECLARE_PROPERTY(eCDynamicLight_PS, GAME_RISEN1, bool, Enabled);
+			
+		private:
+
+		};
+
+		class eCDirectionalLight_PS : public eCDynamicLight_PS
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	1	},
+			};
+
+			GE_DECLARE_CLASS(eCDirectionalLight_PS, eCDynamicLight_PS);
+
+			eCDirectionalLight_PS()				{ }
+			virtual ~eCDirectionalLight_PS()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			GE_DECLARE_PROPERTY(eCDirectionalLight_PS, GAME_RISEN1, bCFloatColor,	Color);
+			GE_DECLARE_PROPERTY(eCDirectionalLight_PS, GAME_RISEN1, bCFloatColor,	SpecularColor);
+			GE_DECLARE_PROPERTY(eCDirectionalLight_PS, GAME_RISEN1, float,			Intensity);
+			GE_DECLARE_PROPERTY(eCDirectionalLight_PS, GAME_RISEN1, bCEulerAngles,	DirectionOffset);
+			
+		private:
+
+		};
+
+		class eCHemisphere_PS : public eCDynamicLight_PS
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	1	},
+			};
+
+			GE_DECLARE_CLASS(eCHemisphere_PS, eCDynamicLight_PS);
+
+			eCHemisphere_PS()			{ }
+			virtual ~eCHemisphere_PS()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			GE_DECLARE_PROPERTY(eCHemisphere_PS, GAME_RISEN1, bCFloatColor,		GeneralAmbient);
+			GE_DECLARE_PROPERTY(eCHemisphere_PS, GAME_RISEN1, bCFloatColor,		BackLight);
+			GE_DECLARE_PROPERTY(eCHemisphere_PS, GAME_RISEN1, bCFloatColor,		GroundLight);
+			GE_DECLARE_PROPERTY(eCHemisphere_PS, GAME_RISEN1, bCEulerAngles,	BackLightAxisDirectionOffset);;
+			GE_DECLARE_PROPERTY(eCHemisphere_PS, GAME_RISEN1, float,			Intensity);
+			GE_DECLARE_PROPERTY(eCHemisphere_PS, GAME_RISEN1, bCFloatColor,		SunLight);
+			GE_DECLARE_PROPERTY(eCHemisphere_PS, GAME_RISEN1, bCEulerAngles,	SunLightAxisDirectionOffset);
+			
+		private:
+
+		};
+
+		class eCVisualMeshBase_PS : public eCEntityPropertySet
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	1	},
+			};
+
+			GE_DECLARE_CLASS(eCVisualMeshBase_PS, eCEntityPropertySet);
+
+			eCVisualMeshBase_PS()			{ }
+			virtual ~eCVisualMeshBase_PS()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			GE_DECLARE_PROPERTY(eCVisualMeshBase_PS, GAME_GOTHIC3, bCMeshResourceString,									ResourceFileName);
+			GE_DECLARE_PROPERTY(eCVisualMeshBase_PS, GAME_GOTHIC3, bTPropertyContainer<enum eEStaticLighingType>,			StaticLightingType);
+			GE_DECLARE_PROPERTY(eCVisualMeshBase_PS, GAME_GOTHIC3, bTPropertyContainer<enum eELightmapAmbientOcclusion>,	LightmapAmbientOcclusion);
+			GE_DECLARE_PROPERTY(eCVisualMeshBase_PS, GAME_GOTHIC3, bTPropertyContainer<enum eELightmapType>,				LightmapType);
+			GE_DECLARE_PROPERTY(eCVisualMeshBase_PS, GAME_GOTHIC3, float,													UnitsPerLightmapTexel);
+			GE_DECLARE_PROPERTY(eCVisualMeshBase_PS, GAME_GOTHIC3, int,														MaterialSwitch);
+			
+		private:
+
+		};
+
+		class eCVisualMeshStatic_PS : public eCVisualMeshBase_PS
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	50	},
+			};
+
+			GE_DECLARE_CLASS(eCVisualMeshStatic_PS, eCVisualMeshBase_PS);
+
+			eCVisualMeshStatic_PS()				{ }
+			virtual ~eCVisualMeshStatic_PS()	{ }
+
+			virtual bool OnWrite(FileStream*);
+			virtual bool OnRead(FileStream*);
+
+			GE_DECLARE_PROPERTY(eCVisualMeshStatic_PS, GAME_GOTHIC3, bCMeshResourceString, ResourceFilePath);
+			
+		private:
+
+		};
 	};
 };

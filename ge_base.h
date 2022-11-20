@@ -13,6 +13,7 @@ namespace GothicLib
 		class bCObjectBase;
 
 		typedef std::string bCString;
+		typedef std::string bCMeshResourceString;
 		template <typename T> using bTRefPtrArray = std::vector<T>;
 		template <typename T> using bTPOSmartPtr = std::shared_ptr<T>;
 		template <typename T> using bTPropertyContainer = int;
@@ -49,6 +50,16 @@ namespace GothicLib
 		struct bCMatrix
 		{
 			bCVector4 x, y, z, w;
+		};
+
+		struct bCEulerAngles
+		{
+			float x, y, z;
+		};
+
+		struct bCFloatColor
+		{
+			float r, g, b, a; // bgra?
 		};
 
 		struct bCBox
@@ -213,6 +224,8 @@ namespace GothicLib
 			Object persistence
 		*/
 
+#define VERSION_NONE 0xFFFF
+
 		struct CLASS_REVISION
 		{
 			GAME		game;
@@ -225,19 +238,19 @@ namespace GothicLib
 		{
 		public:
 
-			ClassDefinition(std::string, std::string, bCObjectBase*(*)());
+			ClassDefinition(std::string, std::string, bCObjectBase*(*)(), CLASS_REVISION*, size_t);
 			~ClassDefinition();
 
 			inline std::string		GetName()			{ return name; };
 			inline std::string		GetBase()			{ return base; };
 			inline ClassDefinition*	GetBaseDef()		{ if (!baseDef) { baseDef = GetClassDef(base); } return baseDef; };
 			inline bCObjectBase*	CreateInstance()	{ return createFunc(); };
+			uint16_t				GetVersion(GAME);
+			bool					IsVersionSupported(GAME, uint16_t);
 			
 			inline std::vector<PropertyDefinition*>& GetProperties() { return properties; };
 
 			static ClassDefinition* GetClassDef(std::string);
-
-
 
 		private:
 
@@ -245,6 +258,8 @@ namespace GothicLib
 			std::string			base;
 			ClassDefinition*	baseDef = nullptr;
 			bCObjectBase*		(*createFunc)();
+			CLASS_REVISION*		revisions;
+			size_t				revisionCount;
 
 			std::vector<PropertyDefinition*> properties;
 
@@ -282,10 +297,13 @@ namespace GothicLib
 		static bCObjectBase* CreateInstance() { return new C(); }				\
 																				\
 		inline static ClassDefinition* classDef =								\
-			new ClassDefinition(#C, #B, &C::CreateInstance);					\
+			new ClassDefinition(#C, #B, &C::CreateInstance, revisions,			\
+								sizeof(revisions) / sizeof(revisions[0]));		\
 																				\
 		inline static ClassDefinition* GetStaticClassDef() { return classDef; }	\
 		virtual ClassDefinition* GetClassDef() { return classDef; }				\
+																				\
+		virtual uint16_t GetVersion() { return classDef->GetVersion(game); }	\
 																				\
 		DECLARE_MEMORY_POOL(C)
 
@@ -305,6 +323,14 @@ namespace GothicLib
 		{
 		public:
 
+			GAME game = GAME_NONE;
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	201	},
+			};
+
 			GE_DECLARE_CLASS(bCObjectBase, );
 
 			bCObjectBase()			{}
@@ -313,8 +339,6 @@ namespace GothicLib
 			virtual bool OnWrite(FileStream*);
 			virtual bool OnRead(FileStream*);
 
-			GAME game = GAME_NONE;
-
 		private:
 
 		};
@@ -322,6 +346,12 @@ namespace GothicLib
 		class bCObjectRefBase : public bCObjectBase
 		{
 		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	1	},
+			};
 
 			GE_DECLARE_CLASS(bCObjectRefBase, bCObjectBase);
 
@@ -342,6 +372,12 @@ namespace GothicLib
 		class eCProcessibleElement : public bCObjectRefBase
 		{
 		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	1	},
+			};
 
 			GE_DECLARE_CLASS(eCProcessibleElement, bCObjectRefBase);
 

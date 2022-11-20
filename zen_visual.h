@@ -261,6 +261,19 @@ namespace GothicLib
 			unsigned char ghostOccluder : 1;
 			unsigned short sectorIndex : 16;
 		};
+
+		struct PolygonFlagsOld
+		{
+			unsigned char portalPoly : 2;
+			unsigned char occluder : 1;
+			unsigned char sectorPoly : 1;
+			unsigned char lodFlag : 1;
+			unsigned char portalIndoorOutdoor : 1;
+			unsigned char ghostOccluder : 1;
+			unsigned char normalMainAxis : 2;
+			unsigned short sectorIndex : 16;
+		};
+
 #pragma pack( pop )
 
 		struct Poly

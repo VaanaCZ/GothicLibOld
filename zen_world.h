@@ -119,12 +119,13 @@ namespace GothicLib
 
 			zCBspBase() { }
 
-			bool LoadBINRecursive(FileStream*);
+			bool LoadBINRecursive(FileStream*, zCBspTree*);
 			virtual bool IsNode() = 0;
 
 			zTBBox3D	bbox;
 			uint32_t	polyOffset;
 			uint32_t	polyCount;
+			
 		};
 
 		class zCBspNode : public zCBspBase
@@ -135,9 +136,10 @@ namespace GothicLib
 
 			virtual bool IsNode() { return true; }
 
-			zTPlane plane;
-			zCBspBase* front;
-			zCBspBase* back;
+			zTPlane		plane;
+			zCBspBase*	front;
+			zCBspBase*	back;
+			bool		renderLod;	// Legacy
 
 		};
 

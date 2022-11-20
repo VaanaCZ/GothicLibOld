@@ -287,7 +287,8 @@ bool bCAccessorPropertyObject::Write(FileStream* file)
 			}
 
 			// Special cases
-			if (type == "bCString")
+			if (type == "bCString" ||
+				type == "bCMeshResourceString")
 			{
 				std::string* str = (std::string*)((size_t)nativeObject + property->GetOffset());
 
@@ -458,6 +459,13 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 		return false;
 	}
 
+	// Figure out if the class is supported			
+	if (classDef->GetVersion(game) == VERSION_NONE)
+	{
+		LOG_ERROR("Class " + classDef->GetName() + " is not supported in the specified engine revision!");
+		return false;
+	}
+
 	if (nativeObject)
 	{
 		if (nativeObject->GetClassDef()->GetName() != className)
@@ -528,7 +536,8 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 				continue;
 
 			// Special cases
-			if (propertyType == "bCString")
+			if (propertyType == "bCString" ||
+				propertyType == "bCMeshResourceString")
 			{
 				std::string* str = (std::string*)((size_t)nativeObject + property->GetOffset());
 
@@ -549,7 +558,7 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 					return false;
 				}
 
-				if (property->GetType() != propertyType)
+				if (property->GetSize() != propertyWritten.size)
 				{
 					LOG_ERROR("Could not read property \"" + propertyName + "\" of class \"" + className +
 						"\". Expected size \"" + std::to_string(property->GetSize()) +
@@ -598,11 +607,14 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 	return true;
 }
 
-ClassDefinition::ClassDefinition(std::string _name, std::string _base, bCObjectBase* (*_createFunc)())
+ClassDefinition::ClassDefinition(std::string _name, std::string _base, bCObjectBase* (*_createFunc)(),
+	CLASS_REVISION* _revisions, size_t _revisionCount)
 {
 	name			= _name;
 	base			= _base;
 	createFunc		= _createFunc;
+	revisions		= _revisions;
+	revisionCount	= _revisionCount;
 
 	if (!classList)
 	{
@@ -643,6 +655,34 @@ ClassDefinition* ClassDefinition::GetClassDef(std::string name)
 	}
 
 	return nullptr;
+}
+
+uint16_t ClassDefinition::GetVersion(GAME game)
+{
+	for (size_t i = 0; i < revisionCount; i++)
+	{
+		if (revisions[i].game == game ||
+			revisions[i].game == GAME_ALL)
+		{
+			return revisions[i].version;
+		}
+	}
+
+	return VERSION_NONE;
+}
+
+bool ClassDefinition::IsVersionSupported(GAME game, uint16_t version)
+{
+	for (size_t i = 0; i < revisionCount; i++)
+	{
+		if (revisions[i].game == game &&
+			revisions[i].version == version)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 PropertyDefinition::PropertyDefinition(ClassDefinition* classDef, GAME _game,
