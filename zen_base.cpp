@@ -7,7 +7,6 @@ using namespace GothicLib::ZenGin;
 
 bool zCArchiver::Write(FileStream* _file, bool briefHeader)
 {
-	mode = ARCHIVER_MODE_ASCII; // temp
 	version = 1;
 	//version = 0;
 
@@ -311,9 +310,11 @@ bool zCArchiver::Read(FileStream* _file)
 	return true;
 }
 
-void GothicLib::ZenGin::zCArchiver::Close()
+void zCArchiver::EndWrite()
 {
 	// Write object count
+	uint64_t currPos = file->Tell();
+
 	file->Seek(objectCountPos);
 
 	if (mode == ARCHIVER_MODE_BIN_SAFE)
@@ -325,6 +326,13 @@ void GothicLib::ZenGin::zCArchiver::Close()
 		std::string strCount = std::to_string(objectList.size());
 		file->Write((char*)strCount.c_str(), strCount.size()); // Yes, this is correct.
 	}
+
+	file->Seek(currPos);
+}
+
+void zCArchiver::Close()
+{
+	EndWrite(); // temp
 
 	// Close file
 	file->Close();
@@ -690,6 +698,8 @@ bool zCArchiver::WriteObject(std::string name, zCObject* object)
 
 bool zCArchiver::WriteChunkStart(std::string objectName, std::string className, uint16_t classVersion, uint32_t objectIndex)
 {
+	CHUNK chunk;
+
 	if (mode == ARCHIVER_MODE_ASCII)
 	{
 		std::string output = "";
@@ -712,14 +722,34 @@ bool zCArchiver::WriteChunkStart(std::string objectName, std::string className, 
 						std::to_string(objectIndex) + "]";
 
 		file->WriteLine(output, "\n");
+
+		chunk.objectOffset = file->Tell();
+	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		chunk.objectOffset = file->Tell();
+
+		BinaryObjectHeader binHeader;
+		binHeader.objectSize	= 0;
+		binHeader.classVersion	= classVersion;
+		binHeader.objectIndex	= objectIndex;
+
+		if (!file->Write(FILE_ARGS(binHeader)))
+		{
+			return false;
+		}
+
+		if (!file->WriteNullString((objectName.empty() ? "%" : objectName)))
+			return false;
+
+		if (!file->WriteNullString((className.empty() ? "%" : className)))
+			return false;
 	}
 
 	// Mark that we entered a new chunk
-	CHUNK chunk;
 	chunk.objectName	= (objectName.empty() ? "%" : objectName);
 	chunk.className		= (className.empty() ? "%" : className);
 	chunk.objectIndex	= objectIndex;
-	chunk.objectOffset	= file->Tell();
 	
 	chunkStack.push_back(chunk);
 
@@ -729,7 +759,7 @@ bool zCArchiver::WriteChunkStart(std::string objectName, std::string className, 
 bool zCArchiver::WriteChunkEnd()
 {
 	// Mark that we left a chunk
-	chunkStack.pop_back();
+	CHUNK& chunk = chunkStack[chunkStack.size() - 1];
 
 	// Read end
 	if (mode == ARCHIVER_MODE_ASCII)
@@ -737,11 +767,13 @@ bool zCArchiver::WriteChunkEnd()
 		std::string output = "";
 
 		// Tabs
-		if (chunkStack.size() != 0)
-		{
-			output.resize(chunkStack.size());
+		size_t tabs = chunkStack.size() - 1;
 
-			for (size_t i = 0; i < chunkStack.size(); i++)
+		if (tabs != 0)
+		{
+			output.resize(tabs);
+
+			for (size_t i = 0; i < tabs; i++)
 			{
 				output[i] = '\t';
 			}
@@ -752,6 +784,19 @@ bool zCArchiver::WriteChunkEnd()
 
 		file->WriteLine(output, "\n");
 	}
+	else if (mode == ARCHIVER_MODE_BINARY)
+	{
+		uint64_t currPos = file->Tell();
+
+		file->Seek(chunk.objectOffset);
+
+		uint32_t chunkSize = currPos - chunk.objectOffset;
+		file->Write(FILE_ARGS(chunkSize));
+
+		file->Seek(currPos);
+	}
+
+	chunkStack.pop_back();
 
 	return true;
 }

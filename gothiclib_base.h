@@ -270,7 +270,6 @@ namespace GothicLib
 		bool			Read(void*, uint64_t);
 		virtual bool	ReadString(std::string&);
 		bool			ReadNullString(std::string&);
-		bool			ReadTerminatedString(std::string&, char);
 		bool			ReadLine(std::string&);
 
 		bool			Write(void*, uint64_t);
@@ -281,6 +280,14 @@ namespace GothicLib
 		void			Seek(uint64_t pos);
 		uint64_t		Tell();
 		uint64_t		TotalSize();
+
+		/*
+			Chunks
+		*/
+
+		uint64_t		StartBinChunk(uint16_t);
+		void			EndBinChunk(uint64_t);
+
 
 		inline bool		Error()		{ return error; }
 

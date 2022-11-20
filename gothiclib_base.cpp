@@ -380,11 +380,6 @@ bool GothicLib::FileStream::ReadString(std::string& str)
 
 bool FileStream::ReadNullString(std::string& str)
 {
-	return ReadTerminatedString(str, NULL);
-}
-
-bool FileStream::ReadTerminatedString(std::string& str, char terminator)
-{
 	if (error)
 	{
 		return false;
@@ -400,7 +395,7 @@ bool FileStream::ReadTerminatedString(std::string& str, char terminator)
 	{
 		result = true;
 
-		if (c == terminator)
+		if (c == NULL)
 		{
 			break;
 		}
@@ -649,6 +644,28 @@ uint64_t FileStream::TotalSize()
 	{
 		return oTotalSize;
 	}
+}
+
+uint64_t FileStream::StartBinChunk(uint16_t type)
+{
+	uint64_t startPos = Tell();
+
+	uint32_t length = 0;
+	Write(FILE_ARGS(type));
+	Write(FILE_ARGS(length));
+
+	return startPos;
+}
+
+void FileStream::EndBinChunk(uint64_t startPos)
+{
+	uint64_t currPos = Tell();
+
+	uint32_t length = currPos - startPos - 6;
+	Seek(startPos + 2);
+	Write(FILE_ARGS(length));
+
+	Seek(currPos);
 }
 
 //

@@ -168,6 +168,7 @@ namespace GothicLib
 			bool Write(FileStream*, bool = false);
 			bool Read(FileStream*);
 
+			void EndWrite();
 			void Close();
 
 			// Write functions
@@ -259,6 +260,7 @@ namespace GothicLib
 			bool ReadASCIIProperty(std::string, std::string, std::string&);
 			bool ReadBinSafeProperty(BINSAFE_TYPE, void*, size_t = 0);
 
+			public: //temp
 			enum ARCHIVER_MODE
 			{
 				ARCHIVER_MODE_BINARY,
@@ -267,11 +269,16 @@ namespace GothicLib
 
 				ARCHIVER_MODE_NONE = -1
 			};
+			private: // temp
 
 			FileStream*		file;
 
 			unsigned short	version		= -1;
+
+			public: //temp
 			ARCHIVER_MODE	mode		= ARCHIVER_MODE_NONE;
+			private: // temp
+
 			bool			savegame	= false;
 			bool			properties	= false;
 

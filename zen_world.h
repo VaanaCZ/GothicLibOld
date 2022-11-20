@@ -119,7 +119,9 @@ namespace GothicLib
 
 			zCBspBase() { }
 
+			bool SaveBINRecursive(FileStream*, zCBspTree*);
 			bool LoadBINRecursive(FileStream*, zCBspTree*);
+
 			virtual bool IsNode() = 0;
 
 			zTBBox3D	bbox;
@@ -137,8 +139,8 @@ namespace GothicLib
 			virtual bool IsNode() { return true; }
 
 			zTPlane		plane;
-			zCBspBase*	front;
-			zCBspBase*	back;
+			zCBspBase*	front = nullptr;
+			zCBspBase*	back = nullptr;
 			bool		renderLod;	// Legacy
 
 		};
@@ -180,12 +182,16 @@ namespace GothicLib
 			zCMesh						mesh;
 			zTBspTreeMode				mode;
 			std::vector<uint32_t>		polys;
-			zCBspBase*					root;
+			zCBspBase*					root = nullptr;
 			std::vector<zVEC3>			lightPositions;
 			std::vector<zCBspSector>	sectors;
 			std::vector<uint32_t>		portalPolys;
 
+			size_t nodeCount = 0; //todo: friend
+			size_t leafCount = 0;//todo: friend
+
 		private:
+
 
 		};
 

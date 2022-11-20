@@ -12,8 +12,47 @@ using namespace GothicLib::ZenGin;
 
 bool zCMaterial::Archive(zCArchiver* archiver)
 {
-	if (!zCObject::Unarchive(archiver))
+	if (!zCObject::Archive(archiver))
 		return false;
+	
+	archiver->WriteString(ARC_ARGS(name));
+	archiver->WriteEnum(ARC_ARGSEW(matGroup, "UNDEF;METAL;STONE;WOOD;EARTH;WATER;SNOW"));
+	archiver->WriteColor(ARC_ARGS(color));
+	archiver->WriteFloat(ARC_ARGS(smoothAngle));
+	archiver->WriteString(ARC_ARGS(texture));
+	archiver->WriteString("texScale", FloatToString(texScale.x) + " " + FloatToString(texScale.y));
+	archiver->WriteFloat(ARC_ARGS(texAniFPS));
+	archiver->WriteEnum(ARC_ARGSEW(texAniMapMode, "NONE;LINEAR"));
+	archiver->WriteString("texAniMapDir", FloatToString(texAniMapDir.x) + " " + FloatToString(texAniMapDir.y));
+
+	if (game >= GAME_SEPTEMBERDEMO)
+	{
+		archiver->WriteBool(ARC_ARGS(noCollDet));
+		archiver->WriteBool(ARC_ARGS(noLightmap));
+		archiver->WriteBool(ARC_ARGS(lodDontCollapse));
+		archiver->WriteString(ARC_ARGS(detailObject));
+	}
+
+	if (game >= GAME_GOTHIC2)
+	{
+		archiver->WriteFloat(ARC_ARGS(detailObjectScale));
+		archiver->WriteBool(ARC_ARGS(forceOccluder));
+		archiver->WriteBool(ARC_ARGS(environmentalMapping));
+		archiver->WriteFloat(ARC_ARGS(environmentalMappingStrength));
+		archiver->WriteEnum(ARC_ARGSEW(waveMode, "NONE;AMBIENT_GROUND;GROUND;AMBIENT_WALL;WALL;ENV;AMBIENT_WIND;WIND"));
+		archiver->WriteEnum(ARC_ARGSEW(waveSpeed, "NONE;SLOW;NORMAL;FAST"));
+		archiver->WriteFloat(ARC_ARGS(waveMaxAmplitude));
+		archiver->WriteFloat(ARC_ARGS(waveGridSize));
+		archiver->WriteBool(ARC_ARGS(ignoreSunLight));
+		archiver->WriteEnum(ARC_ARGSEW(alphaFunc, "MAT_DEFAULT;NONE;BLEND;ADD;SUB;MUL;MUL2"));
+	}
+
+	if (game <= GAME_DEMO5)
+	{
+		archiver->WriteByte(ARC_ARGS(libFlag));
+	}
+
+	archiver->WriteRawFloat(ARC_ARGSF(defaultMapping));
 
 	return true;
 }
@@ -386,12 +425,245 @@ bool zCOBBox3D::LoadBIN(FileStream* file)
 
 bool zCOBBox3D::SaveBIN(FileStream* file)
 {
-	return false;
+	file->Write(&center, sizeof(center));
+	file->Write(&axis, sizeof(axis));
+	file->Write(&extent, sizeof(extent));
+
+	if (readChilds)
+	{
+		uint16_t childCount = childs.size();
+		file->Write(&childCount, sizeof(childCount));
+
+		for (size_t i = 0; i < childs.size(); i++)
+		{
+			childs[i].SaveBIN(file);
+		}
+	}
+
+	return true;
 }
+
+inline int CalcNormalMainAxis(zTPlane plane)
+{
+	int axis;
+
+	float r[3];
+	r[0] = fabs(plane.normal.x);
+	r[1] = fabs(plane.normal.y);
+	r[2] = fabs(plane.normal.z);
+
+	axis = (r[0] < r[1]);
+	if (r[2] > r[axis])
+		axis = 2;
+
+	return axis;
+};
 
 bool zCMesh::SaveMSH(FileStream* file)
 {
-	return false;
+	// Mesh start
+	uint64_t meshStart = file->StartBinChunk(MESHCHUNK_MESHSTART);
+
+	uint16_t version = 0;
+
+	if (game >= GAME_GOTHIC2)
+	{
+		version = 0x0109;
+	}
+	else
+	{
+		version = 0x0009;
+	}
+
+	file->Write(FILE_ARGS(version));
+	file->Write(FILE_ARGS(date));
+	file->WriteLine(name, "\n");
+
+	file->EndBinChunk(meshStart);
+
+	// Bbox
+	uint64_t bboxStart = file->StartBinChunk(MESHCHUNK_BBOX);
+
+	file->Write(FILE_ARGS(bbox));
+	obbox.SaveBIN(file);
+
+	file->EndBinChunk(bboxStart);
+
+	// Materials
+	uint64_t materialsStart = file->StartBinChunk(MESHCHUNK_MATERIALS);
+
+	zCArchiver archiver;
+	archiver.mode = zCArchiver::ARCHIVER_MODE_BINARY;
+	archiver.game = game;
+	archiver.Write(file, true);
+
+	if (game >= GAME_DEMO5)
+	{
+		archiver.WriteInt("", materials.size());
+	}
+	else
+	{
+		uint32_t materialCount = materials.size();
+		file->Write(FILE_ARGS(materialCount));
+	}
+
+	for (size_t i = 0; i < materials.size(); i++)
+	{
+		if (game >= GAME_DEMO5)
+		{
+			archiver.WriteString("", materials[i].name);
+			archiver.WriteObject(&materials[i]);
+		}
+		else
+		{
+			file->WriteLine(materials[i].name, "\r");
+			materials[i].Save(file);
+		}
+	}
+
+	if (game >= GAME_GOTHIC2)
+	{
+		archiver.WriteBool("", alphaTestingEnabled);
+	}
+
+	archiver.EndWrite();
+
+	file->EndBinChunk(materialsStart);
+
+	// Lightmaps
+	if (oldLightmaps)
+	{
+		uint64_t lightmapsStart = file->StartBinChunk(MESHCHUNK_LIGHTMAPS_OLD);
+
+		uint32_t textureCount = lightmaps.size();
+		file->Write(FILE_ARGS(textureCount));
+
+		for (size_t i = 0; i < lightmaps.size(); i++)
+		{
+			file->Write(FILE_ARGS(lightmaps[i].lmVectors));
+
+			if (!textures[i].SaveTexture(file))
+			{
+				return false;
+			}
+		}
+
+		file->EndBinChunk(lightmapsStart);
+	}
+	else
+	{
+		uint64_t lightmapsStart = file->StartBinChunk(MESHCHUNK_LIGHTMAPS_NEW);
+
+		uint32_t textureCount = textures.size();
+		file->Write(FILE_ARGS(textureCount));
+	
+		for (size_t i = 0; i < textures.size(); i++)
+		{
+			if (!textures[i].SaveTexture(file))
+			{
+				return false;
+			}
+		}
+
+		// Read lightmaps
+		uint32_t lightmapCount = lightmaps.size();
+		file->Write(FILE_ARGS(lightmapCount));
+
+		if (lightmaps.size() > 0)
+		{
+			file->Write(&lightmaps[0], sizeof(LightmapChunk) * lightmaps.size());
+		}
+
+		file->EndBinChunk(lightmapsStart);
+	}
+
+	// Verts
+	uint64_t vertsStart = file->StartBinChunk(MESHCHUNK_VERTS);
+
+	uint32_t vertCount = verts.size();
+	file->Write(FILE_ARGS(vertCount));
+
+	if (verts.size() > 0)
+	{
+		file->Write(&verts[0], sizeof(zVEC3) * verts.size());
+	}
+
+	file->EndBinChunk(vertsStart);
+
+	// Feats
+	uint64_t featsStart = file->StartBinChunk(MESHCHUNK_FEATS);
+
+	uint32_t featCount = feats.size();
+	file->Write(FILE_ARGS(featCount));
+
+	if (feats.size() > 0)
+	{
+		file->Write(&feats[0], sizeof(Feature) * feats.size());
+	}
+
+	file->EndBinChunk(featsStart);
+	
+	// Polys
+	uint64_t polysStart = file->StartBinChunk(MESHCHUNK_POLYS);
+
+	uint32_t polyCount = polys.size();
+	file->Write(FILE_ARGS(polyCount));
+
+	for (size_t i = 0; i < polys.size(); i++)
+	{
+		file->Write(FILE_ARGS(polys[i].materialIndex));
+		file->Write(FILE_ARGS(polys[i].lightmapIndex));
+		file->Write(FILE_ARGS(polys[i].plane));
+
+		if (game >= GAME_GOTHIC2)
+		{
+			file->Write(FILE_ARGS(polys[i].flags));
+		}
+		else
+		{
+			PolygonFlagsOld oldFlags;
+			memset(&oldFlags, 0, sizeof(oldFlags));
+			oldFlags.portalPoly				= polys[i].flags.portalPoly;
+			oldFlags.occluder				= polys[i].flags.occluder;
+			oldFlags.sectorPoly				= polys[i].flags.sectorPoly;
+			oldFlags.lodFlag				= polys[i].flags.lodFlag;
+			oldFlags.portalIndoorOutdoor	= polys[i].flags.portalIndoorOutdoor;
+			oldFlags.ghostOccluder			= polys[i].flags.ghostOccluder;
+			oldFlags.normalMainAxis			= CalcNormalMainAxis(polys[i].plane);
+			oldFlags.sectorIndex			= polys[i].flags.sectorIndex;
+
+			file->Write(FILE_ARGS(oldFlags));
+		}
+
+		uint8_t count = polys[i].verts.size();
+		file->Write(FILE_ARGS(count));
+
+		for (size_t j = 0; j < polys[i].verts.size(); j++)
+		{
+			int32_t vertIndex = polys[i].verts[j];
+			int16_t oldvertIndex = polys[i].verts[j];
+			uint32_t featIndex = polys[i].feats[j];
+
+			if (game >= GAME_GOTHIC2)
+			{
+				file->Write(FILE_ARGS(vertIndex));
+			}
+			else
+			{
+				file->Write(FILE_ARGS(oldvertIndex));
+			}
+
+			file->Write(FILE_ARGS(featIndex));
+		}
+	}
+
+	file->EndBinChunk(polysStart);
+
+	// End
+	uint64_t endStart = file->StartBinChunk(MESHCHUNK_MESHEND);
+	file->EndBinChunk(endStart);
+
+	return true;
 }
 
 bool zCMesh::LoadMSH(FileStream* file)
@@ -420,22 +692,34 @@ bool zCMesh::LoadMSH(FileStream* file)
 
 		case MESHCHUNK_MESHSTART:
 		{
-			uint16_t	version;
-			zDATE		date;
-			std::string	name;
+			uint16_t version;
 
 			file->Read(FILE_ARGS(version));
 			file->Read(FILE_ARGS(date));
 			file->ReadLine(name);
+
+			if (game >= GAME_GOTHIC2)
+			{
+				if (version != 0x0109)
+				{
+					LOG_ERROR("Unknown zCMesh version \"" + std::to_string(version) + "\" found, expected version 0x0109!");
+					return false;
+				}
+			}
+			else
+			{
+				if (version != 0x0009)
+				{
+					LOG_ERROR("Unknown zCMesh version \"" + std::to_string(version) + "\" found, expected version 0x0009!");
+					return false;
+				}
+			}
 
 			break;
 		}
 
 		case MESHCHUNK_BBOX:
 		{
-			zTBBox3D bbox;
-			zCOBBox3D obbox;
-
 			if (game <= GAME_DEMO5)
 			{
 				obbox.readChilds = false;
@@ -486,8 +770,6 @@ bool zCMesh::LoadMSH(FileStream* file)
 				}
 			}
 
-			zBOOL alphaTestingEnabled;
-			
 			if (game >= GAME_GOTHIC2)
 			{
 				archiver.ReadBool("", alphaTestingEnabled);
@@ -500,6 +782,8 @@ bool zCMesh::LoadMSH(FileStream* file)
 
 		case MESHCHUNK_LIGHTMAPS_OLD:
 		{
+			oldLightmaps = true;
+
 			// Read textures
  			uint32_t textureCount = 0;
 			file->Read(FILE_ARGS(textureCount));
@@ -531,6 +815,8 @@ bool zCMesh::LoadMSH(FileStream* file)
 		
 		case MESHCHUNK_LIGHTMAPS_NEW:
 		{
+			oldLightmaps = false;
+
 			// Read textures
 			uint32_t textureCount = 0;
 			file->Read(FILE_ARGS(textureCount));

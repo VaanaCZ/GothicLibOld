@@ -273,7 +273,6 @@ namespace GothicLib
 			unsigned char normalMainAxis : 2;
 			unsigned short sectorIndex : 16;
 		};
-
 #pragma pack( pop )
 
 		struct Poly
@@ -309,6 +308,14 @@ namespace GothicLib
 
 			bool SaveMSH(FileStream*);
 			bool LoadMSH(FileStream*);
+
+			zDATE		date;
+			std::string	name;
+			zTBBox3D	bbox;
+			zCOBBox3D	obbox;
+
+			zBOOL	alphaTestingEnabled;
+			bool	oldLightmaps;
 
 			std::vector<zCMaterial>		materials;
 			std::vector<zCTexture>		textures;

@@ -20,6 +20,7 @@ bool zCWorld::SaveWorld(FileStream* file)
 	else if (game >= GAME_DEMO5)
 	{
 		zCArchiver archiver;
+		archiver.mode = zCArchiver::ARCHIVER_MODE_ASCII; // temp
 		archiver.game = game;
 		if (!archiver.Write(file))
 		{
@@ -76,6 +77,17 @@ bool zCWorld::Archive(zCArchiver* archiver)
 {
 	if (!zCObject::Archive(archiver))
 		return false;
+
+	// MeshAndBsp
+	if (bsp)
+	{
+		archiver->WriteChunkStart("MeshAndBsp");
+		if (!bsp->SaveBIN(archiver->GetFile()))
+		{
+			return false;
+		}
+		archiver->WriteChunkEnd();
+	}
 
 	// VobTree
 	if (vobTree)
@@ -302,7 +314,7 @@ bool zCWorld::LoadWorldFile(FileStream* file)
 
 			if (!bsp->LoadBIN(file))
 			{
-				//return false;
+				return false;
 			}
 		}
 		else if (line.find("VobHierarchy") == 0)
@@ -467,6 +479,66 @@ bool oCWorld::Unarchive(zCArchiver* archiver)
 	BSP
 */
 
+bool zCBspBase::SaveBINRecursive(FileStream* file, zCBspTree* tree)
+{
+	file->Write(FILE_ARGS(bbox));
+	file->Write(FILE_ARGS(polyOffset));
+	file->Write(FILE_ARGS(polyCount));
+
+	tree->nodeCount++;
+
+	if (IsNode())
+	{
+		zCBspNode* node = (zCBspNode*)this;
+
+		uint8_t flag = 0;
+
+		if (node->front)
+		{
+			flag |= 1;
+
+			if (!node->front->IsNode())
+			{
+				flag |= 4;
+			}
+		}
+
+		if (node->back)
+		{
+			flag |= 2;
+
+			if (!node->back->IsNode())
+			{
+				flag |= 8;
+			}
+		}
+
+		file->Write(FILE_ARGS(flag));
+		file->Write(FILE_ARGS(node->plane));
+
+		if (tree->game <= GAME_GOTHICSEQUEL)
+		{
+			file->Write(FILE_ARGS(node->renderLod));
+		}
+
+		if (node->front)
+		{
+			node->front->SaveBINRecursive(file, tree);
+		}
+
+		if (node->back)
+		{
+			node->back->SaveBINRecursive(file, tree);
+		}
+	}
+	else
+	{
+		tree->leafCount++;
+	}
+
+	return true;
+}
+
 bool zCBspBase::LoadBINRecursive(FileStream* file, zCBspTree* tree)
 {
 	file->Read(FILE_ARGS(bbox));
@@ -526,7 +598,167 @@ bool zCBspBase::LoadBINRecursive(FileStream* file, zCBspTree* tree)
 
 bool zCBspTree::SaveBIN(FileStream* file)
 {
-	return false;
+	// Write beginning
+	uint64_t startPos = file->Tell();
+
+	uint32_t version = 0;
+
+	if (game >= GAME_GOTHIC2)
+	{
+		version = 0x04090000;
+	}
+	else if(game >= GAME_GOTHIC1)
+	{
+		version = 0x02090000;
+	}
+	else
+	{
+		version = 0x01090000;
+	}
+
+	uint32_t length = 0;
+
+	file->Write(FILE_ARGS(version));
+	file->Write(FILE_ARGS(length));
+
+	// Mesh
+	if (!mesh.SaveMSH(file))
+	{
+		return false;
+	}
+
+	// Write BSP start
+	uint64_t bspStart = file->StartBinChunk(BSPCHUNK_START);
+
+	uint16_t bspVersion = 0;
+
+	if (game >= GAME_GOTHIC2)
+	{
+		bspVersion = 3;
+	}
+	else if (game >= GAME_GOTHIC1)
+	{
+		bspVersion = 2;
+	}
+	else
+	{
+		bspVersion = 1;
+	}
+
+	file->Write(FILE_ARGS(bspVersion));
+	file->Write(FILE_ARGS(mode));
+
+	file->EndBinChunk(bspStart);
+
+	// Polys
+	uint64_t polysStart = file->StartBinChunk(BSPCHUNK_POLYS);
+
+	uint32_t polyCount = polys.size();
+	file->Write(FILE_ARGS(polyCount));
+
+	if (polys.size() > 0)
+	{
+		file->Write(&polys[0], sizeof(uint32_t) * polys.size());
+	}
+
+	file->EndBinChunk(polysStart);
+
+	// Tree
+	uint64_t treeStart = file->StartBinChunk(BSPCHUNK_TREE);
+
+	nodeCount = leafCount = 0;
+
+	uint64_t countPos = file->Tell();
+
+	file->Write(FILE_ARGS(nodeCount));
+	file->Write(FILE_ARGS(leafCount));
+
+	if (!root->SaveBINRecursive(file, this))
+	{
+		return false;
+	}
+
+	uint64_t currPos2 = file->Tell();
+
+	file->Seek(countPos);
+
+	file->Write(FILE_ARGS(nodeCount));
+	file->Write(FILE_ARGS(leafCount));
+
+	file->Seek(currPos2);
+
+	file->EndBinChunk(treeStart);
+
+	// Lights
+	if (game >= GAME_GOTHIC1)
+	{
+		uint64_t lightsStart = file->StartBinChunk(BSPCHUNK_LIGHTS);
+	
+		if (lightPositions.size() > 0)
+		{
+			file->Write(&lightPositions[0], sizeof(zVEC3) * lightPositions.size());
+		}
+
+		file->EndBinChunk(lightsStart);
+	}
+
+	// Sectors
+	uint64_t sectorsStart = file->StartBinChunk(BSPCHUNK_OUTDOOR_SECTORS);
+
+	uint32_t sectorCount = sectors.size();
+	file->Write(FILE_ARGS(sectorCount));
+	
+	for (size_t i = 0; i < sectors.size(); i++)
+	{
+		zCBspSector& sector = sectors[i];
+
+		file->WriteLine(sector.name, "\n");
+
+		uint32_t nodeCount = sector.nodes.size();
+		uint32_t portalCount = sector.portalPolys.size();
+
+		file->Write(FILE_ARGS(nodeCount));
+		file->Write(FILE_ARGS(portalCount));
+
+		if (sector.nodes.size() > 0)
+		{
+			file->Write(&sector.nodes[0], sizeof(uint32_t) * sector.nodes.size());
+		}
+
+		if (sector.portalPolys.size() > 0)
+		{
+			file->Write(&sector.portalPolys[0], sizeof(uint32_t) * sector.portalPolys.size());
+		}
+	}
+
+	uint32_t portalCount = portalPolys.size();
+	file->Write(FILE_ARGS(portalCount));
+
+	if (portalPolys.size() > 0)
+	{
+		file->Write(&portalPolys[0], sizeof(uint32_t) * portalPolys.size());
+	}
+
+	file->EndBinChunk(sectorsStart);
+
+	// End
+	uint64_t endStart = file->StartBinChunk(BSPCHUNK_END);
+
+	uint8_t endMarker = 0x42;
+	file->Write(FILE_ARGS(endMarker)); // B
+
+	file->EndBinChunk(endStart);
+
+	// Close chunk
+	uint64_t currPos = file->Tell();
+
+	length = currPos - startPos - 8;
+	file->Seek(startPos + 4);
+	file->Write(FILE_ARGS(length));
+
+	file->Seek(currPos);
+
+	return true;
 }
 
 bool zCBspTree::LoadBIN(FileStream* file)
@@ -534,11 +766,36 @@ bool zCBspTree::LoadBIN(FileStream* file)
 	// Read start
 	uint32_t version, length;
 
-	if (!file->Read(&version, sizeof(version)) ||
-		!file->Read(&length, sizeof(length)))
+	if (!file->Read(FILE_ARGS(version)) ||
+		!file->Read(FILE_ARGS(length)))
 	{
 		LOG_ERROR("Unexpected end of file when reading MeshAndBsp chunk");
 		return false;
+	}
+
+	if (game >= GAME_GOTHIC2)
+	{
+		if (version != 0x04090000)
+		{
+			LOG_ERROR("Unknown MeshAndBSP version \"" + std::to_string(version) + "\" found, expected version 0x04090000!");
+			return false;
+		}
+	}
+	else if (game >= GAME_GOTHIC1)
+	{
+		if (version != 0x02090000)
+		{
+			LOG_ERROR("Unknown MeshAndBSP version \"" + std::to_string(version) + "\" found, expected version 0x02090000!");
+			return false;
+		}
+	}
+	else
+	{
+		if (version != 0x01090000)
+		{
+			LOG_ERROR("Unknown MeshAndBSP version \"" + std::to_string(version) + "\" found, expected version 0x01090000!");
+			return false;
+		}
 	}
 
 	// Mesh
@@ -551,7 +808,7 @@ bool zCBspTree::LoadBIN(FileStream* file)
 	// Read BSP chunks
 	bool end = false;
 
-	uint32_t nodeCount, leafCount = 0;
+	nodeCount = leafCount = 0;
 
 	while (true)
 	{
@@ -593,7 +850,7 @@ bool zCBspTree::LoadBIN(FileStream* file)
 					return false;
 				}
 			}
-			else if (game >= GAME_CHRISTMASEDITION)
+			else
 			{
 				if (bspVersion != 1)
 				{
@@ -626,10 +883,13 @@ bool zCBspTree::LoadBIN(FileStream* file)
 			file->Read(FILE_ARGS(nodeCount));
 			file->Read(FILE_ARGS(leafCount));
 
-			root = new zCBspNode();
-			if (!root->LoadBINRecursive(file, this))
+			if (nodeCount > 0 || leafCount > 0)
 			{
-				return false;
+				root = new zCBspNode();
+				if (!root->LoadBINRecursive(file, this))
+				{
+					return false;
+				}
 			}
 
 			break;
@@ -660,7 +920,7 @@ bool zCBspTree::LoadBIN(FileStream* file)
 				{
 					zCBspSector& sector = sectors[i];
 
-					file->ReadTerminatedString(sector.name, '\n');
+					file->ReadLine(sector.name);
 
 					uint32_t nodeCount, portalCount = 0;
 					file->Read(FILE_ARGS(nodeCount));

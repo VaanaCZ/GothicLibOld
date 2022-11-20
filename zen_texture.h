@@ -64,6 +64,7 @@ namespace GothicLib
 			zCTexture()				{ }
 			virtual ~zCTexture()	{ }
 
+			bool SaveTexture(FileStream*);
 			bool LoadTexture(FileStream*);
 			void Destroy();
 

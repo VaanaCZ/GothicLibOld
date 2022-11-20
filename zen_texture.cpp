@@ -2,6 +2,46 @@
 
 using namespace GothicLib::ZenGin;
 
+bool zCTexture::SaveTexture(FileStream* file)
+{
+	// Write beginning
+	uint32_t signature = 0x5845545A;
+	uint32_t version = 0;
+
+	file->Write(FILE_ARGS(signature));
+	file->Write(FILE_ARGS(version));
+
+	// Read info
+	file->Write(FILE_ARGS(format));
+	file->Write(FILE_ARGS(width));
+	file->Write(FILE_ARGS(height));
+	file->Write(FILE_ARGS(mipmapCount));
+	file->Write(FILE_ARGS(refWidth));
+	file->Write(FILE_ARGS(refHeight));
+	file->Write(FILE_ARGS(averageColor));
+
+	// Read data
+	int32_t currWidth, currHeight;
+
+	for (int i = mipmapCount - 1; i >= 0; i--)
+	{
+		currWidth	= width >> i;
+		currHeight	= height >> i;
+
+		if (currWidth < 1)
+			currWidth = 1;
+
+		if (currHeight < 1)
+			currHeight = 1;
+
+		size_t readSize = currWidth * currHeight * texFormatBpps[format];
+
+		file->Write(data[i], readSize);
+	}
+
+	return true;
+}
+
 bool zCTexture::LoadTexture(FileStream* file)
 {
 	// Read beginning
