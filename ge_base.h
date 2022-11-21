@@ -133,9 +133,9 @@ namespace GothicLib
 
 		enum GAME
 		{
-			/* Versions */
-			GAME_GOTHIC3,
+			/* Genome versions */
 
+			GAME_GOTHIC3,
 				GAME_G3_102 = GAME_GOTHIC3,
 				GAME_G3_107 = GAME_GOTHIC3,
 				GAME_G3_108 = GAME_GOTHIC3,
@@ -143,7 +143,6 @@ namespace GothicLib
 				GAME_G3_112 = GAME_GOTHIC3,
 
 			GAME_RISEN1,
-
 				GAME_R1_100 = GAME_RISEN1,
 				GAME_R1_101 = GAME_RISEN1,
 				GAME_R1_110 = GAME_RISEN1,

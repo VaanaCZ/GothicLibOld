@@ -4,13 +4,13 @@
 
 using namespace GothicLib::ZenGin;
 
-
-bool zCArchiver::Write(FileStream* _file, bool briefHeader)
+bool zCArchiver::Write(FileStream* _file, ARCHIVER_MODE _mode, uint16_t _version, bool _savegame, bool _properties, bool briefHeader, std::string user)
 {
-	version = 1;
-	//version = 0;
-
-	file = _file;
+	file		= _file;
+	mode		= _mode;
+	version		= _version;
+	savegame	= _savegame;
+	properties	= _properties;
 
 	// Write header
 
@@ -82,7 +82,7 @@ bool zCArchiver::Write(FileStream* _file, bool briefHeader)
 		/*
 			user x
 		*/
-		file->WriteLine("user GothicLib", "\n");
+		file->WriteLine("user " + user, "\n");
 	}
 	else if (version == 0)
 	{

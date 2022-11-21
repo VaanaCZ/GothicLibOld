@@ -40,7 +40,7 @@ namespace GothicLib
 			zCWorld()			{ }
 			virtual ~zCWorld()	{ }
 
-			bool SaveWorld(FileStream*, GAME);
+			bool SaveWorld(FileStream*, ARCHIVER_MODE, GAME, bool = false, bool = false, bool = false, std::string = "GothicLib");
 			bool LoadWorld(FileStream*, GAME);
 
 			virtual bool Archive(zCArchiver*, GAME);
@@ -778,7 +778,7 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		17408			},
 				{ GAME_CHRISTMASEDITION,	17408			},
 				{ GAME_GOTHIC1,				64704			},
 				{ GAME_GOTHICSEQUEL,		64704			},
@@ -828,7 +828,7 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		0				},
 				{ GAME_CHRISTMASEDITION,	0				},
 				{ GAME_GOTHIC1,				36865			},
 				{ GAME_GOTHICSEQUEL,		36865			},

@@ -107,28 +107,23 @@ namespace GothicLib
 
 		enum GAME
 		{
-			/* Versions */
-			GAME_DEMO3,
+			/* ZenGin versions */
 
+			GAME_DEMO3,
 				GAME_G1_056C = GAME_DEMO3,
 
 			GAME_DEMO5,
-
 				GAME_G1_064B = GAME_DEMO5,
 
 			GAME_SEPTEMBERDEMO,
-
 				GAME_G1_094K = GAME_SEPTEMBERDEMO,
 
-			//GAME_G1_100B,
-
 			GAME_CHRISTMASEDITION,
-
+				GAME_G1_100B = GAME_CHRISTMASEDITION,
 				GAME_G1_101D = GAME_CHRISTMASEDITION,
 				GAME_G1_101E = GAME_CHRISTMASEDITION,
 
 			GAME_GOTHIC1,
-
 				GAME_G1_104D = GAME_GOTHIC1,
 				GAME_G1_106L = GAME_GOTHIC1,
 				GAME_G1_107C = GAME_GOTHIC1,
@@ -138,11 +133,9 @@ namespace GothicLib
 				GAME_G1_108K = GAME_GOTHIC1,
 
 			GAME_GOTHICSEQUEL,
-
 				GAME_G1A_112F = GAME_GOTHICSEQUEL,
 
 			GAME_GOTHIC2,
-
 				GAME_G2_128 = GAME_GOTHIC2,
 				GAME_G2_129 = GAME_GOTHIC2,
 				GAME_G2_130 = GAME_GOTHIC2,
@@ -150,12 +143,19 @@ namespace GothicLib
 				GAME_G2_132 = GAME_GOTHIC2,
 
 			GAME_GOTHIC2ADDON,
-
 				GAME_G2A_26 = GAME_GOTHIC2ADDON,
 
 			GAME_ALL,
-
 			GAME_NONE = -1
+		};
+
+		enum ARCHIVER_MODE
+		{
+			ARCHIVER_MODE_BINARY,
+			ARCHIVER_MODE_ASCII,
+			ARCHIVER_MODE_BIN_SAFE,
+
+			ARCHIVER_MODE_NONE = -1
 		};
 
 		class zCArchiver
@@ -165,7 +165,7 @@ namespace GothicLib
 			zCArchiver()	{ }
 			~zCArchiver()	{ }
 
-			bool Write(FileStream*, bool = false);
+			bool Write(FileStream*, ARCHIVER_MODE, uint16_t = 1, bool = false, bool = false, bool = false, std::string = "GothicLib");
 			bool Read(FileStream*);
 
 			void EndWrite();
@@ -259,25 +259,10 @@ namespace GothicLib
 			bool ReadASCIIProperty(std::string, std::string, std::string&);
 			bool ReadBinSafeProperty(BINSAFE_TYPE, void*, size_t = 0);
 
-			public: //temp
-			enum ARCHIVER_MODE
-			{
-				ARCHIVER_MODE_BINARY,
-				ARCHIVER_MODE_ASCII,
-				ARCHIVER_MODE_BIN_SAFE,
-
-				ARCHIVER_MODE_NONE = -1
-			};
-			private: // temp
-
 			FileStream*		file;
 
-			unsigned short	version		= -1;
-
-			public: //temp
-			ARCHIVER_MODE	mode		= ARCHIVER_MODE_NONE;
-			private: // temp
-
+			ARCHIVER_MODE	mode = ARCHIVER_MODE_NONE;
+			uint16_t		version		= -1;
 			bool			savegame	= false;
 			bool			properties	= false;
 
@@ -291,9 +276,7 @@ namespace GothicLib
 			};
 
 			std::vector<CHUNK>		chunkStack;
-
 			std::vector<zCObject*>	objectList;
-
 			uint64_t				objectCountPos = 0;
 
 	#pragma pack(push,1)

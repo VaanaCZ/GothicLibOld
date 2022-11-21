@@ -6,7 +6,7 @@ using namespace GothicLib::ZenGin;
 	World classes
 */
 
-bool zCWorld::SaveWorld(FileStream* file, GAME game)
+bool zCWorld::SaveWorld(FileStream* file, ARCHIVER_MODE mode, GAME game, bool savegame, bool properties, bool briefHeader, std::string user)
 {
 	if (game == GAME_DEMO3)
 	{
@@ -20,8 +20,12 @@ bool zCWorld::SaveWorld(FileStream* file, GAME game)
 	else if (game >= GAME_DEMO5)
 	{
 		zCArchiver archiver;
-		archiver.mode = zCArchiver::ARCHIVER_MODE_ASCII; // temp
-		if (!archiver.Write(file))
+
+		int version = 1;
+		if (game <= GAME_DEMO5)
+			version = 0;
+
+		if (!archiver.Write(file, mode, version, savegame, properties, briefHeader, user))
 		{
 			return false;
 		}
@@ -598,13 +602,17 @@ bool zCBspTree::SaveBIN(FileStream* file, GAME game)
 	{
 		version = 0x04090000;
 	}
-	else if(game >= GAME_GOTHIC1)
+	else if (game >= GAME_GOTHIC1)
 	{
 		version = 0x02090000;
 	}
-	else
+	else if (game >= GAME_SEPTEMBERDEMO)
 	{
 		version = 0x01090000;
+	}
+	else
+	{
+		version = 0x00050000;
 	}
 
 	uint32_t length = 0;
@@ -791,11 +799,19 @@ bool zCBspTree::LoadBIN(FileStream* file, GAME game)
 			return false;
 		}
 	}
-	else
+	else if (game >= GAME_SEPTEMBERDEMO)
 	{
 		if (version != 0x01090000)
 		{
 			LOG_ERROR("Unknown MeshAndBSP version \"" + std::to_string(version) + "\" found, expected version 0x01090000!");
+			return false;
+		}
+	}
+	else
+	{
+		if (version != 0x00050000)
+		{
+			LOG_ERROR("Unknown MeshAndBSP version \"" + std::to_string(version) + "\" found, expected version 0x00050000!");
 			return false;
 		}
 	}
@@ -1734,18 +1750,36 @@ bool zCTouchDamage::Archive(zCArchiver* archiver, GAME game)
 
 	archiver->WriteFloat(ARC_ARGS(damage));
 
-	archiver->WriteGroupBegin("DamageType");
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->WriteGroupBegin("DamageType");
 
-	archiver->WriteBool(ARC_ARGS(Barrier));
-	archiver->WriteBool(ARC_ARGS(Blunt));
-	archiver->WriteBool(ARC_ARGS(Edge));
-	archiver->WriteBool(ARC_ARGS(Fire));
-	archiver->WriteBool(ARC_ARGS(Fly));
-	archiver->WriteBool(ARC_ARGS(Magic));
-	archiver->WriteBool(ARC_ARGS(Point));
-	archiver->WriteBool(ARC_ARGS(Fall));
+		archiver->WriteBool(ARC_ARGS(Barrier));
+		archiver->WriteBool(ARC_ARGS(Blunt));
+		archiver->WriteBool(ARC_ARGS(Edge));
+		archiver->WriteBool(ARC_ARGS(Fire));
+		archiver->WriteBool(ARC_ARGS(Fly));
+		archiver->WriteBool(ARC_ARGS(Magic));
+		archiver->WriteBool(ARC_ARGS(Point));
+		archiver->WriteBool(ARC_ARGS(Fall));
 
-	archiver->WriteGroupEnd("DamageType");
+		archiver->WriteGroupEnd("DamageType");
+	}
+	else
+	{
+		int damageType = 0;
+
+		if (Barrier)	damageType = 0;
+		else if (Blunt)	damageType = 1;
+		else if (Edge)	damageType = 2;
+		else if (Fire)	damageType = 3;
+		else if (Fly)	damageType = 4;
+		else if (Magic)	damageType = 5;
+		else if (Point)	damageType = 6;
+		else if (Fall)	damageType = 7;
+
+		archiver->WriteEnum(ARC_ARGSEW(damageType, "BARRIER;BLUNT;EDGE;FIRE;FLY;MAGIC;POINT;FALL")); // todo: check in 0.94k
+	}
 
 	archiver->WriteFloat(ARC_ARGS(damageRepeatDelaySec));
 	archiver->WriteFloat(ARC_ARGS(damageVolDownScale));
@@ -1762,14 +1796,37 @@ bool zCTouchDamage::Unarchive(zCArchiver* archiver, GAME game)
 		return false;
 
 	archiver->ReadFloat(ARC_ARGS(damage));
-	archiver->ReadBool(ARC_ARGS(Barrier));
-	archiver->ReadBool(ARC_ARGS(Blunt));
-	archiver->ReadBool(ARC_ARGS(Edge));
-	archiver->ReadBool(ARC_ARGS(Fire));
-	archiver->ReadBool(ARC_ARGS(Fly));
-	archiver->ReadBool(ARC_ARGS(Magic));
-	archiver->ReadBool(ARC_ARGS(Point));
-	archiver->ReadBool(ARC_ARGS(Fall));
+
+	if (game >= GAME_CHRISTMASEDITION)
+	{
+		archiver->ReadBool(ARC_ARGS(Barrier));
+		archiver->ReadBool(ARC_ARGS(Blunt));
+		archiver->ReadBool(ARC_ARGS(Edge));
+		archiver->ReadBool(ARC_ARGS(Fire));
+		archiver->ReadBool(ARC_ARGS(Fly));
+		archiver->ReadBool(ARC_ARGS(Magic));
+		archiver->ReadBool(ARC_ARGS(Point));
+		archiver->ReadBool(ARC_ARGS(Fall));
+	}
+	else
+	{
+		int damageType;
+		archiver->ReadEnum(ARC_ARGSE(damageType));
+
+		switch (damageType)
+		{
+		case 0:		Barrier = true;	break;
+		case 1:		Blunt = true;	break;
+		case 2:		Edge = true;	break;
+		case 3:		Fire = true;	break;
+		case 4:		Fly = true;		break;
+		case 5:		Magic = true;	break;
+		case 6:		Point = true;	break;
+		case 7:		Fall = true;	break;
+		default:					break;
+		}
+	}
+
 	archiver->ReadFloat(ARC_ARGS(damageRepeatDelaySec));
 	archiver->ReadFloat(ARC_ARGS(damageVolDownScale));
 	archiver->ReadEnum(ARC_ARGSE(damageCollType));

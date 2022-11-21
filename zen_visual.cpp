@@ -404,7 +404,7 @@ bool zCOBBox3D::LoadBIN(FileStream* file, GAME game)
 	file->Read(&axis, sizeof(axis));
 	file->Read(&extent, sizeof(extent));
 
-	if (readChilds)
+	if (game >= GAME_SEPTEMBERDEMO)
 	{
 		uint16_t childCount = 0;
 		file->Read(&childCount, sizeof(childCount));
@@ -429,7 +429,7 @@ bool zCOBBox3D::SaveBIN(FileStream* file, GAME game)
 	file->Write(&axis, sizeof(axis));
 	file->Write(&extent, sizeof(extent));
 
-	if (readChilds)
+	if (game >= GAME_SEPTEMBERDEMO)
 	{
 		uint16_t childCount = childs.size();
 		file->Write(&childCount, sizeof(childCount));
@@ -470,9 +470,13 @@ bool zCMesh::SaveMSH(FileStream* file, GAME game)
 	{
 		version = 0x0109;
 	}
-	else
+	else if (game >= GAME_SEPTEMBERDEMO)
 	{
 		version = 0x0009;
+	}
+	else
+	{
+		version = 0x0005;
 	}
 
 	file->Write(FILE_ARGS(version));
@@ -493,8 +497,15 @@ bool zCMesh::SaveMSH(FileStream* file, GAME game)
 	uint64_t materialsStart = file->StartBinChunk(MESHCHUNK_MATERIALS);
 
 	zCArchiver archiver;
-	archiver.mode = zCArchiver::ARCHIVER_MODE_BINARY;
-	archiver.Write(file, true);
+
+	int zenVersion = 1;
+	if (game <= GAME_DEMO5)
+		zenVersion = 0;
+
+	if (!archiver.Write(file, ARCHIVER_MODE_BINARY, zenVersion, false, false, true))
+	{
+		return false;
+	}
 
 	if (game >= GAME_DEMO5)
 	{
@@ -629,10 +640,11 @@ bool zCMesh::SaveMSH(FileStream* file, GAME game)
 			oldFlags.portalIndoorOutdoor	= polys[i].flags.portalIndoorOutdoor;
 			oldFlags.ghostOccluder			= polys[i].flags.ghostOccluder;
 			oldFlags.normalMainAxis			= CalcNormalMainAxis(polys[i].plane);
-			oldFlags.sectorIndex			= polys[i].flags.sectorIndex;
 
 			file->Write(FILE_ARGS(oldFlags));
 		}
+
+		file->Write(FILE_ARGS(polys[i].sectorIndex));
 
 		uint8_t count = polys[i].verts.size();
 		file->Write(FILE_ARGS(count));
@@ -705,11 +717,19 @@ bool zCMesh::LoadMSH(FileStream* file, GAME game)
 					return false;
 				}
 			}
-			else
+			else if (game >= GAME_SEPTEMBERDEMO)
 			{
 				if (version != 0x0009)
 				{
 					LOG_ERROR("Unknown zCMesh version \"" + std::to_string(version) + "\" found, expected version 0x0009!");
+					return false;
+				}
+			}
+			else
+			{
+				if (version != 0x0005)
+				{
+					LOG_ERROR("Unknown zCMesh version \"" + std::to_string(version) + "\" found, expected version 0x0005!");
 					return false;
 				}
 			}
@@ -719,11 +739,6 @@ bool zCMesh::LoadMSH(FileStream* file, GAME game)
 
 		case MESHCHUNK_BBOX:
 		{
-			if (game <= GAME_DEMO5)
-			{
-				obbox.readChilds = false;
-			}
-
 			file->Read(FILE_ARGS(bbox));
 			obbox.LoadBIN(file, game);
 
@@ -902,8 +917,9 @@ bool zCMesh::LoadMSH(FileStream* file, GAME game)
 						polys[i].flags.lodFlag				= oldFlags.lodFlag;
 						polys[i].flags.portalIndoorOutdoor	= oldFlags.portalIndoorOutdoor;
 						polys[i].flags.ghostOccluder		= oldFlags.ghostOccluder;
-						polys[i].flags.sectorIndex			= oldFlags.sectorIndex;
 					}
+
+					file->Read(FILE_ARGS(polys[i].sectorIndex));
 
 					uint8_t count;
 					file->Read(FILE_ARGS(count));

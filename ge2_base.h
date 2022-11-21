@@ -21,13 +21,12 @@ namespace GothicLib
 
 		enum GAME
 		{
-			/* Versions */
-			GAME_RISEN2,
+			/* Genome2 versions */
 
-			GAME_R2_100 = GAME_RISEN2,
+			GAME_RISEN2,
+				GAME_R2_100 = GAME_RISEN2,
 
 			GAME_ALL,
-
 			GAME_NONE = -1
 		};
 		

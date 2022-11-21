@@ -233,8 +233,6 @@ namespace GothicLib
 			zVEC3 extent;
 
 			std::vector<zCOBBox3D> childs;
-
-			bool readChilds = true;
 		};
 
 		struct LightmapChunk
@@ -259,7 +257,6 @@ namespace GothicLib
 			unsigned char lodFlag : 1;
 			unsigned char portalIndoorOutdoor : 1;
 			unsigned char ghostOccluder : 1;
-			unsigned short sectorIndex : 16;
 		};
 
 		struct PolygonFlagsOld
@@ -271,7 +268,9 @@ namespace GothicLib
 			unsigned char portalIndoorOutdoor : 1;
 			unsigned char ghostOccluder : 1;
 			unsigned char normalMainAxis : 2;
-			unsigned short sectorIndex : 16;
+			//unsigned char unknownFlag : 1; // Gothic: Sequel
+			//unsigned char padding : 5;
+			unsigned char padding : 6;
 		};
 #pragma pack( pop )
 
@@ -281,6 +280,7 @@ namespace GothicLib
 			short			lightmapIndex;
 			zTPlane			plane;
 			PolygonFlags	flags;
+			uint16_t		sectorIndex;
 
 			std::vector<int> verts;
 			std::vector<unsigned int> feats;
