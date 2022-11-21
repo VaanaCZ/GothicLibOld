@@ -42,6 +42,8 @@ bool zCWorld::SaveWorld(FileStream* file, ARCHIVER_MODE mode, GAME game, bool sa
 		LOG_ERROR("Game not specified. Please specify a game to use before loading a world!");
 		return false;
 	}
+
+	return true;
 }
 
 bool zCWorld::LoadWorld(FileStream* file, GAME game)
@@ -73,6 +75,8 @@ bool zCWorld::LoadWorld(FileStream* file, GAME game)
 		LOG_ERROR("Game not specified. Please specify a game to use before loading a world!");
 		return false;
 	}
+
+	return true;
 }
 
 bool zCWorld::Archive(zCArchiver* archiver, GAME game)
@@ -1750,7 +1754,7 @@ bool zCTouchDamage::Archive(zCArchiver* archiver, GAME game)
 
 	archiver->WriteFloat(ARC_ARGS(damage));
 
-	if (game >= GAME_CHRISTMASEDITION)
+	if (game >= GAME_GOTHIC1)
 	{
 		archiver->WriteGroupBegin("DamageType");
 
@@ -1769,16 +1773,14 @@ bool zCTouchDamage::Archive(zCArchiver* archiver, GAME game)
 	{
 		int damageType = 0;
 
-		if (Barrier)	damageType = 0;
+		if (Edge)		damageType = 0;
 		else if (Blunt)	damageType = 1;
-		else if (Edge)	damageType = 2;
+		else if (Point)	damageType = 2;
 		else if (Fire)	damageType = 3;
-		else if (Fly)	damageType = 4;
-		else if (Magic)	damageType = 5;
-		else if (Point)	damageType = 6;
-		else if (Fall)	damageType = 7;
+		else if (Magic)	damageType = 4;
+		else if (Fly)	damageType = 5;
 
-		archiver->WriteEnum(ARC_ARGSEW(damageType, "BARRIER;BLUNT;EDGE;FIRE;FLY;MAGIC;POINT;FALL")); // todo: check in 0.94k
+		archiver->WriteEnum(ARC_ARGSEW(damageType, "DAM_EDGE;DAM_BLUNT;DAM_POINT;DAM_FIRE;DAM_MAGIC;DAM_FLY"));
 	}
 
 	archiver->WriteFloat(ARC_ARGS(damageRepeatDelaySec));
@@ -1797,7 +1799,7 @@ bool zCTouchDamage::Unarchive(zCArchiver* archiver, GAME game)
 
 	archiver->ReadFloat(ARC_ARGS(damage));
 
-	if (game >= GAME_CHRISTMASEDITION)
+	if (game >= GAME_GOTHIC1)
 	{
 		archiver->ReadBool(ARC_ARGS(Barrier));
 		archiver->ReadBool(ARC_ARGS(Blunt));
@@ -1815,14 +1817,12 @@ bool zCTouchDamage::Unarchive(zCArchiver* archiver, GAME game)
 
 		switch (damageType)
 		{
-		case 0:		Barrier = true;	break;
+		case 0:		Edge = true;	break;
 		case 1:		Blunt = true;	break;
-		case 2:		Edge = true;	break;
+		case 2:		Point = true;	break;
 		case 3:		Fire = true;	break;
-		case 4:		Fly = true;		break;
-		case 5:		Magic = true;	break;
-		case 6:		Point = true;	break;
-		case 7:		Fall = true;	break;
+		case 4:		Magic = true;	break;
+		case 5:		Fly = true;		break;
 		default:					break;
 		}
 	}
