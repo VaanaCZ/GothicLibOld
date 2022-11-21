@@ -162,8 +162,8 @@ namespace GothicLib
 			bCAccessorPropertyObject(bCObjectBase* _nativeObject)	{ nativeObject = _nativeObject; }
 			~bCAccessorPropertyObject()								{ }
 
-			bool Write(FileStream*);
-			bool Read(FileStream*);
+			bool Write(FileStream*, GAME);
+			bool Read(FileStream*, GAME);
 
 			bCObjectBase*	GetNativeObject() { return nativeObject; }
 
@@ -176,8 +176,6 @@ namespace GothicLib
 
 				return dynamic_cast<C>(object);
 			}
-			
-			GAME game = GAME_NONE;
 
 		private:
 
@@ -303,7 +301,8 @@ namespace GothicLib
 		inline static ClassDefinition* GetStaticClassDef() { return classDef; }	\
 		virtual ClassDefinition* GetClassDef() { return classDef; }				\
 																				\
-		virtual uint16_t GetVersion() { return classDef->GetVersion(game); }	\
+		virtual uint16_t GetVersion(GAME game)									\
+			{ return classDef->GetVersion(game); }								\
 																				\
 		DECLARE_MEMORY_POOL(C)
 
@@ -323,8 +322,6 @@ namespace GothicLib
 		{
 		public:
 
-			GAME game = GAME_NONE;
-
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_GOTHIC3,	1	},
@@ -336,8 +333,8 @@ namespace GothicLib
 			bCObjectBase()			{}
 			virtual ~bCObjectBase()	{}
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 		private:
 
@@ -358,8 +355,8 @@ namespace GothicLib
 			bCObjectRefBase()			{}
 			virtual ~bCObjectRefBase()	{}
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 		private:
 
@@ -384,11 +381,11 @@ namespace GothicLib
 			eCProcessibleElement()			{}
 			virtual ~eCProcessibleElement()	{}
 
-			virtual bool DoLoadData(FileStream*) { return true; } // Gothic 3
-			virtual bool DoSaveData(FileStream*) { return true; } // Gothic 3
+			virtual bool DoLoadData(FileStream*, GAME) { return true; } // Gothic 3
+			virtual bool DoSaveData(FileStream*, GAME) { return true; } // Gothic 3
 
-			virtual bool Save(FileStream*, FileStream* = nullptr);
-			virtual bool Load(FileStream*, FileStream* = nullptr);
+			virtual bool Save(FileStream*, FileStream*, GAME);
+			virtual bool Load(FileStream*, FileStream*, GAME);
 
 			GE_DECLARE_PROPERTY(eCProcessibleElement, GAME_ALL, bool, IsPersistable);
 

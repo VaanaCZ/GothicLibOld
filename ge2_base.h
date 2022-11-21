@@ -16,28 +16,6 @@ namespace GothicLib
 		template <typename T> using bTRefPtrArray = std::vector<T>;
 
 		/*
-			File
-		*/
-
-		class bCArchive
-		{
-		public:
-
-			bCArchive()		{ }
-			~bCArchive()	{ }
-
-			bool Read(FileStream*);
-			bool Write(FileStream*);
-
-			bCObjectBase* ReadObject(bCObjectBase* o = nullptr);
-
-		private:
-
-			FileStream* file;
-
-		};
-
-		/*
 			Archivation
 		*/
 
@@ -52,6 +30,24 @@ namespace GothicLib
 
 			GAME_NONE = -1
 		};
+		
+		class bCArchive
+		{
+		public:
+
+			bCArchive()		{ }
+			~bCArchive()	{ }
+
+			bool Read(FileStream*);
+			bool Write(FileStream*);
+
+			bCObjectBase* ReadObject(GAME, bCObjectBase* = nullptr);
+
+		private:
+
+			FileStream* file;
+
+		};
 
 		class bCRuntimeClass
 		{
@@ -61,8 +57,8 @@ namespace GothicLib
 			bCRuntimeClass(bCObjectBase* _nativeObject)	{ nativeObject = _nativeObject; }
 			~bCRuntimeClass()							{ }
 
-			bool Read(FileStream*);
-			bool Write(FileStream*);
+			bool Read(FileStream*, GAME);
+			bool Write(FileStream*, GAME);
 
 			bCObjectBase* GetNativeObject() { return nativeObject; }
 
@@ -75,8 +71,6 @@ namespace GothicLib
 
 				return dynamic_cast<C>(object);
 			}
-
-			GAME game = GAME_NONE;
 
 #pragma pack (push, 1)
 			struct ClassWritten
@@ -138,7 +132,7 @@ namespace GothicLib
 			inline std::string		GetBase()			{ return base; };
 			inline ClassDefinition*	GetBaseDef()		{ if (!baseDef) { baseDef = GetClassDef(base); } return baseDef; };
 			inline bCObjectBase*	CreateInstance()	{ return createFunc(); };
-			bool					Read(bCObjectBase*, FileStream*);
+			bool					Read(bCObjectBase*, FileStream*, GAME);
 			uint16_t				GetVersion(GAME);
 			bool					IsVersionSupported(GAME, uint16_t);
 			
@@ -149,7 +143,7 @@ namespace GothicLib
 
 		private:
 
-			typedef bool (*ReadFunc)(bCObjectBase*, FileStream*);
+			typedef bool (*ReadFunc)(bCObjectBase*, FileStream*, GAME);
 
 			std::string			name;
 			std::string			base;
@@ -195,8 +189,8 @@ namespace GothicLib
 #define GE2_DECLARE_CLASS(C, B)													\
 		static bCObjectBase* CreateInstance() { return new C(); }				\
 																				\
-		static bool OnReadStatic(C* c, FileStream* f)							\
-			{ return c->C::OnRead(f); }											\
+		static bool OnReadStatic(C* c, FileStream* f, GAME g)					\
+			{ return c->C::OnRead(f, g); }										\
 																				\
 		inline static ClassDefinition* classDef =								\
 			new ClassDefinition(#C, #B, &C::CreateInstance, &C::OnReadStatic,	\
@@ -206,7 +200,8 @@ namespace GothicLib
 		inline static ClassDefinition* GetStaticClassDef() { return classDef; }	\
 		virtual ClassDefinition* GetClassDef() { return classDef; }				\
 																				\
-		virtual uint16_t GetVersion() { return classDef->GetVersion(game); }	\
+		virtual uint16_t GetVersion(GAME game)									\
+			{ return classDef->GetVersion(game); }								\
 																				\
 		DECLARE_MEMORY_POOL(C)
 
@@ -248,8 +243,6 @@ namespace GothicLib
 		{
 		public:
 
-			GAME game = GAME_NONE;
-
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_RISEN2,	1	},
@@ -260,8 +253,8 @@ namespace GothicLib
 			bCObjectBase()			{}
 			virtual ~bCObjectBase()	{}
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 		private:
 

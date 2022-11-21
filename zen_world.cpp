@@ -6,11 +6,11 @@ using namespace GothicLib::ZenGin;
 	World classes
 */
 
-bool zCWorld::SaveWorld(FileStream* file)
+bool zCWorld::SaveWorld(FileStream* file, GAME game)
 {
 	if (game == GAME_DEMO3)
 	{
-		if (!SaveWorldFile(file))
+		if (!SaveWorldFile(file, game))
 		{
 			return false;
 		}
@@ -21,13 +21,12 @@ bool zCWorld::SaveWorld(FileStream* file)
 	{
 		zCArchiver archiver;
 		archiver.mode = zCArchiver::ARCHIVER_MODE_ASCII; // temp
-		archiver.game = game;
 		if (!archiver.Write(file))
 		{
 			return false;
 		}
 
-		if (!archiver.WriteObject(this))
+		if (!archiver.WriteObject(game, this))
 		{
 			return false;
 		}
@@ -41,11 +40,11 @@ bool zCWorld::SaveWorld(FileStream* file)
 	}
 }
 
-bool zCWorld::LoadWorld(FileStream* file)
+bool zCWorld::LoadWorld(FileStream* file, GAME game)
 {
 	if (game == GAME_DEMO3)
 	{
-		if (!LoadWorldFile(file))
+		if (!LoadWorldFile(file, game))
 		{
 			return false;
 		}
@@ -53,13 +52,12 @@ bool zCWorld::LoadWorld(FileStream* file)
 	else if (game >= GAME_DEMO5)
 	{
 		zCArchiver archiver;
-		archiver.game = game;
 		if (!archiver.Read(file))
 		{
 			return false;
 		}
 
-		if (!archiver.ReadObject(this))
+		if (!archiver.ReadObject(game, this))
 		{
 			return false;
 		}
@@ -73,16 +71,16 @@ bool zCWorld::LoadWorld(FileStream* file)
 	}
 }
 
-bool zCWorld::Archive(zCArchiver* archiver)
+bool zCWorld::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCObject::Archive(archiver))
+	if (!zCObject::Archive(archiver, game))
 		return false;
 
 	// MeshAndBsp
 	if (bsp)
 	{
 		archiver->WriteChunkStart("MeshAndBsp");
-		if (!bsp->SaveBIN(archiver->GetFile()))
+		if (!bsp->SaveBIN(archiver->GetFile(), game))
 		{
 			return false;
 		}
@@ -95,7 +93,7 @@ bool zCWorld::Archive(zCArchiver* archiver)
 		size_t vobCount = 0;
 
 		archiver->WriteChunkStart("VobTree");
-		if (!ArcVobTree(archiver, vobTree, vobCount))
+		if (!ArcVobTree(archiver, vobTree, vobCount, game))
 		{
 			return false;
 		}
@@ -106,7 +104,7 @@ bool zCWorld::Archive(zCArchiver* archiver)
 	if (wayNet && game >= GAME_SEPTEMBERDEMO)
 	{
 		archiver->WriteChunkStart("WayNet");
-		archiver->WriteObject(wayNet);
+		archiver->WriteObject(game, wayNet);
 		archiver->WriteChunkEnd();
 	}
 
@@ -117,15 +115,15 @@ bool zCWorld::Archive(zCArchiver* archiver)
 	// old WayNet
 	if (wayNet && game <= GAME_DEMO5)
 	{
-		archiver->WriteObject(wayNet);
+		archiver->WriteObject(game, wayNet);
 	}
 
 	return true;
 }
 
-bool zCWorld::Unarchive(zCArchiver* archiver)
+bool zCWorld::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCObject::Unarchive(archiver))
+	if (!zCObject::Unarchive(archiver, game))
 		return false;
 
 	// Loop through chunks until the end
@@ -140,9 +138,8 @@ bool zCWorld::Unarchive(zCArchiver* archiver)
 		if (objectName == "MeshAndBsp")
 		{
 			bsp = new zCBspTree();
-			bsp->game = game;
 			
-			if (!bsp->LoadBIN(archiver->GetFile()))
+			if (!bsp->LoadBIN(archiver->GetFile(), game))
 			{
 				return false;
 			}
@@ -151,9 +148,8 @@ bool zCWorld::Unarchive(zCArchiver* archiver)
 		{
 			size_t vobCount = 0;
 			vobTree = new zCVob();
-			vobTree->game = game;
-
-			if (!UnarcVobTree(archiver, vobTree, vobCount))
+			
+			if (!UnarcVobTree(archiver, vobTree, vobCount, game))
 			{
 				return false;
 			}
@@ -161,10 +157,9 @@ bool zCWorld::Unarchive(zCArchiver* archiver)
 		else if (objectName == "WayNet")
 		{
 			wayNet = new zCWayNet();
-			wayNet->game	= game;
 			wayNet->world	= this;
 
-			wayNet = archiver->ReadObjectAs<zCWayNet*>(wayNet);
+			wayNet = archiver->ReadObjectAs<zCWayNet*>(game, wayNet);
 
 			if (!wayNet)
 			{
@@ -187,10 +182,9 @@ bool zCWorld::Unarchive(zCArchiver* archiver)
 	if (!wayNet && game <= GAME_DEMO5)
 	{
 		wayNet = new zCWayNet();
-		wayNet->game	= game;
 		wayNet->world	= this;
 
-		wayNet = archiver->ReadObjectAs<zCWayNet*>(wayNet);
+		wayNet = archiver->ReadObjectAs<zCWayNet*>(game, wayNet);
 
 		if (!wayNet)
 		{
@@ -201,12 +195,12 @@ bool zCWorld::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCWorld::ArcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vobCount)
+bool zCWorld::ArcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vobCount, GAME game)
 {
 	// Write vobs
 	if (vobCount != 0)
 	{
-		archiver->WriteObject(vob);
+		archiver->WriteObject(game, vob);
 	}
 	
 	// Write childs
@@ -218,21 +212,21 @@ bool zCWorld::ArcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vobCount)
 
 	for (size_t i = 0; i < childCount; i++)
 	{
-		if (!ArcVobTree(archiver, vob->children[i], vobCount))
+		if (!ArcVobTree(archiver, vob->children[i], vobCount, game))
 			return false;
 	}
 
 	return true;
 }
 
-bool zCWorld::UnarcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vobCount)
+bool zCWorld::UnarcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vobCount, GAME game)
 {
 	// Read vob
 	zCVob* nextVob;
 
 	if (vobCount != 0)
 	{
-		nextVob = archiver->ReadObjectAs<zCVob*>();
+		nextVob = archiver->ReadObjectAs<zCVob*>(game);
 
 		if (!nextVob)
 			return false;
@@ -256,14 +250,14 @@ bool zCWorld::UnarcVobTree(zCArchiver* archiver, zCVob* vob, size_t& vobCount)
 
 	for (size_t i = 0; i < childCount; i++)
 	{
-		if (!UnarcVobTree(archiver, nextVob, vobCount))
+		if (!UnarcVobTree(archiver, nextVob, vobCount, game))
 			return false;
 	}
 
 	return true;
 }
 
-bool zCWorld::SaveWorldFile(FileStream* file)
+bool zCWorld::SaveWorldFile(FileStream* file, GAME game)
 {
 	// These versions are not read by the game
 	// but they should still be implemented
@@ -281,7 +275,7 @@ bool zCWorld::SaveWorldFile(FileStream* file)
 
 		size_t vobCount = 0;
 
-		if (!SaveVobTree(file, vobTree, vobCount))
+		if (!SaveVobTree(file, vobTree, vobCount, game))
 			return false;
 
 		file->WriteLine("}", "\n");
@@ -298,7 +292,7 @@ bool zCWorld::SaveWorldFile(FileStream* file)
 	return true;
 }
 
-bool zCWorld::LoadWorldFile(FileStream* file)
+bool zCWorld::LoadWorldFile(FileStream* file, GAME game)
 {
 	std::string line;
 
@@ -310,9 +304,8 @@ bool zCWorld::LoadWorldFile(FileStream* file)
 			file->ReadLine(line); // {
 
 			bsp = new zCBspTree();
-			bsp->game = game;
 
-			if (!bsp->LoadBIN(file))
+			if (!bsp->LoadBIN(file, game))
 			{
 				return false;
 			}
@@ -320,9 +313,8 @@ bool zCWorld::LoadWorldFile(FileStream* file)
 		else if (line.find("VobHierarchy") == 0)
 		{
 			vobTree = new zCVob();
-			vobTree->game = game;
 
-			if (!LoadVobTree(file, vobTree))
+			if (!LoadVobTree(file, vobTree, game))
 			{
 				return false;
 			}
@@ -330,7 +322,6 @@ bool zCWorld::LoadWorldFile(FileStream* file)
 		else if (line.find("Waynet") == 0)
 		{
 			wayNet = new zCWayNet();
-			wayNet->game	= game;
 			wayNet->world	= this;
 
 			if (!wayNet->LoadWaynet(file))
@@ -343,11 +334,11 @@ bool zCWorld::LoadWorldFile(FileStream* file)
 	return true;
 }
 
-bool zCWorld::SaveVobTree(FileStream* file, zCVob* parentVob, size_t& vobCount)
+bool zCWorld::SaveVobTree(FileStream* file, zCVob* parentVob, size_t& vobCount, GAME game)
 {
 	if (vobCount != 0)
 	{
-		if (!parentVob->SaveVob(file))
+		if (!parentVob->SaveVob(file, game))
 			return false;
 	}
 
@@ -358,14 +349,14 @@ bool zCWorld::SaveVobTree(FileStream* file, zCVob* parentVob, size_t& vobCount)
 
 	for (size_t i = 0; i < parentVob->children.size(); i++)
 	{
-		if (!SaveVobTree(file, parentVob->children[i], vobCount))
+		if (!SaveVobTree(file, parentVob->children[i], vobCount, game))
 			return false;
 	}
 
 	return true;
 }
 
-bool zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
+bool zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob, GAME game)
 {	
 	bool inVob = false;
 	zCVob* vob = parentVob;
@@ -412,7 +403,7 @@ bool zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 		{
 			if (line == "{")
 			{
-				if (!vob->LoadVob(file))
+				if (!vob->LoadVob(file, game))
 				{
 					return false;
 				}
@@ -430,7 +421,7 @@ bool zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 				{
 					vob->visualPtr = new zCDecal();
 					((zCDecal*)vob->visualPtr)->name = vob->visual;
-					vob->visualPtr->Load(file);
+					vob->visualPtr->Load(file, game);
 				}
 				else
 				{
@@ -444,7 +435,7 @@ bool zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 
 			for (size_t i = 0; i < childCount; i++)
 			{
-				if (!LoadVobTree(file, vob))
+				if (!LoadVobTree(file, vob, game))
 				{
 					return false;
 				}
@@ -455,9 +446,9 @@ bool zCWorld::LoadVobTree(FileStream* file, zCVob* parentVob)
 	}
 }
 
-bool oCWorld::Archive(zCArchiver* archiver)
+bool oCWorld::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCWorld::Archive(archiver))
+	if (!zCWorld::Archive(archiver, game))
 		return false;
 
 	//todo: savegame
@@ -465,9 +456,9 @@ bool oCWorld::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCWorld::Unarchive(zCArchiver* archiver)
+bool oCWorld::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCWorld::Unarchive(archiver))
+	if (!zCWorld::Unarchive(archiver, game))
 		return false;
 
 	//todo: savegame
@@ -479,7 +470,7 @@ bool oCWorld::Unarchive(zCArchiver* archiver)
 	BSP
 */
 
-bool zCBspBase::SaveBINRecursive(FileStream* file, zCBspTree* tree)
+bool zCBspBase::SaveBIN(FileStream* file, zCBspTree* tree, GAME game)
 {
 	file->Write(FILE_ARGS(bbox));
 	file->Write(FILE_ARGS(polyOffset));
@@ -516,19 +507,19 @@ bool zCBspBase::SaveBINRecursive(FileStream* file, zCBspTree* tree)
 		file->Write(FILE_ARGS(flag));
 		file->Write(FILE_ARGS(node->plane));
 
-		if (tree->game <= GAME_GOTHICSEQUEL)
+		if (game <= GAME_GOTHICSEQUEL)
 		{
 			file->Write(FILE_ARGS(node->renderLod));
 		}
 
 		if (node->front)
 		{
-			node->front->SaveBINRecursive(file, tree);
+			node->front->SaveBIN(file, tree, game);
 		}
 
 		if (node->back)
 		{
-			node->back->SaveBINRecursive(file, tree);
+			node->back->SaveBIN(file, tree, game);
 		}
 	}
 	else
@@ -539,7 +530,7 @@ bool zCBspBase::SaveBINRecursive(FileStream* file, zCBspTree* tree)
 	return true;
 }
 
-bool zCBspBase::LoadBINRecursive(FileStream* file, zCBspTree* tree)
+bool zCBspBase::LoadBIN(FileStream* file, zCBspTree* tree, GAME game)
 {
 	file->Read(FILE_ARGS(bbox));
 	file->Read(FILE_ARGS(polyOffset));
@@ -553,7 +544,7 @@ bool zCBspBase::LoadBINRecursive(FileStream* file, zCBspTree* tree)
 		file->Read(FILE_ARGS(flag));
 		file->Read(FILE_ARGS(node->plane));
 
-		if (tree->game <= GAME_GOTHICSEQUEL)
+		if (game <= GAME_GOTHICSEQUEL)
 		{
 			file->Read(FILE_ARGS(node->renderLod));
 		}
@@ -569,7 +560,7 @@ bool zCBspBase::LoadBINRecursive(FileStream* file, zCBspTree* tree)
 				node->front = new zCBspNode();
 			}
 
-			if (!node->front->LoadBINRecursive(file, tree))
+			if (!node->front->LoadBIN(file, tree, game))
 			{
 				return false;
 			}
@@ -586,7 +577,7 @@ bool zCBspBase::LoadBINRecursive(FileStream* file, zCBspTree* tree)
 				node->back = new zCBspNode();
 			}
 
-			if (!node->back->LoadBINRecursive(file, tree))
+			if (!node->back->LoadBIN(file, tree, game))
 			{
 				return false;
 			}
@@ -596,7 +587,7 @@ bool zCBspBase::LoadBINRecursive(FileStream* file, zCBspTree* tree)
 	return true;
 }
 
-bool zCBspTree::SaveBIN(FileStream* file)
+bool zCBspTree::SaveBIN(FileStream* file, GAME game)
 {
 	// Write beginning
 	uint64_t startPos = file->Tell();
@@ -622,7 +613,7 @@ bool zCBspTree::SaveBIN(FileStream* file)
 	file->Write(FILE_ARGS(length));
 
 	// Mesh
-	if (!mesh.SaveMSH(file))
+	if (!mesh.SaveMSH(file, game))
 	{
 		return false;
 	}
@@ -673,7 +664,7 @@ bool zCBspTree::SaveBIN(FileStream* file)
 	file->Write(FILE_ARGS(nodeCount));
 	file->Write(FILE_ARGS(leafCount));
 
-	if (!root->SaveBINRecursive(file, this))
+	if (!root->SaveBIN(file, this, game))
 	{
 		return false;
 	}
@@ -694,6 +685,17 @@ bool zCBspTree::SaveBIN(FileStream* file)
 	{
 		uint64_t lightsStart = file->StartBinChunk(BSPCHUNK_LIGHTS);
 	
+		// For converting between versions
+		if (lightPositions.size() != leafCount)
+		{
+			for (size_t i = 0; i < leafCount; i++)
+			{
+				zVEC3 newLight;
+				newLight.x = newLight.y = newLight.z = -99.0f;
+				lightPositions.push_back(newLight);
+			}
+		}
+
 		if (lightPositions.size() > 0)
 		{
 			file->Write(&lightPositions[0], sizeof(zVEC3) * lightPositions.size());
@@ -761,7 +763,7 @@ bool zCBspTree::SaveBIN(FileStream* file)
 	return true;
 }
 
-bool zCBspTree::LoadBIN(FileStream* file)
+bool zCBspTree::LoadBIN(FileStream* file, GAME game)
 {
 	// Read start
 	uint32_t version, length;
@@ -799,8 +801,7 @@ bool zCBspTree::LoadBIN(FileStream* file)
 	}
 
 	// Mesh
-	mesh.game = game;
-	if (!mesh.LoadMSH(file))
+	if (!mesh.LoadMSH(file, game))
 	{
 		return false;
 	}
@@ -886,7 +887,7 @@ bool zCBspTree::LoadBIN(FileStream* file)
 			if (nodeCount > 0 || leafCount > 0)
 			{
 				root = new zCBspNode();
-				if (!root->LoadBINRecursive(file, this))
+				if (!root->LoadBIN(file, this, game))
 				{
 					return false;
 				}
@@ -989,9 +990,9 @@ bool zCBspTree::LoadBIN(FileStream* file)
 		oCVob
 */
 
-bool zCVob::Archive(zCArchiver* archiver)
+bool zCVob::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCObject::Archive(archiver))
+	if (!zCObject::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("Internals");
@@ -1066,8 +1067,8 @@ bool zCVob::Archive(zCArchiver* archiver)
 
 		archiver->WriteGroupEnd("Vob");
 
-		archiver->WriteObject("visual", visualPtr);
-		archiver->WriteObject("ai", aiPtr);
+		archiver->WriteObject("visual", game, visualPtr);
+		archiver->WriteObject("ai", game, aiPtr);
 
 		if (archiver->IsSavegame())
 		{
@@ -1078,9 +1079,9 @@ bool zCVob::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCVob::Unarchive(zCArchiver* archiver)
+bool zCVob::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCObject::Unarchive(archiver))
+	if (!zCObject::Unarchive(archiver, game))
 		return false;
 
 	int	pack = 0;
@@ -1129,12 +1130,12 @@ bool zCVob::Unarchive(zCArchiver* archiver)
 
 		if (dataRaw.bitfield.hasRelevantVisualObject)
 		{
-			visualPtr = archiver->ReadObjectAs<zCVisual*>("visual");
+			visualPtr = archiver->ReadObjectAs<zCVisual*>("visual", game);
 		}
 
 		if (dataRaw.bitfield.hasAIObject)
 		{
-			aiPtr = archiver->ReadObjectAs<zCAIBase*>("ai");
+			aiPtr = archiver->ReadObjectAs<zCAIBase*>("ai", game);
 		}
 
 		if (archiver->IsSavegame())
@@ -1143,7 +1144,7 @@ bool zCVob::Unarchive(zCArchiver* archiver)
 
 			if (dataRaw.bitfield.hasEventManObject)
 			{
-				eventManagerPtr = archiver->ReadObjectAs<zCEventManager*>("eventManager");
+				eventManagerPtr = archiver->ReadObjectAs<zCEventManager*>("eventManager", game);
 			}
 		}
 
@@ -1200,8 +1201,8 @@ bool zCVob::Unarchive(zCArchiver* archiver)
 			archiver->ReadBool(ARC_ARGS(isAmbient));
 		}
 
-		visualPtr = archiver->ReadObjectAs<zCVisual*>("visual");
-		aiPtr = archiver->ReadObjectAs<zCAIBase*>("ai");
+		visualPtr = archiver->ReadObjectAs<zCVisual*>("visual", game);
+		aiPtr = archiver->ReadObjectAs<zCAIBase*>("ai", game);
 
 		if (archiver->IsSavegame())
 		{
@@ -1220,7 +1221,7 @@ bool zCVob::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCVob::SaveVob(FileStream* file)
+bool zCVob::SaveVob(FileStream* file, GAME game)
 {
 	file->WriteLine("zCVob (" + std::to_string(vobID) + " " +
 								std::to_string(vobType) + ")", "\n");
@@ -1281,14 +1282,14 @@ bool zCVob::SaveVob(FileStream* file)
 	file->WriteLine("}", "\n");
 
 	// Derived classes
-	if (!Save(file))
+	if (!Save(file, game))
 		return false;
 
 	// Decal
 	zCDecal* decal = dynamic_cast<zCDecal*>(visualPtr);
 	if (decal)
 	{
-		if (!decal->Save(file))
+		if (!decal->Save(file, game))
 			return false;
 	}
 
@@ -1297,7 +1298,7 @@ bool zCVob::SaveVob(FileStream* file)
 	return true;
 }
 
-bool zCVob::LoadVob(FileStream* file)
+bool zCVob::LoadVob(FileStream* file, GAME game)
 {
 	bool inVob = false;
 
@@ -1318,7 +1319,7 @@ bool zCVob::LoadVob(FileStream* file)
 			{
 				inVob = false;
 
-				if (!Load(file))
+				if (!Load(file, game))
 					return false;
 
 				return true;
@@ -1419,9 +1420,9 @@ bool zCVob::LoadVob(FileStream* file)
 	zCCSCamera
 */
 
-bool zCCSCamera::Archive(zCArchiver* archiver)
+bool zCCSCamera::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCVob::Archive(archiver))
+	if (!zCVob::Archive(archiver, game))
 		return false;
 
 	archiver->WriteEnum(ARC_ARGSEW(camTrjFOR, "WORLD;OBJECT"));
@@ -1453,12 +1454,12 @@ bool zCCSCamera::Archive(zCArchiver* archiver)
 
 		for (size_t i = 0; i < numPos; i++)
 		{
-			archiver->WriteObject(positions[i]);
+			archiver->WriteObject(game, positions[i]);
 		}
 
 		for (size_t i = 0; i < numTargets; i++)
 		{
-			archiver->WriteObject(targets[i]);
+			archiver->WriteObject(game, targets[i]);
 		}
 	}
 
@@ -1473,9 +1474,9 @@ bool zCCSCamera::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCCSCamera::Unarchive(zCArchiver* archiver)
+bool zCCSCamera::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCVob::Unarchive(archiver))
+	if (!zCVob::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadEnum(ARC_ARGSE(camTrjFOR));
@@ -1510,7 +1511,7 @@ bool zCCSCamera::Unarchive(zCArchiver* archiver)
 
 			for (size_t i = 0; i < numPos; i++)
 			{
-				positions[i] = archiver->ReadObjectAs<zCCamTrj_KeyFrame*>();
+				positions[i] = archiver->ReadObjectAs<zCCamTrj_KeyFrame*>(game);
 			}
 		}
 
@@ -1520,7 +1521,7 @@ bool zCCSCamera::Unarchive(zCArchiver* archiver)
 
 			for (size_t i = 0; i < numTargets; i++)
 			{
-				targets[i] = archiver->ReadObjectAs<zCCamTrj_KeyFrame*>();
+				targets[i] = archiver->ReadObjectAs<zCCamTrj_KeyFrame*>(game);
 			}
 		}
 	}
@@ -1540,9 +1541,9 @@ bool zCCSCamera::Unarchive(zCArchiver* archiver)
 	zCCamTrj_KeyFrame
 */
 
-bool zCCamTrj_KeyFrame::Archive(zCArchiver* archiver)
+bool zCCamTrj_KeyFrame::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCVob::Archive(archiver))
+	if (!zCVob::Archive(archiver, game))
 		return false;
 	
 	archiver->WriteFloat(ARC_ARGS(time));
@@ -1580,9 +1581,9 @@ bool zCCamTrj_KeyFrame::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCCamTrj_KeyFrame::Unarchive(zCArchiver* archiver)
+bool zCCamTrj_KeyFrame::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCVob::Unarchive(archiver))
+	if (!zCVob::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadFloat(ARC_ARGS(time));
@@ -1638,9 +1639,9 @@ bool zCCamTrj_KeyFrame::Unarchive(zCArchiver* archiver)
 		zCVobScreenFX
 */
 
-bool zCEarthquake::Archive(zCArchiver* archiver)
+bool zCEarthquake::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCEffect::Archive(archiver))
+	if (!zCEffect::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("Earthquake");
@@ -1654,9 +1655,9 @@ bool zCEarthquake::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCEarthquake::Unarchive(zCArchiver* archiver)
+bool zCEarthquake::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCEffect::Unarchive(archiver))
+	if (!zCEffect::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadFloat(ARC_ARGS(radius));
@@ -1666,9 +1667,9 @@ bool zCEarthquake::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCPFXControler::Archive(zCArchiver* archiver)
+bool zCPFXControler::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCEffect::Archive(archiver))
+	if (!zCEffect::Archive(archiver, game))
 		return false;
 
 	archiver->WriteString(ARC_ARGS(pfxName));
@@ -1678,9 +1679,9 @@ bool zCPFXControler::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCPFXControler::Unarchive(zCArchiver* archiver)
+bool zCPFXControler::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCEffect::Unarchive(archiver))
+	if (!zCEffect::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(pfxName));
@@ -1690,9 +1691,9 @@ bool zCPFXControler::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCVobAnimate::Archive(zCArchiver* archiver)
+bool zCVobAnimate::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCEffect::Archive(archiver))
+	if (!zCEffect::Archive(archiver, game))
 		return false;
 
 	archiver->WriteBool(ARC_ARGS(startOn));
@@ -1705,9 +1706,9 @@ bool zCVobAnimate::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCVobAnimate::Unarchive(zCArchiver* archiver)
+bool zCVobAnimate::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCEffect::Unarchive(archiver))
+	if (!zCEffect::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadBool(ARC_ARGS(startOn));
@@ -1724,9 +1725,9 @@ bool zCVobAnimate::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCTouchDamage::Archive(zCArchiver* archiver)
+bool zCTouchDamage::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCEffect::Archive(archiver))
+	if (!zCEffect::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("TouchDamage");
@@ -1755,9 +1756,9 @@ bool zCTouchDamage::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCTouchDamage::Unarchive(zCArchiver* archiver)
+bool zCTouchDamage::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCEffect::Unarchive(archiver))
+	if (!zCEffect::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadFloat(ARC_ARGS(damage));
@@ -1776,9 +1777,9 @@ bool zCTouchDamage::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCVobLensFlare::Archive(zCArchiver* archiver)
+bool zCVobLensFlare::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCEffect::Archive(archiver))
+	if (!zCEffect::Archive(archiver, game))
 		return false;
 
 	archiver->WriteString(ARC_ARGS(lensflareFX));
@@ -1786,9 +1787,9 @@ bool zCVobLensFlare::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCVobLensFlare::Unarchive(zCArchiver* archiver)
+bool zCVobLensFlare::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCEffect::Unarchive(archiver))
+	if (!zCEffect::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(lensflareFX));
@@ -1796,17 +1797,17 @@ bool zCVobLensFlare::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCVobScreenFX::Archive(zCArchiver* archiver)
+bool zCVobScreenFX::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCEffect::Archive(archiver))
+	if (!zCEffect::Archive(archiver, game))
 		return false;
 
 	return true;
 }
 
-bool zCVobScreenFX::Unarchive(zCArchiver* archiver)
+bool zCVobScreenFX::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCEffect::Unarchive(archiver))
+	if (!zCEffect::Unarchive(archiver, game))
 		return false;
 
 	if (archiver->IsSavegame())
@@ -1826,9 +1827,9 @@ bool zCVobScreenFX::Unarchive(zCArchiver* archiver)
 	oCItem
 */
 
-bool oCItem::Archive(zCArchiver* archiver)
+bool oCItem::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!oCVob::Archive(archiver))
+	if (!oCVob::Archive(archiver, game))
 		return false;
 
 	archiver->WriteString(ARC_ARGS(itemInstance));
@@ -1842,9 +1843,9 @@ bool oCItem::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCItem::Unarchive(zCArchiver* archiver)
+bool oCItem::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!oCVob::Unarchive(archiver))
+	if (!oCVob::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(itemInstance));
@@ -1858,9 +1859,9 @@ bool oCItem::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCItem::Save(FileStream* file)
+bool oCItem::Save(FileStream* file, GAME game)
 {
-	if (!zCVob::Save(file))
+	if (!zCVob::Save(file, game))
 		return false;
 
 	file->WriteLine("{", "\n");
@@ -1872,9 +1873,9 @@ bool oCItem::Save(FileStream* file)
 	return true;
 }
 
-bool oCItem::Load(FileStream* file)
+bool oCItem::Load(FileStream* file, GAME game)
 {
-	if (!zCVob::Load(file))
+	if (!zCVob::Load(file, game))
 		return false;
 
 	bool inVob = false;
@@ -1924,9 +1925,9 @@ bool oCItem::Load(FileStream* file)
 			oCMobWheel
 */
 
-bool oCMOB::Archive(zCArchiver* archiver)
+bool oCMOB::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!oCVob::Archive(archiver))
+	if (!oCVob::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("MOB");
@@ -1962,9 +1963,9 @@ bool oCMOB::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCMOB::Unarchive(zCArchiver* archiver)
+bool oCMOB::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!oCVob::Unarchive(archiver))
+	if (!oCVob::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(focusName));
@@ -1996,9 +1997,9 @@ bool oCMOB::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCMobInter::Archive(zCArchiver* archiver)
+bool oCMobInter::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!oCMOB::Archive(archiver))
+	if (!oCMOB::Archive(archiver, game))
 		return false;
 
 	if (!archiver->IsProperties())
@@ -2030,9 +2031,9 @@ bool oCMobInter::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCMobInter::Unarchive(zCArchiver* archiver)
+bool oCMobInter::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!oCMOB::Unarchive(archiver))
+	if (!oCMOB::Unarchive(archiver, game))
 		return false;
 
 	if (!archiver->IsProperties())
@@ -2064,9 +2065,9 @@ bool oCMobInter::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCMobFire::Archive(zCArchiver* archiver)
+bool oCMobFire::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!oCMobInter::Archive(archiver))
+	if (!oCMobInter::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("Fire");
@@ -2079,9 +2080,9 @@ bool oCMobFire::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCMobFire::Unarchive(zCArchiver* archiver)
+bool oCMobFire::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!oCMobInter::Unarchive(archiver))
+	if (!oCMobInter::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(fireSlot));
@@ -2090,9 +2091,9 @@ bool oCMobFire::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCMobLockable::Archive(zCArchiver* archiver)
+bool oCMobLockable::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!oCMobInter::Archive(archiver))
+	if (!oCMobInter::Archive(archiver, game))
 		return false;
 	
 	if (game >= GAME_CHRISTMASEDITION)
@@ -2109,9 +2110,9 @@ bool oCMobLockable::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCMobLockable::Unarchive(zCArchiver* archiver)
+bool oCMobLockable::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!oCMobInter::Unarchive(archiver))
+	if (!oCMobInter::Unarchive(archiver, game))
 		return false;
 
 	if (game >= GAME_CHRISTMASEDITION)
@@ -2124,9 +2125,9 @@ bool oCMobLockable::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCMobContainer::Archive(zCArchiver* archiver)
+bool oCMobContainer::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!oCMobLockable::Archive(archiver))
+	if (!oCMobLockable::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("Container");
@@ -2149,9 +2150,9 @@ bool oCMobContainer::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCMobContainer::Unarchive(zCArchiver* archiver)
+bool oCMobContainer::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!oCMobLockable::Unarchive(archiver))
+	if (!oCMobLockable::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(contains));
@@ -2177,9 +2178,9 @@ bool oCMobContainer::Unarchive(zCArchiver* archiver)
 	Only included to support demo5 loading.
 */
 
-bool oCMob::Archive(zCArchiver* archiver)
+bool oCMob::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!oCVob::Archive(archiver))
+	if (!oCVob::Archive(archiver, game))
 		return false;
 
 	archiver->WriteString(ARC_ARGS(mobInstance));
@@ -2187,9 +2188,9 @@ bool oCMob::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCMob::Unarchive(zCArchiver* archiver)
+bool oCMob::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!oCVob::Unarchive(archiver))
+	if (!oCVob::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(mobInstance));
@@ -2197,9 +2198,9 @@ bool oCMob::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCMob::Save(FileStream* file)
+bool oCMob::Save(FileStream* file, GAME game)
 {
-	if (!zCVob::Save(file))
+	if (!zCVob::Save(file, game))
 		return false;
 
 	file->WriteLine("{", "\n");
@@ -2211,9 +2212,9 @@ bool oCMob::Save(FileStream* file)
 	return true;
 }
 
-bool oCMob::Load(FileStream* file)
+bool oCMob::Load(FileStream* file, GAME game)
 {
-	if (!zCVob::Load(file))
+	if (!zCVob::Load(file, game))
 		return false;
 
 	bool inVob = false;
@@ -2253,9 +2254,9 @@ bool oCMob::Load(FileStream* file)
 	oCNpc
 */
 
-bool oCNpc::Archive(zCArchiver* archiver)
+bool oCNpc::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!oCVob::Archive(archiver))
+	if (!oCVob::Archive(archiver, game))
 		return false;
 
 	archiver->WriteString(ARC_ARGS(npcInstance));
@@ -2265,9 +2266,9 @@ bool oCNpc::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCNpc::Unarchive(zCArchiver* archiver)
+bool oCNpc::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!oCVob::Unarchive(archiver))
+	if (!oCVob::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(npcInstance));
@@ -2299,9 +2300,9 @@ bool oCNpc::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCNpc::Save(FileStream* file)
+bool oCNpc::Save(FileStream* file, GAME game)
 {
-	if (!zCVob::Save(file))
+	if (!zCVob::Save(file, game))
 		return false;
 
 	file->WriteLine("{", "\n");
@@ -2313,9 +2314,9 @@ bool oCNpc::Save(FileStream* file)
 	return true;
 }
 
-bool oCNpc::Load(FileStream* file)
+bool oCNpc::Load(FileStream* file, GAME game)
 {
-	if (!zCVob::Load(file))
+	if (!zCVob::Load(file, game))
 		return false;
 
 	bool inVob = false;
@@ -2372,9 +2373,9 @@ bool oCNpc::Load(FileStream* file)
 		zCTriggerWorldStart
 */
 
-bool zCTriggerBase::Archive(zCArchiver* archiver)
+bool zCTriggerBase::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCVob::Archive(archiver))
+	if (!zCVob::Archive(archiver, game))
 		return false;
 
 	if (game >= GAME_SEPTEMBERDEMO)
@@ -2385,9 +2386,9 @@ bool zCTriggerBase::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCTriggerBase::Unarchive(zCArchiver* archiver)
+bool zCTriggerBase::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCVob::Unarchive(archiver))
+	if (!zCVob::Unarchive(archiver, game))
 		return false;
 
 	if (game >= GAME_SEPTEMBERDEMO)
@@ -2398,9 +2399,9 @@ bool zCTriggerBase::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCCodeMaster::Archive(zCArchiver* archiver)
+bool zCCodeMaster::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTriggerBase::Archive(archiver))
+	if (!zCTriggerBase::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("CodeMaster");
@@ -2440,7 +2441,7 @@ bool zCCodeMaster::Archive(zCArchiver* archiver)
 		for (size_t i = 0; i < numSlavesTriggered; i++)
 		{
 			std::string slaveTriggeredKey = "slaveTriggered" + std::to_string(i);
-			archiver->WriteObject(slaveTriggeredKey, slaveTriggeredList[i]);
+			archiver->WriteObject(slaveTriggeredKey, game, slaveTriggeredList[i]);
 		}
 	}
 
@@ -2449,9 +2450,9 @@ bool zCCodeMaster::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCCodeMaster::Unarchive(zCArchiver* archiver)
+bool zCCodeMaster::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTriggerBase::Unarchive(archiver))
+	if (!zCTriggerBase::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadBool(ARC_ARGS(orderRelevant));
@@ -2486,16 +2487,16 @@ bool zCCodeMaster::Unarchive(zCArchiver* archiver)
 		for (size_t i = 0; i < numSlavesTriggered; i++)
 		{
 			std::string slaveTriggeredKey = "slaveTriggered" + std::to_string(i);
-			slaveTriggeredList[i] = archiver->ReadObjectAs<zCVob*>(slaveTriggeredKey);
+			slaveTriggeredList[i] = archiver->ReadObjectAs<zCVob*>(slaveTriggeredKey, game);
 		}
 	}
 
 	return true;
 }
 
-bool zCMessageFilter::Archive(zCArchiver* archiver)
+bool zCMessageFilter::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTriggerBase::Archive(archiver))
+	if (!zCTriggerBase::Archive(archiver, game))
 		return false;
 
 	archiver->WriteEnum(ARC_ARGSEW(onTrigger, "MT_NONE;MT_TRIGGER;MT_UNTRIGGER;MT_ENABLE;MT_DISABLE;MT_TOGGLE_ENABLED"));
@@ -2504,9 +2505,9 @@ bool zCMessageFilter::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCMessageFilter::Unarchive(zCArchiver* archiver)
+bool zCMessageFilter::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTriggerBase::Unarchive(archiver))
+	if (!zCTriggerBase::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadEnum(ARC_ARGSE(onTrigger));
@@ -2515,9 +2516,9 @@ bool zCMessageFilter::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCMoverControler::Archive(zCArchiver* archiver)
+bool zCMoverControler::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTriggerBase::Archive(archiver))
+	if (!zCTriggerBase::Archive(archiver, game))
 		return false;
 
 	archiver->WriteEnum(ARC_ARGSEW(moverMessage, "GOTO_KEY_FIXED_DIRECTLY;_DISABLED_;GOTO_KEY_NEXT;GOTO_KEY_PREV"));
@@ -2526,9 +2527,9 @@ bool zCMoverControler::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCMoverControler::Unarchive(zCArchiver* archiver)
+bool zCMoverControler::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTriggerBase::Unarchive(archiver))
+	if (!zCTriggerBase::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadEnum(ARC_ARGSE(moverMessage));
@@ -2537,9 +2538,9 @@ bool zCMoverControler::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCTrigger::Archive(zCArchiver* archiver)
+bool zCTrigger::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTriggerBase::Archive(archiver))
+	if (!zCTriggerBase::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("Trigger");
@@ -2616,7 +2617,7 @@ bool zCTrigger::Archive(zCArchiver* archiver)
 	if (archiver->IsSavegame())
 	{
 		archiver->WriteFloat(ARC_ARGS(nextTimeTriggerable));
-		archiver->WriteObject("savedOtherVob", savedOtherVobPtr);
+		archiver->WriteObject("savedOtherVob", game, savedOtherVobPtr);
 		archiver->WriteInt(ARC_ARGS(countCanBeActivated));
 
 		bool isEnabled = flags.isEnabled;
@@ -2628,9 +2629,9 @@ bool zCTrigger::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCTrigger::Unarchive(zCArchiver* archiver)
+bool zCTrigger::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTriggerBase::Unarchive(archiver))
+	if (!zCTriggerBase::Unarchive(archiver, game))
 		return false;
 
 	if (!archiver->IsProperties())
@@ -2704,7 +2705,7 @@ bool zCTrigger::Unarchive(zCArchiver* archiver)
 	if (archiver->IsSavegame())
 	{
 		archiver->ReadFloat(ARC_ARGS(nextTimeTriggerable));
-		savedOtherVobPtr = archiver->ReadObjectAs<zCVob*>("savedOtherVob");
+		savedOtherVobPtr = archiver->ReadObjectAs<zCVob*>("savedOtherVob", game);
 		archiver->ReadInt(ARC_ARGS(countCanBeActivated));
 
 		zBOOL isEnabled;
@@ -2719,9 +2720,9 @@ bool zCTrigger::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCMover::Archive(zCArchiver* archiver)
+bool zCMover::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTrigger::Archive(archiver))
+	if (!zCTrigger::Archive(archiver, game))
 		return false;
 	
 	archiver->WriteGroupBegin("Mover");
@@ -2797,9 +2798,9 @@ bool zCMover::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCMover::Unarchive(zCArchiver* archiver)
+bool zCMover::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTrigger::Unarchive(archiver))
+	if (!zCTrigger::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadEnum(ARC_ARGSE(moverBehavior));
@@ -2865,9 +2866,9 @@ bool zCMover::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCTriggerChangeLevel::Archive(zCArchiver* archiver)
+bool oCTriggerChangeLevel::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTrigger::Archive(archiver))
+	if (!zCTrigger::Archive(archiver, game))
 		return false;
 
 	archiver->WriteString(ARC_ARGS(levelName));
@@ -2876,9 +2877,9 @@ bool oCTriggerChangeLevel::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCTriggerChangeLevel::Unarchive(zCArchiver* archiver)
+bool oCTriggerChangeLevel::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTrigger::Unarchive(archiver))
+	if (!zCTrigger::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(levelName));
@@ -2887,9 +2888,9 @@ bool oCTriggerChangeLevel::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCTriggerList::Archive(zCArchiver* archiver)
+bool zCTriggerList::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTrigger::Archive(archiver))
+	if (!zCTrigger::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("TriggerList");
@@ -2923,9 +2924,9 @@ bool zCTriggerList::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCTriggerList::Unarchive(zCArchiver* archiver)
+bool zCTriggerList::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTrigger::Unarchive(archiver))
+	if (!zCTrigger::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadEnum(ARC_ARGSE(listProcess));
@@ -2964,9 +2965,9 @@ bool zCTriggerList::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCTriggerScript::Archive(zCArchiver* archiver)
+bool oCTriggerScript::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTrigger::Archive(archiver))
+	if (!zCTrigger::Archive(archiver, game))
 		return false;
 
 	archiver->WriteString(ARC_ARGS(scriptFunc));
@@ -2974,9 +2975,9 @@ bool oCTriggerScript::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCTriggerScript::Unarchive(zCArchiver* archiver)
+bool oCTriggerScript::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTrigger::Unarchive(archiver))
+	if (!zCTrigger::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(scriptFunc));
@@ -2984,9 +2985,9 @@ bool oCTriggerScript::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCTriggerTeleport::Archive(zCArchiver* archiver)
+bool zCTriggerTeleport::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTrigger::Archive(archiver))
+	if (!zCTrigger::Archive(archiver, game))
 		return false;
 
 	archiver->WriteString(ARC_ARGS(sfxTeleport));
@@ -2994,9 +2995,9 @@ bool zCTriggerTeleport::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCTriggerTeleport::Unarchive(zCArchiver* archiver)
+bool zCTriggerTeleport::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTrigger::Unarchive(archiver))
+	if (!zCTrigger::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(sfxTeleport));
@@ -3004,9 +3005,9 @@ bool zCTriggerTeleport::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCTriggerWorldStart::Archive(zCArchiver* archiver)
+bool zCTriggerWorldStart::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTriggerBase::Archive(archiver))
+	if (!zCTriggerBase::Archive(archiver, game))
 		return false;
 
 	archiver->WriteBool(ARC_ARGS(fireOnlyFirstTime));
@@ -3019,9 +3020,9 @@ bool zCTriggerWorldStart::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCTriggerWorldStart::Unarchive(zCArchiver* archiver)
+bool zCTriggerWorldStart::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCTriggerBase::Unarchive(archiver))
+	if (!zCTriggerBase::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadBool(ARC_ARGS(fireOnlyFirstTime));
@@ -3042,9 +3043,9 @@ bool zCTriggerWorldStart::Unarchive(zCArchiver* archiver)
 	zCVobLight
 */
 
-bool zCVobLight::Archive(zCArchiver* archiver)
+bool zCVobLight::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCVob::Archive(archiver))
+	if (!zCVob::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("VobLight");
@@ -3138,9 +3139,9 @@ bool zCVobLight::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCVobLight::Unarchive(zCArchiver* archiver)
+bool zCVobLight::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCVob::Unarchive(archiver))
+	if (!zCVob::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(lightPresetInUse));
@@ -3259,9 +3260,9 @@ bool zCVobLight::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCVobLight::Save(FileStream* file)
+bool zCVobLight::Save(FileStream* file, GAME game)
 {
-	if (!zCVob::Save(file))
+	if (!zCVob::Save(file, game))
 		return false;
 
 	file->WriteLine("{", "\n");
@@ -3317,9 +3318,9 @@ bool zCVobLight::Save(FileStream* file)
 	return true;
 }
 
-bool zCVobLight::Load(FileStream* file)
+bool zCVobLight::Load(FileStream* file, GAME game)
 {
-	if (!zCVob::Load(file))
+	if (!zCVob::Load(file, game))
 		return false;
 
 	bool inVob = false;
@@ -3493,9 +3494,9 @@ bool zCVobLight::Load(FileStream* file)
 			zCZoneZFogDefault
 */
 
-bool zCVobSound::Archive(zCArchiver* archiver)
+bool zCVobSound::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCZone::Archive(archiver))
+	if (!zCZone::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("Sound");
@@ -3533,9 +3534,9 @@ bool zCVobSound::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCVobSound::Unarchive(zCArchiver* archiver)
+bool zCVobSound::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCZone::Unarchive(archiver))
+	if (!zCZone::Unarchive(archiver, game))
 		return false;
 
 	if (game <= GAME_DEMO5)
@@ -3574,9 +3575,9 @@ bool zCVobSound::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCVobSoundDaytime::Archive(zCArchiver* archiver)
+bool zCVobSoundDaytime::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCVobSound::Archive(archiver))
+	if (!zCVobSound::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("SoundDaytime");
@@ -3590,9 +3591,9 @@ bool zCVobSoundDaytime::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCVobSoundDaytime::Unarchive(zCArchiver* archiver)
+bool zCVobSoundDaytime::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCVobSound::Unarchive(archiver))
+	if (!zCVobSound::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadFloat(ARC_ARGS(sndStartTime));
@@ -3602,9 +3603,9 @@ bool zCVobSoundDaytime::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCZoneMusic::Archive(zCArchiver* archiver)
+bool oCZoneMusic::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCZoneMusic::Archive(archiver))
+	if (!zCZoneMusic::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("DynaMusic");
@@ -3628,9 +3629,9 @@ bool oCZoneMusic::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCZoneMusic::Unarchive(zCArchiver* archiver)
+bool oCZoneMusic::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCZoneMusic::Unarchive(archiver))
+	if (!zCZoneMusic::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadBool(ARC_ARGS(enabled));
@@ -3654,9 +3655,9 @@ bool oCZoneMusic::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCZoneVobFarPlane::Archive(zCArchiver* archiver)
+bool zCZoneVobFarPlane::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCZone::Archive(archiver))
+	if (!zCZone::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("ZoneVobFarPlane");
@@ -3669,9 +3670,9 @@ bool zCZoneVobFarPlane::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCZoneVobFarPlane::Unarchive(zCArchiver* archiver)
+bool zCZoneVobFarPlane::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCZone::Unarchive(archiver))
+	if (!zCZone::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadFloat(ARC_ARGS(vobFarPlaneZ));
@@ -3680,9 +3681,9 @@ bool zCZoneVobFarPlane::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCZoneZFog::Archive(zCArchiver* archiver)
+bool zCZoneZFog::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCZone::Archive(archiver))
+	if (!zCZone::Archive(archiver, game))
 		return false;
 
 	archiver->WriteGroupBegin("ZoneZFog");
@@ -3702,9 +3703,9 @@ bool zCZoneZFog::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCZoneZFog::Unarchive(zCArchiver* archiver)
+bool zCZoneZFog::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCZone::Unarchive(archiver))
+	if (!zCZone::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadFloat(ARC_ARGS(fogRangeCenter));
@@ -3724,17 +3725,17 @@ bool zCZoneZFog::Unarchive(zCArchiver* archiver)
 	AI classes
 */
 
-bool zCAIPlayer::Archive(zCArchiver* archiver)
+bool zCAIPlayer::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCAIBase::Archive(archiver))
+	if (!zCAIBase::Archive(archiver, game))
 		return false;
 
 	return false;
 }
 
-bool zCAIPlayer::Unarchive(zCArchiver* archiver)
+bool zCAIPlayer::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCAIBase::Unarchive(archiver))
+	if (!zCAIBase::Unarchive(archiver, game))
 		return false;
 
 	if (archiver->IsSavegame())
@@ -3752,22 +3753,22 @@ bool zCAIPlayer::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool oCAniCtrl_Human::Archive(zCArchiver* archiver)
+bool oCAniCtrl_Human::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCAIPlayer::Archive(archiver))
+	if (!zCAIPlayer::Archive(archiver, game))
 		return false;
 
 	return false;
 }
 
-bool oCAniCtrl_Human::Unarchive(zCArchiver* archiver)
+bool oCAniCtrl_Human::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCAIPlayer::Unarchive(archiver))
+	if (!zCAIPlayer::Unarchive(archiver, game))
 		return false;
 
 	if (archiver->IsSavegame())
 	{
-		aiNpc = archiver->ReadObjectAs<oCNpc*>("aiNpc");
+		aiNpc = archiver->ReadObjectAs<oCNpc*>("aiNpc", game);
 
 		archiver->ReadInt(ARC_ARGS(walkMode));
 		archiver->ReadInt(ARC_ARGS(weaponMode));
@@ -3784,17 +3785,17 @@ bool oCAniCtrl_Human::Unarchive(zCArchiver* archiver)
 	Event manager
 */
 
-bool zCEventManager::Archive(zCArchiver* archiver)
+bool zCEventManager::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCObject::Archive(archiver))
+	if (!zCObject::Archive(archiver, game))
 		return false;
 
 	return false;
 }
 
-bool zCEventManager::Unarchive(zCArchiver* archiver)
+bool zCEventManager::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCObject::Unarchive(archiver))
+	if (!zCObject::Unarchive(archiver, game))
 		return false;
 
 	return false;
@@ -3804,9 +3805,9 @@ bool zCEventManager::Unarchive(zCArchiver* archiver)
 	Waynet
 */
 
-bool zCWayNet::Archive(zCArchiver* archiver)
+bool zCWayNet::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCObject::Archive(archiver))
+	if (!zCObject::Archive(archiver, game))
 		return false;
 	
 	if (game >= GAME_CHRISTMASEDITION)
@@ -3873,7 +3874,7 @@ bool zCWayNet::Archive(zCArchiver* archiver)
 		for (size_t i = 0; i < numWaypoints; i++)
 		{
 			std::string waypointKey = "waypoint" + std::to_string(i);
-			archiver->WriteObject(waypointKey, waypointList[i]);
+			archiver->WriteObject(waypointKey, game, waypointList[i]);
 		}
 	}
 
@@ -3903,19 +3904,19 @@ bool zCWayNet::Archive(zCArchiver* archiver)
 		for (size_t i = 0; i < numWays; i++)
 		{
 			std::string waylKey = "wayl" + std::to_string(i);
-			archiver->WriteObject(waylKey, wayList[i].left);
+			archiver->WriteObject(waylKey, game, wayList[i].left);
 
 			std::string wayrKey = "wayr" + std::to_string(i);
-			archiver->WriteObject(wayrKey, wayList[i].right);
+			archiver->WriteObject(wayrKey, game, wayList[i].right);
 		}
 	}
 
 	return true;
 }
 
-bool zCWayNet::Unarchive(zCArchiver* archiver)
+bool zCWayNet::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCObject::Unarchive(archiver))
+	if (!zCObject::Unarchive(archiver, game))
 		return false;
 
 	waynetVersion = 0;
@@ -3992,7 +3993,7 @@ bool zCWayNet::Unarchive(zCArchiver* archiver)
 			for (size_t i = 0; i < numWaypoints; i++)
 			{
 				std::string waypointKey = "waypoint" + std::to_string(i);
-				zCWaypoint* waypoint = archiver->ReadObjectAs<zCWaypoint*>(waypointKey);
+				zCWaypoint* waypoint = archiver->ReadObjectAs<zCWaypoint*>(waypointKey, game);
 
 				waypointList[i] = waypoint;
 			}
@@ -4055,10 +4056,10 @@ bool zCWayNet::Unarchive(zCArchiver* archiver)
 			for (size_t i = 0; i < numWays; i++)
 			{
 				std::string waylKey = "wayl" + std::to_string(i);
-				zCWaypoint* wayl = archiver->ReadObjectAs<zCWaypoint*>(waylKey);
+				zCWaypoint* wayl = archiver->ReadObjectAs<zCWaypoint*>(waylKey, game);
 
 				std::string wayrKey = "wayr" + std::to_string(i);
-				zCWaypoint* wayr = archiver->ReadObjectAs<zCWaypoint*>(wayrKey);
+				zCWaypoint* wayr = archiver->ReadObjectAs<zCWaypoint*>(wayrKey, game);
 
 				zCWay way;
 				way.left	= wayl;
@@ -4210,9 +4211,9 @@ bool zCWayNet::LoadWaynet(FileStream* file)
 	return true;
 }
 
-bool zCWaypoint::Archive(zCArchiver* archiver)
+bool zCWaypoint::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCObject::Archive(archiver))
+	if (!zCObject::Archive(archiver, game))
 		return false;
 
 	archiver->WriteString(ARC_ARGS(wpName));
@@ -4224,9 +4225,9 @@ bool zCWaypoint::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCWaypoint::Unarchive(zCArchiver* archiver)
+bool zCWaypoint::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCObject::Unarchive(archiver))
+	if (!zCObject::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(wpName));

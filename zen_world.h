@@ -40,11 +40,11 @@ namespace GothicLib
 			zCWorld()			{ }
 			virtual ~zCWorld()	{ }
 
-			bool SaveWorld(FileStream*);
-			bool LoadWorld(FileStream*);
+			bool SaveWorld(FileStream*, GAME);
+			bool LoadWorld(FileStream*, GAME);
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			zCBspTree*	bsp;
 			zCVob*		vobTree;
@@ -55,15 +55,15 @@ namespace GothicLib
 		private:
 
 			// .ZEN
-			bool ArcVobTree(zCArchiver*, zCVob*, size_t&);
-			bool UnarcVobTree(zCArchiver*, zCVob*, size_t&);
+			bool ArcVobTree(zCArchiver*, zCVob*, size_t&, GAME);
+			bool UnarcVobTree(zCArchiver*, zCVob*, size_t&, GAME);
 
 			// .PWF
-			bool SaveWorldFile(FileStream*);
-			bool LoadWorldFile(FileStream*);
+			bool SaveWorldFile(FileStream*, GAME);
+			bool LoadWorldFile(FileStream*, GAME);
 
-			bool SaveVobTree(FileStream*, zCVob*, size_t&);
-			bool LoadVobTree(FileStream*, zCVob*);
+			bool SaveVobTree(FileStream*, zCVob*, size_t&, GAME);
+			bool LoadVobTree(FileStream*, zCVob*, GAME);
 
 		};
 
@@ -87,8 +87,8 @@ namespace GothicLib
 			oCWorld()			{ }
 			virtual ~oCWorld()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 		private:
 
@@ -119,8 +119,8 @@ namespace GothicLib
 
 			zCBspBase() { }
 
-			bool SaveBINRecursive(FileStream*, zCBspTree*);
-			bool LoadBINRecursive(FileStream*, zCBspTree*);
+			bool SaveBIN(FileStream*, zCBspTree*, GAME);
+			bool LoadBIN(FileStream*, zCBspTree*, GAME);
 
 			virtual bool IsNode() = 0;
 
@@ -174,10 +174,8 @@ namespace GothicLib
 			zCBspTree()				{ }
 			virtual ~zCBspTree()	{ }
 
-			bool SaveBIN(FileStream*);
-			bool LoadBIN(FileStream*);
-
-			GAME game;
+			bool SaveBIN(FileStream*, GAME);
+			bool LoadBIN(FileStream*, GAME);
 
 			zCMesh						mesh;
 			zTBspTreeMode				mode;
@@ -392,11 +390,11 @@ namespace GothicLib
 			zCVob()				{ vobType = zVOB_TYPE_NORMAL; }
 			virtual ~zCVob()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
-			bool SaveVob(FileStream*);
-			bool LoadVob(FileStream*);
+			bool SaveVob(FileStream*, GAME);
+			bool LoadVob(FileStream*, GAME);
 
 			std::vector<zCVob*> children;
 
@@ -507,8 +505,8 @@ namespace GothicLib
 			zCCSCamera()			{ }
 			virtual ~zCCSCamera()	{ }
 			
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -576,8 +574,8 @@ namespace GothicLib
 			zCCamTrj_KeyFrame()				{ }
 			virtual ~zCCamTrj_KeyFrame()	{ }
 			
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -691,8 +689,8 @@ namespace GothicLib
 			zCEarthquake()			{ }
 			virtual ~zCEarthquake()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -726,8 +724,8 @@ namespace GothicLib
 			zCPFXControler()			{ }
 			virtual ~zCPFXControler()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -760,8 +758,8 @@ namespace GothicLib
 			zCVobAnimate()			{ }
 			virtual ~zCVobAnimate()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -793,8 +791,8 @@ namespace GothicLib
 			zCTouchDamage()				{ }
 			virtual ~zCTouchDamage()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -866,8 +864,8 @@ namespace GothicLib
 			zCVobLensFlare()			{ }
 			virtual ~zCVobLensFlare()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -898,8 +896,8 @@ namespace GothicLib
 			zCVobScreenFX()				{ }
 			virtual ~zCVobScreenFX()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -940,11 +938,11 @@ namespace GothicLib
 			oCItem()				{ vobType = zVOB_TYPE_ITEM; }
 			virtual ~oCItem()		{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
-			virtual bool Save(FileStream*);
-			virtual bool Load(FileStream*);
+			virtual bool Save(FileStream*, GAME);
+			virtual bool Load(FileStream*, GAME);
 
 			/*
 				Properties
@@ -1003,8 +1001,8 @@ namespace GothicLib
 			oCMOB()				{ vobType = zVOB_TYPE_MOB; }
 			virtual ~oCMOB()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1047,8 +1045,8 @@ namespace GothicLib
 			oCMobInter()			{ }
 			virtual ~oCMobInter()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1111,8 +1109,8 @@ namespace GothicLib
 			oCMobFire()				{ }
 			virtual ~oCMobFire()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1168,8 +1166,8 @@ namespace GothicLib
 			oCMobLockable()				{ }
 			virtual ~oCMobLockable()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1205,8 +1203,8 @@ namespace GothicLib
 			oCMobContainer()			{ }
 			virtual ~oCMobContainer()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1312,11 +1310,11 @@ namespace GothicLib
 			oCMob()				{ vobType = zVOB_TYPE_MOB; }
 			virtual ~oCMob()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
-			virtual bool Save(FileStream*);
-			virtual bool Load(FileStream*);
+			virtual bool Save(FileStream*, GAME);
+			virtual bool Load(FileStream*, GAME);
 
 			/*
 				Properties
@@ -1354,11 +1352,11 @@ namespace GothicLib
 			oCNpc()				{ vobType = zVOB_TYPE_NSC; }
 			virtual ~oCNpc()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
-			virtual bool Save(FileStream*);
-			virtual bool Load(FileStream*);
+			virtual bool Save(FileStream*, GAME);
+			virtual bool Load(FileStream*, GAME);
 
 			/*
 				Properties
@@ -1444,8 +1442,8 @@ namespace GothicLib
 			zCTriggerBase()				{ }
 			virtual ~zCTriggerBase()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1476,8 +1474,8 @@ namespace GothicLib
 			zCCodeMaster()			{ }
 			virtual ~zCCodeMaster()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1525,8 +1523,8 @@ namespace GothicLib
 			zCMessageFilter() { }
 			virtual ~zCMessageFilter() { }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1567,8 +1565,8 @@ namespace GothicLib
 			zCMoverControler()			{ }
 			virtual ~zCMoverControler()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1608,8 +1606,8 @@ namespace GothicLib
 			zCTrigger()				{ }
 			virtual ~zCTrigger()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1725,8 +1723,8 @@ namespace GothicLib
 			zCMover()			{ }
 			virtual ~zCMover()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1790,8 +1788,8 @@ namespace GothicLib
 			oCTriggerChangeLevel()			{ }
 			virtual ~oCTriggerChangeLevel()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1831,8 +1829,8 @@ namespace GothicLib
 			zCTriggerList()			{ }
 			virtual ~zCTriggerList()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1867,8 +1865,8 @@ namespace GothicLib
 			oCTriggerScript()			{ }
 			virtual ~oCTriggerScript()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1900,8 +1898,8 @@ namespace GothicLib
 			zCTriggerTeleport()				{ }
 			virtual ~zCTriggerTeleport()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -1957,8 +1955,8 @@ namespace GothicLib
 			zCTriggerWorldStart()			{ }
 			virtual ~zCTriggerWorldStart()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -2040,11 +2038,11 @@ namespace GothicLib
 			zCVobLight()			{ vobType = zVOB_TYPE_LIGHT; }
 			virtual ~zCVobLight()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
-			virtual bool Save(FileStream*);
-			virtual bool Load(FileStream*);
+			virtual bool Save(FileStream*, GAME);
+			virtual bool Load(FileStream*, GAME);
 
 			/*
 				Properties
@@ -2294,8 +2292,8 @@ namespace GothicLib
 			zCVobSound()			{ vobType = zVOB_TYPE_SOUND; }
 			virtual ~zCVobSound()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -2339,8 +2337,8 @@ namespace GothicLib
 			zCVobSoundDaytime()				{ }
 			virtual ~zCVobSoundDaytime()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -2396,8 +2394,8 @@ namespace GothicLib
 			oCZoneMusic()			{ }
 			virtual ~oCZoneMusic()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -2459,8 +2457,8 @@ namespace GothicLib
 			zCZoneVobFarPlane()				{ }
 			virtual ~zCZoneVobFarPlane()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -2515,8 +2513,8 @@ namespace GothicLib
 			zCZoneZFog()			{ }
 			virtual ~zCZoneZFog()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -2627,8 +2625,8 @@ namespace GothicLib
 			zCAIPlayer()			{ }
 			virtual ~zCAIPlayer()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -2667,8 +2665,8 @@ namespace GothicLib
 			oCAniCtrl_Human()			{ }
 			virtual ~oCAniCtrl_Human()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -2758,8 +2756,8 @@ namespace GothicLib
 			zCEventManager()				{ }
 			virtual ~zCEventManager()		{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -2798,8 +2796,8 @@ namespace GothicLib
 			zCWaypoint()				{ }
 			virtual ~zCWaypoint()		{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			/*
 				Properties
@@ -2872,8 +2870,8 @@ namespace GothicLib
 			zCWayNet()				{ }
 			virtual ~zCWayNet()		{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
 			bool SaveWaynet(FileStream*);
 			bool LoadWaynet(FileStream*);

@@ -7,47 +7,47 @@ using namespace GothicLib::Genome;
 	gCProject
 */
 
-bool gCProject::OnWrite(FileStream* file)
+bool gCProject::OnWrite(FileStream* file, GAME game)
 {
 	if (game <= GAME_GOTHIC3)
 	{
-		return bCObjectRefBase::OnWrite(file);
+		return bCObjectRefBase::OnWrite(file, game);
 	}
 
-	return WriteData(file);
+	return WriteData(file, game);
 }
 
-bool gCProject::OnRead(FileStream* file)
+bool gCProject::OnRead(FileStream* file, GAME game)
 {
 	if (game <= GAME_GOTHIC3)
 	{
-		return bCObjectRefBase::OnRead(file);
+		return bCObjectRefBase::OnRead(file, game);
 	}
 
-	return ReadData(file);
+	return ReadData(file, game);
 }
 
-bool gCProject::DoLoadData(FileStream* file)
+bool gCProject::DoLoadData(FileStream* file, GAME game)
 {
 	if (game <= GAME_GOTHIC3)
 	{
-		return ReadData(file);
-	}
-
-	return true;
-}
-
-bool gCProject::DoSaveData(FileStream* file)
-{
-	if (game <= GAME_GOTHIC3)
-	{
-		return WriteData(file);
+		return ReadData(file, game);
 	}
 
 	return true;
 }
 
-bool gCProject::WriteData(FileStream* file)
+bool gCProject::DoSaveData(FileStream* file, GAME game)
+{
+	if (game <= GAME_GOTHIC3)
+	{
+		return WriteData(file, game);
+	}
+
+	return true;
+}
+
+bool gCProject::WriteData(FileStream* file, GAME game)
 {
 	uint16_t version	= 1;
 	uint32_t count		= worlds.size();
@@ -68,7 +68,7 @@ bool gCProject::WriteData(FileStream* file)
 	return true;
 }
 
-bool gCProject::ReadData(FileStream* file)
+bool gCProject::ReadData(FileStream* file, GAME game)
 {
 	uint16_t version;
 	uint32_t count = 0;
@@ -93,47 +93,47 @@ bool gCProject::ReadData(FileStream* file)
 	gCWorld
 */
 
-bool gCWorld::OnWrite(FileStream* file)
+bool gCWorld::OnWrite(FileStream* file, GAME game)
 {
 	if (game <= GAME_GOTHIC3)
 	{
-		return bCObjectRefBase::OnWrite(file);
+		return bCObjectRefBase::OnWrite(file, game);
 	}
 
-	return WriteData(file);
+	return WriteData(file, game);
 }
 
-bool gCWorld::OnRead(FileStream* file)
+bool gCWorld::OnRead(FileStream* file, GAME game)
 {
 	if (game <= GAME_GOTHIC3)
 	{
-		return bCObjectRefBase::OnRead(file);
+		return bCObjectRefBase::OnRead(file, game);
 	}
 
-	return ReadData(file);
+	return ReadData(file, game);
 }
 
-bool gCWorld::DoLoadData(FileStream* file)
+bool gCWorld::DoLoadData(FileStream* file, GAME game)
 {
 	if (game <= GAME_GOTHIC3)
 	{
-		return ReadData(file);
-	}
-
-	return true;
-}
-
-bool gCWorld::DoSaveData(FileStream* file)
-{
-	if (game <= GAME_GOTHIC3)
-	{
-		return WriteData(file);
+		return ReadData(file, game);
 	}
 
 	return true;
 }
 
-bool gCWorld::WriteData(FileStream* file)
+bool gCWorld::DoSaveData(FileStream* file, GAME game)
+{
+	if (game <= GAME_GOTHIC3)
+	{
+		return WriteData(file, game);
+	}
+
+	return true;
+}
+
+bool gCWorld::WriteData(FileStream* file, GAME game)
 {
 	uint16_t version = 36;
 
@@ -148,7 +148,7 @@ bool gCWorld::WriteData(FileStream* file)
 	return true;
 }
 
-bool gCWorld::ReadData(FileStream* file)
+bool gCWorld::ReadData(FileStream* file, GAME game)
 {
 	uint16_t version;
 
@@ -162,7 +162,7 @@ bool gCWorld::ReadData(FileStream* file)
 	gCSector
 */
 
-bool gCSector::OnWrite(FileStream* file)
+bool gCSector::OnWrite(FileStream* file, GAME game)
 {
 	uint16_t version = 27;
 
@@ -178,13 +178,13 @@ bool gCSector::OnWrite(FileStream* file)
 
 	if (game >= GAME_RISEN1)
 	{
-		return WriteData(file);
+		return WriteData(file, game);
 	}
 
 	return true;
 }
 
-bool gCSector::OnRead(FileStream* file)
+bool gCSector::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 
@@ -196,13 +196,13 @@ bool gCSector::OnRead(FileStream* file)
 	if (game >= GAME_RISEN1 &&
 		version >= 200)
 	{
-		return ReadData(file);
+		return ReadData(file, game);
 	}
 
 	return true;
 }
 
-bool gCSector::DoLoadData(FileStream* file)
+bool gCSector::DoLoadData(FileStream* file, GAME game)
 {
 	if (game <= GAME_GOTHIC3)
 	{
@@ -210,13 +210,13 @@ bool gCSector::DoLoadData(FileStream* file)
 
 		file->Read(FILE_ARGS(version));
 
-		return ReadData(file);
+		return ReadData(file, game);
 	}
 
 	return true;
 }
 
-bool gCSector::DoSaveData(FileStream* file)
+bool gCSector::DoSaveData(FileStream* file, GAME game)
 {
 	if (game <= GAME_GOTHIC3)
 	{
@@ -224,13 +224,13 @@ bool gCSector::DoSaveData(FileStream* file)
 
 		file->Write(FILE_ARGS(version));
 
-		return WriteData(file);
+		return WriteData(file, game);
 	}
 
 	return true;
 }
 
-bool gCSector::WriteData(FileStream* file)
+bool gCSector::WriteData(FileStream* file, GAME game)
 {
 	uint32_t dynamicLayerCount	= dynamicLayers.size();
 	uint32_t geometryLayerCount	= geometryLayers.size();
@@ -258,7 +258,7 @@ bool gCSector::WriteData(FileStream* file)
 	return true;
 }
 
-bool gCSector::ReadData(FileStream* file)
+bool gCSector::ReadData(FileStream* file, GAME game)
 {
 	uint32_t dynamicLayerCount = 0;
 	uint32_t geometryLayerCount = 0;
@@ -301,7 +301,7 @@ bool gCSector::ReadData(FileStream* file)
 		gCDynamicLayer
 */
 
-bool gCGeometryLayer::OnWrite(FileStream* file)
+bool gCGeometryLayer::OnWrite(FileStream* file, GAME game)
 {
 	if (game >= GAME_RISEN1)
 	{
@@ -309,10 +309,10 @@ bool gCGeometryLayer::OnWrite(FileStream* file)
 		return false;
 	}
 
-	return bCObjectBase::OnWrite(file);
+	return bCObjectBase::OnWrite(file, game);
 }
 
-bool gCGeometryLayer::OnRead(FileStream* file)
+bool gCGeometryLayer::OnRead(FileStream* file, GAME game)
 {
 	if (game >= GAME_RISEN1)
 	{
@@ -320,10 +320,10 @@ bool gCGeometryLayer::OnRead(FileStream* file)
 		return false;
 	}
 
-	return bCObjectBase::OnRead(file);
+	return bCObjectBase::OnRead(file, game);
 }
 
-bool gCGeometryLayer::DoLoadData(FileStream* file)
+bool gCGeometryLayer::DoLoadData(FileStream* file, GAME game)
 {
 	if (game >= GAME_RISEN1)
 	{
@@ -333,14 +333,13 @@ bool gCGeometryLayer::DoLoadData(FileStream* file)
 
 	// Load context
 	bCAccessorPropertyObject accessor;
-	accessor.game = game;
-	accessor.Read(file);
+	accessor.Read(file, game);
 	context = accessor.GetNativeObjectAs<eCGeometrySpatialContext*>();
 
 	return true;
 }
 
-bool gCGeometryLayer::DoSaveData(FileStream* file)
+bool gCGeometryLayer::DoSaveData(FileStream* file, GAME game)
 {
 	if (game >= GAME_RISEN1)
 	{
@@ -350,53 +349,52 @@ bool gCGeometryLayer::DoSaveData(FileStream* file)
 
 	// Save context
 	bCAccessorPropertyObject accessor(context);
-	accessor.game = game;
-	accessor.Write(file);
+	accessor.Write(file, game);
 
 	return true;
 }
 
-bool gCDynamicLayer::OnWrite(FileStream* file)
+bool gCDynamicLayer::OnWrite(FileStream* file, GAME game)
 {
 	if (game >= GAME_RISEN1)
 	{
-		return WriteData(file);
+		return WriteData(file, game);
 	}
 
-	return bCObjectBase::OnWrite(file);
+	return bCObjectBase::OnWrite(file, game);
 }
 
-bool gCDynamicLayer::OnRead(FileStream* file)
+bool gCDynamicLayer::OnRead(FileStream* file, GAME game)
 {
 	if (game >= GAME_RISEN1)
 	{
-		return ReadData(file);
+		return ReadData(file, game);
 	}
 
-	return bCObjectBase::OnRead(file);
+	return bCObjectBase::OnRead(file, game);
 }
 
-bool gCDynamicLayer::DoLoadData(FileStream* file)
+bool gCDynamicLayer::DoLoadData(FileStream* file, GAME game)
 {
 	if (game <= GAME_GOTHIC3)
 	{
-		return ReadData(file);
+		return ReadData(file, game);
 	}
 
 	return true;
 }
 
-bool gCDynamicLayer::DoSaveData(FileStream* file)
+bool gCDynamicLayer::DoSaveData(FileStream* file, GAME game)
 {
 	if (game <= GAME_GOTHIC3)
 	{
-		return WriteData(file);
+		return WriteData(file, game);
 	}
 
 	return true;
 }
 
-bool gCDynamicLayer::WriteData(FileStream* file)
+bool gCDynamicLayer::WriteData(FileStream* file, GAME game)
 {
 	uint64_t magic = 0x4C44454D4F4E4547;
 	file->Write(FILE_ARGS(magic));
@@ -412,13 +410,12 @@ bool gCDynamicLayer::WriteData(FileStream* file)
 
 	// Save context
 	bCAccessorPropertyObject accessor(context);
-	accessor.game = game;
-	accessor.Write(file);
+	accessor.Write(file, game);
 
 	return true;
 }
 
-bool gCDynamicLayer::ReadData(FileStream* file)
+bool gCDynamicLayer::ReadData(FileStream* file, GAME game)
 {
 	uint64_t magic;
 	file->Read(FILE_ARGS(magic));
@@ -434,8 +431,7 @@ bool gCDynamicLayer::ReadData(FileStream* file)
 
 	// Load context
 	bCAccessorPropertyObject accessor;
-	accessor.game = game;
-	accessor.Read(file);
+	accessor.Read(file, game);
 	context = accessor.GetNativeObjectAs<eCEntityDynamicContext*>();
 
 	return true;
@@ -447,12 +443,12 @@ bool gCDynamicLayer::ReadData(FileStream* file)
 		eCEntityDynamicContext
 */
 
-bool eCGeometrySpatialContext::OnWrite(FileStream* file)
+bool eCGeometrySpatialContext::OnWrite(FileStream* file, GAME game)
 {
 	return true;
 }
 
-bool eCGeometrySpatialContext::OnRead(FileStream* file)
+bool eCGeometrySpatialContext::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
@@ -472,12 +468,12 @@ bool eCGeometrySpatialContext::OnRead(FileStream* file)
 	return true;
 }
 
-bool eCGeometrySpatialContext::WriteNodes(FileStream* file)
+bool eCGeometrySpatialContext::WriteNodes(FileStream* file, GAME game)
 {
 	return true;
 }
 
-bool eCGeometrySpatialContext::ReadNodes(FileStream* file)
+bool eCGeometrySpatialContext::ReadNodes(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
@@ -505,8 +501,7 @@ bool eCGeometrySpatialContext::ReadNodes(FileStream* file)
 			}
 
 			entityList[i] = new eCSpatialEntity();
-			entityList[i]->game = this->game;
-			if (!entityList[i]->OnRead(file))
+			if (!entityList[i]->OnRead(file, game))
 			{
 				return false;
 			}
@@ -516,12 +511,12 @@ bool eCGeometrySpatialContext::ReadNodes(FileStream* file)
 	return true;
 }
 
-bool eCEntityDynamicContext::OnWrite(FileStream* file)
+bool eCEntityDynamicContext::OnWrite(FileStream* file, GAME game)
 {
 	return true;
 }
 
-bool eCEntityDynamicContext::OnRead(FileStream* file)
+bool eCEntityDynamicContext::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
@@ -553,8 +548,7 @@ bool eCEntityDynamicContext::OnRead(FileStream* file)
 		for (size_t i = 0; i < entityCount; i++)
 		{
 			entityList[i] = new eCDynamicEntity();
-			entityList[i]->game = this->game;
-			if (!entityList[i]->OnRead(file))
+			if (!entityList[i]->OnRead(file, game))
 			{
 				return false;
 			}
@@ -594,12 +588,12 @@ bool eCEntityProxy::Read(FileStream* file)
 	return true;
 }
 
-bool eCNode::OnWrite(FileStream* file)
+bool eCNode::OnWrite(FileStream* file, GAME game)
 {
 	return true;
 }
 
-bool eCNode::OnRead(FileStream* file)
+bool eCNode::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
@@ -612,17 +606,17 @@ bool eCNode::OnRead(FileStream* file)
 	return true;
 }
 
-bool eCEntity::OnWrite(FileStream* file)
+bool eCEntity::OnWrite(FileStream* file, GAME game)
 {
 	return true;
 }
 
-bool eCEntity::OnRead(FileStream* file)
+bool eCEntity::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
 
-	eCNode::OnRead(file);
+	eCNode::OnRead(file, game);
 
 	bool unknown;
 
@@ -764,8 +758,7 @@ bool eCEntity::OnRead(FileStream* file)
 			file->Read(FILE_ARGS(propertSetVersion));
 		
 			bCAccessorPropertyObject accessor;
-			accessor.game = game;
-			if (!accessor.Read(file))
+			if (!accessor.Read(file, game))
 			{
 				return false;
 			}
@@ -791,12 +784,12 @@ bool eCEntity::OnRead(FileStream* file)
 	return true;
 }
 
-bool eCGeometryEntity::OnWrite(FileStream* file)
+bool eCGeometryEntity::OnWrite(FileStream* file, GAME game)
 {
 	return true;
 }
 
-bool eCGeometryEntity::OnRead(FileStream* file)
+bool eCGeometryEntity::OnRead(FileStream* file, GAME game)
 {
 	if (game >= GAME_RISEN1) // Not implemented in Gothic 3
 	{
@@ -822,22 +815,22 @@ bool eCGeometryEntity::OnRead(FileStream* file)
 		file->Read(FILE_ARGS(cacheInRange));
 	}
 
-	return eCEntity::OnRead(file);
+	return eCEntity::OnRead(file, game);
 }
 
-bool eCSpatialEntity::OnWrite(FileStream* file)
+bool eCSpatialEntity::OnWrite(FileStream* file, GAME game)
 {
 	return true;
 }
 
-bool eCSpatialEntity::OnRead(FileStream* file)
+bool eCSpatialEntity::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
 
 	if (version == 30)
 	{
-		return eCGeometryEntity::OnRead(file);
+		return eCGeometryEntity::OnRead(file, game);
 	}
 
 	bool hasId;
@@ -854,15 +847,15 @@ bool eCSpatialEntity::OnRead(FileStream* file)
 		file->Read(FILE_ARGS(visualWorldNodeOOBoundary));
 	}
 
-	return eCGeometryEntity::OnRead(file);
+	return eCGeometryEntity::OnRead(file, game);
 }
 
-bool eCDynamicEntity::OnWrite(FileStream* file)
+bool eCDynamicEntity::OnWrite(FileStream* file, GAME game)
 {
 	return true;
 }
 
-bool eCDynamicEntity::OnRead(FileStream* file)
+bool eCDynamicEntity::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
@@ -903,7 +896,7 @@ bool eCDynamicEntity::OnRead(FileStream* file)
 		}
 	}
 
-	return eCGeometryEntity::OnRead(file);
+	return eCGeometryEntity::OnRead(file, game);
 }
 
 /*
@@ -917,7 +910,7 @@ bool eCDynamicEntity::OnRead(FileStream* file)
 			eCVisualMeshStatic_PS [GOTHIC3]
 */
 
-bool eCEntityPropertySet::OnWrite(FileStream* file)
+bool eCEntityPropertySet::OnWrite(FileStream* file, GAME game)
 {
 	uint16_t version = 2;
 	file->Read(FILE_ARGS(version));
@@ -927,7 +920,7 @@ bool eCEntityPropertySet::OnWrite(FileStream* file)
 	return true;
 }
 
-bool eCEntityPropertySet::OnRead(FileStream* file)
+bool eCEntityPropertySet::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
@@ -944,27 +937,27 @@ bool eCEntityPropertySet::OnRead(FileStream* file)
 	return true;
 }
 
-bool eCCollisionShapeBase_PS::OnWrite(FileStream* file)
+bool eCCollisionShapeBase_PS::OnWrite(FileStream* file, GAME game)
 {
 	return false;
 }
 
-bool eCCollisionShapeBase_PS::OnRead(FileStream* file)
+bool eCCollisionShapeBase_PS::OnRead(FileStream* file, GAME game)
 {
 	return false;
 }
 
-bool eCCollisionShape_PS::OnWrite(FileStream* file)
+bool eCCollisionShape_PS::OnWrite(FileStream* file, GAME game)
 {
 	return false;
 }
 
-bool eCCollisionShape_PS::OnRead(FileStream* file)
+bool eCCollisionShape_PS::OnRead(FileStream* file, GAME game)
 {
 	return false;
 }
 
-bool eCDynamicLight_PS::OnWrite(FileStream* file)
+bool eCDynamicLight_PS::OnWrite(FileStream* file, GAME game)
 {
 	uint16_t version = 1;
 	file->Write(FILE_ARGS(version));
@@ -972,7 +965,7 @@ bool eCDynamicLight_PS::OnWrite(FileStream* file)
 	return true;
 }
 
-bool eCDynamicLight_PS::OnRead(FileStream* file)
+bool eCDynamicLight_PS::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
@@ -980,7 +973,7 @@ bool eCDynamicLight_PS::OnRead(FileStream* file)
 	return true;
 }
 
-bool eCDirectionalLight_PS::OnWrite(FileStream* file)
+bool eCDirectionalLight_PS::OnWrite(FileStream* file, GAME game)
 {
 	uint16_t version = 1;
 	file->Write(FILE_ARGS(version));
@@ -988,7 +981,7 @@ bool eCDirectionalLight_PS::OnWrite(FileStream* file)
 	return true;
 }
 
-bool eCDirectionalLight_PS::OnRead(FileStream* file)
+bool eCDirectionalLight_PS::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
@@ -996,7 +989,7 @@ bool eCDirectionalLight_PS::OnRead(FileStream* file)
 	return true;
 }
 
-bool eCHemisphere_PS::OnWrite(FileStream* file)
+bool eCHemisphere_PS::OnWrite(FileStream* file, GAME game)
 {
 	uint16_t version = 1;
 	file->Write(FILE_ARGS(version));
@@ -1004,7 +997,7 @@ bool eCHemisphere_PS::OnWrite(FileStream* file)
 	return true;
 }
 
-bool eCHemisphere_PS::OnRead(FileStream* file)
+bool eCHemisphere_PS::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
@@ -1012,34 +1005,34 @@ bool eCHemisphere_PS::OnRead(FileStream* file)
 	return true;
 }
 
-bool eCVisualMeshBase_PS::OnWrite(FileStream* file)
+bool eCVisualMeshBase_PS::OnWrite(FileStream* file, GAME game)
 {
 	uint16_t version = 1;
 	file->Write(FILE_ARGS(version));
 
-	return eCEntityPropertySet::OnWrite(file);
+	return eCEntityPropertySet::OnWrite(file, game);
 }
 
-bool eCVisualMeshBase_PS::OnRead(FileStream* file)
+bool eCVisualMeshBase_PS::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
 
-	return eCEntityPropertySet::OnRead(file);
+	return eCEntityPropertySet::OnRead(file, game);
 }
 
-bool eCVisualMeshStatic_PS::OnWrite(FileStream* file)
+bool eCVisualMeshStatic_PS::OnWrite(FileStream* file, GAME game)
 {
 	uint16_t version = 50;
 	file->Write(FILE_ARGS(version));
 
-	return eCVisualMeshBase_PS::OnWrite(file);
+	return eCVisualMeshBase_PS::OnWrite(file, game);
 }
 
-bool eCVisualMeshStatic_PS::OnRead(FileStream* file)
+bool eCVisualMeshStatic_PS::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
 
-	return eCVisualMeshBase_PS::OnRead(file);
+	return eCVisualMeshBase_PS::OnRead(file, game);
 }

@@ -10,9 +10,9 @@ using namespace GothicLib::ZenGin;
 	zCMaterial
 */
 
-bool zCMaterial::Archive(zCArchiver* archiver)
+bool zCMaterial::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCObject::Archive(archiver))
+	if (!zCObject::Archive(archiver, game))
 		return false;
 	
 	archiver->WriteString(ARC_ARGS(name));
@@ -57,9 +57,9 @@ bool zCMaterial::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCMaterial::Unarchive(zCArchiver* archiver)
+bool zCMaterial::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCObject::Unarchive(archiver))
+	if (!zCObject::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(name));
@@ -119,12 +119,12 @@ bool zCMaterial::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCMaterial::Save(FileStream* file)
+bool zCMaterial::Save(FileStream* file, GAME game)
 {
 	return false;
 }
 
-bool zCMaterial::Load(FileStream* file)
+bool zCMaterial::Load(FileStream* file, GAME game)
 {
 	std::string line, key, value;
 
@@ -257,9 +257,9 @@ bool zCMaterial::Load(FileStream* file)
 			zCMorphMesh
 */
 
-bool zCDecal::Archive(zCArchiver* archiver)
+bool zCDecal::Archive(zCArchiver* archiver, GAME game)
 {
-	if (!zCVisual::Archive(archiver))
+	if (!zCVisual::Archive(archiver, game))
 		return false;
 
 	archiver->WriteString(ARC_ARGS(name));
@@ -278,9 +278,9 @@ bool zCDecal::Archive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCDecal::Unarchive(zCArchiver* archiver)
+bool zCDecal::Unarchive(zCArchiver* archiver, GAME game)
 {
-	if (!zCVisual::Unarchive(archiver))
+	if (!zCVisual::Unarchive(archiver, game))
 		return false;
 
 	archiver->ReadString(ARC_ARGS(name));
@@ -299,7 +299,7 @@ bool zCDecal::Unarchive(zCArchiver* archiver)
 	return true;
 }
 
-bool zCDecal::Save(FileStream* file)
+bool zCDecal::Save(FileStream* file, GAME game)
 {
 	file->WriteLine("zCDecal ()", "\n");
 	file->WriteLine("{", "\n");
@@ -334,7 +334,7 @@ bool zCDecal::Save(FileStream* file)
 	return true;
 }
 
-bool zCDecal::Load(FileStream* file)
+bool zCDecal::Load(FileStream* file, GAME game)
 {
 	bool inVob = false;
 
@@ -398,7 +398,7 @@ bool zCDecal::Load(FileStream* file)
 	return false;
 }
 
-bool zCOBBox3D::LoadBIN(FileStream* file)
+bool zCOBBox3D::LoadBIN(FileStream* file, GAME game)
 {
 	file->Read(&center, sizeof(center));
 	file->Read(&axis, sizeof(axis));
@@ -415,7 +415,7 @@ bool zCOBBox3D::LoadBIN(FileStream* file)
 
 			for (size_t i = 0; i < childCount; i++)
 			{
-				childs[i].LoadBIN(file);
+				childs[i].LoadBIN(file, game);
 			}
 		}
 	}
@@ -423,7 +423,7 @@ bool zCOBBox3D::LoadBIN(FileStream* file)
 	return true;
 }
 
-bool zCOBBox3D::SaveBIN(FileStream* file)
+bool zCOBBox3D::SaveBIN(FileStream* file, GAME game)
 {
 	file->Write(&center, sizeof(center));
 	file->Write(&axis, sizeof(axis));
@@ -436,7 +436,7 @@ bool zCOBBox3D::SaveBIN(FileStream* file)
 
 		for (size_t i = 0; i < childs.size(); i++)
 		{
-			childs[i].SaveBIN(file);
+			childs[i].SaveBIN(file, game);
 		}
 	}
 
@@ -459,7 +459,7 @@ inline int CalcNormalMainAxis(zTPlane plane)
 	return axis;
 };
 
-bool zCMesh::SaveMSH(FileStream* file)
+bool zCMesh::SaveMSH(FileStream* file, GAME game)
 {
 	// Mesh start
 	uint64_t meshStart = file->StartBinChunk(MESHCHUNK_MESHSTART);
@@ -485,7 +485,7 @@ bool zCMesh::SaveMSH(FileStream* file)
 	uint64_t bboxStart = file->StartBinChunk(MESHCHUNK_BBOX);
 
 	file->Write(FILE_ARGS(bbox));
-	obbox.SaveBIN(file);
+	obbox.SaveBIN(file, game);
 
 	file->EndBinChunk(bboxStart);
 
@@ -494,7 +494,6 @@ bool zCMesh::SaveMSH(FileStream* file)
 
 	zCArchiver archiver;
 	archiver.mode = zCArchiver::ARCHIVER_MODE_BINARY;
-	archiver.game = game;
 	archiver.Write(file, true);
 
 	if (game >= GAME_DEMO5)
@@ -512,12 +511,12 @@ bool zCMesh::SaveMSH(FileStream* file)
 		if (game >= GAME_DEMO5)
 		{
 			archiver.WriteString("", materials[i].name);
-			archiver.WriteObject(&materials[i]);
+			archiver.WriteObject(game, &materials[i]);
 		}
 		else
 		{
 			file->WriteLine(materials[i].name, "\r");
-			materials[i].Save(file);
+			materials[i].Save(file, game);
 		}
 	}
 
@@ -666,7 +665,7 @@ bool zCMesh::SaveMSH(FileStream* file)
 	return true;
 }
 
-bool zCMesh::LoadMSH(FileStream* file)
+bool zCMesh::LoadMSH(FileStream* file, GAME game)
 {
 	bool end = false;
 
@@ -726,7 +725,7 @@ bool zCMesh::LoadMSH(FileStream* file)
 			}
 
 			file->Read(FILE_ARGS(bbox));
-			obbox.LoadBIN(file);
+			obbox.LoadBIN(file, game);
 
 			break;
 		}
@@ -739,7 +738,6 @@ bool zCMesh::LoadMSH(FileStream* file)
 			if (game >= GAME_DEMO5)
 			{
 				archiver.Read(file);
-				archiver.game = game;
 
 				archiver.ReadInt("", materialCount);
 			}
@@ -755,17 +753,16 @@ bool zCMesh::LoadMSH(FileStream* file)
 				for (size_t i = 0; i < materialCount; i++)
 				{
 					std::string materialName;
-					materials[i].game = game;
 
 					if (game >= GAME_DEMO5)
 					{
 						archiver.ReadString("", materialName);
-						archiver.ReadObjectAs<zCMaterial*>(&materials[i]);
+						archiver.ReadObjectAs<zCMaterial*>(game, &materials[i]);
 					}
 					else
 					{
 						file->ReadLine(materialName);
-						materials[i].Load(file);
+						materials[i].Load(file, game);
 					}
 				}
 			}

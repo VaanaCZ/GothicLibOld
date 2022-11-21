@@ -80,11 +80,11 @@ namespace GothicLib
 			zCMaterial()			{ }
 			virtual ~zCMaterial()	{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
-			virtual bool Save(FileStream*);
-			virtual bool Load(FileStream*);
+			virtual bool Save(FileStream*, GAME);
+			virtual bool Load(FileStream*, GAME);
 
 			/*
 				Properties
@@ -182,11 +182,11 @@ namespace GothicLib
 			zCDecal()				{ }
 			virtual ~zCDecal()		{ }
 
-			virtual bool Archive(zCArchiver*);
-			virtual bool Unarchive(zCArchiver*);
+			virtual bool Archive(zCArchiver*, GAME);
+			virtual bool Unarchive(zCArchiver*, GAME);
 
-			virtual bool Save(FileStream*);
-			virtual bool Load(FileStream*);
+			virtual bool Save(FileStream*, GAME);
+			virtual bool Load(FileStream*, GAME);
 
 			/*
 				Properties
@@ -225,8 +225,8 @@ namespace GothicLib
 			zCOBBox3D()		{}
 			~zCOBBox3D()	{}
 
-			bool LoadBIN(FileStream*);
-			bool SaveBIN(FileStream*);
+			bool LoadBIN(FileStream*, GAME);
+			bool SaveBIN(FileStream*, GAME);
 
 			zVEC3 center;
 			zVEC3 axis[3];
@@ -306,8 +306,8 @@ namespace GothicLib
 			zCMesh()			{ }
 			virtual ~zCMesh()	{ }
 
-			bool SaveMSH(FileStream*);
-			bool LoadMSH(FileStream*);
+			bool SaveMSH(FileStream*, GAME);
+			bool LoadMSH(FileStream*, GAME);
 
 			zDATE		date;
 			std::string	name;

@@ -25,11 +25,11 @@ namespace GothicLib
 			gCProject()				{ }
 			virtual ~gCProject()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
-			virtual bool DoLoadData(FileStream*);
-			virtual bool DoSaveData(FileStream*);
+			virtual bool DoLoadData(FileStream*, GAME);
+			virtual bool DoSaveData(FileStream*, GAME);
 
 			GE_DECLARE_PROPERTY(gCProject, GAME_GOTHIC3,	bTPOSmartPtr<class gCWorkspace>,	WorkspacePtr);
 			GE_DECLARE_PROPERTY(gCProject, GAME_ALL,		bTRefPtrArray<class gCWorld *>,		Worlds);
@@ -39,8 +39,8 @@ namespace GothicLib
 
 		private:
 
-			bool WriteData(FileStream*);
-			bool ReadData(FileStream*);
+			bool WriteData(FileStream*, GAME);
+			bool ReadData(FileStream*, GAME);
 
 		};
 
@@ -63,18 +63,18 @@ namespace GothicLib
 			gCWorld()			{ }
 			virtual ~gCWorld()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
-			virtual bool DoLoadData(FileStream*);
-			virtual bool DoSaveData(FileStream*);
+			virtual bool DoLoadData(FileStream*, GAME);
+			virtual bool DoSaveData(FileStream*, GAME);
 
 			std::string sectorFile;
 
 		private:
 
-			bool WriteData(FileStream*);
-			bool ReadData(FileStream*);
+			bool WriteData(FileStream*, GAME);
+			bool ReadData(FileStream*, GAME);
 
 		};
 		
@@ -97,11 +97,11 @@ namespace GothicLib
 			gCSector()			{ }
 			virtual ~gCSector()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
-			virtual bool DoLoadData(FileStream*);
-			virtual bool DoSaveData(FileStream*);
+			virtual bool DoLoadData(FileStream*, GAME);
+			virtual bool DoSaveData(FileStream*, GAME);
 			
 			GE_DECLARE_PROPERTY(gCSector, GAME_GOTHIC3,	bTPOSmartPtr<class gCWorld>,			WorldPtr);
 			GE_DECLARE_PROPERTY(gCSector, GAME_GOTHIC3,	bTRefPtrArray<class gCGeometryLayer *>,	GeometryLayers);
@@ -121,8 +121,8 @@ namespace GothicLib
 
 		private:
 
-			bool WriteData(FileStream*);
-			bool ReadData(FileStream*);
+			bool WriteData(FileStream*, GAME);
+			bool ReadData(FileStream*, GAME);
 
 		};
 
@@ -171,11 +171,11 @@ namespace GothicLib
 			gCGeometryLayer()			{ }
 			virtual ~gCGeometryLayer()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
-			virtual bool DoLoadData(FileStream*);
-			virtual bool DoSaveData(FileStream*);
+			virtual bool DoLoadData(FileStream*, GAME);
+			virtual bool DoSaveData(FileStream*, GAME);
 			
 			GE_DECLARE_PROPERTY(gCGeometryLayer, GAME_GOTHIC3, bCString,									OriginImportName);
 			GE_DECLARE_PROPERTY(gCGeometryLayer, GAME_GOTHIC3, bTPropertyContainer<enum gEGeometryType>,	GeometryType);
@@ -199,19 +199,19 @@ namespace GothicLib
 			gCDynamicLayer()			{ }
 			virtual ~gCDynamicLayer()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
-			virtual bool DoLoadData(FileStream*);
-			virtual bool DoSaveData(FileStream*);
+			virtual bool DoLoadData(FileStream*, GAME);
+			virtual bool DoSaveData(FileStream*, GAME);
 			
 			GE_DECLARE_PROPERTY(gCDynamicLayer, GAME_ALL,		bTPropertyContainer<enum gEEntityType>,	EntityType);
 			GE_DECLARE_PROPERTY(gCDynamicLayer, GAME_RISEN1,	bCString,								OriginImportName);
 
 		private:
 
-			bool WriteData(FileStream*);
-			bool ReadData(FileStream*);
+			bool WriteData(FileStream*, GAME);
+			bool ReadData(FileStream*, GAME);
 
 		};
 
@@ -265,11 +265,11 @@ namespace GothicLib
 			eCGeometrySpatialContext()			{ }
 			virtual ~eCGeometrySpatialContext()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
-			virtual bool WriteNodes(FileStream*);
-			virtual bool ReadNodes(FileStream*);
+			virtual bool WriteNodes(FileStream*, GAME);
+			virtual bool ReadNodes(FileStream*, GAME);
 
 			bool hybridContext;
 
@@ -292,8 +292,8 @@ namespace GothicLib
 			eCEntityDynamicContext()			{ }
 			virtual ~eCEntityDynamicContext()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 		private:
 
@@ -339,8 +339,8 @@ namespace GothicLib
 			eCNode()			{ }
 			virtual ~eCNode()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 			bCGuid		id;
 						
@@ -365,8 +365,8 @@ namespace GothicLib
 			eCEntity()			{ }
 			virtual ~eCEntity()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 			std::string	name;
 			bCMatrix	worldMatrix;
@@ -415,8 +415,8 @@ namespace GothicLib
 			eCGeometryEntity()			{ }
 			virtual ~eCGeometryEntity()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 			float		renderAlphaValue;
 			float		viewRange;
@@ -440,8 +440,8 @@ namespace GothicLib
 			eCSpatialEntity()			{ }
 			virtual ~eCSpatialEntity()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 			bCBox			visualWorldNodeBoundary;
 			bCOrientedBox	visualWorldNodeOOBoundary;
@@ -465,8 +465,8 @@ namespace GothicLib
 			eCDynamicEntity()			{ }
 			virtual ~eCDynamicEntity()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 			bCMatrix		localMatrix;
 			bCBox			worldNodeBoundary;
@@ -504,8 +504,8 @@ namespace GothicLib
 			eCEntityPropertySet()			{ }
 			virtual ~eCEntityPropertySet()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 			bool renderingEnabled;
 
@@ -528,8 +528,8 @@ namespace GothicLib
 			eCCollisionShapeBase_PS()			{ }
 			virtual ~eCCollisionShapeBase_PS()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 						
 		private:
 
@@ -550,8 +550,8 @@ namespace GothicLib
 			eCCollisionShape_PS()			{ }
 			virtual ~eCCollisionShape_PS()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 			GE_DECLARE_PROPERTY(eCCollisionShape_PS, GAME_GOTHIC3, bTPropertyContainer<enum eECollisionGroup>,	Group);
 			GE_DECLARE_PROPERTY(eCCollisionShape_PS, GAME_GOTHIC3, bTPropertyContainer<enum eEPhysicRangeType>,	Range);
@@ -578,8 +578,8 @@ namespace GothicLib
 			eCDynamicLight_PS()			{ }
 			virtual ~eCDynamicLight_PS()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 			GE_DECLARE_PROPERTY(eCDynamicLight_PS, GAME_RISEN1, bool, Enabled);
 			
@@ -602,8 +602,8 @@ namespace GothicLib
 			eCDirectionalLight_PS()				{ }
 			virtual ~eCDirectionalLight_PS()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 			GE_DECLARE_PROPERTY(eCDirectionalLight_PS, GAME_RISEN1, bCFloatColor,	Color);
 			GE_DECLARE_PROPERTY(eCDirectionalLight_PS, GAME_RISEN1, bCFloatColor,	SpecularColor);
@@ -629,8 +629,8 @@ namespace GothicLib
 			eCHemisphere_PS()			{ }
 			virtual ~eCHemisphere_PS()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 			GE_DECLARE_PROPERTY(eCHemisphere_PS, GAME_RISEN1, bCFloatColor,		GeneralAmbient);
 			GE_DECLARE_PROPERTY(eCHemisphere_PS, GAME_RISEN1, bCFloatColor,		BackLight);
@@ -658,8 +658,8 @@ namespace GothicLib
 			eCVisualMeshBase_PS()			{ }
 			virtual ~eCVisualMeshBase_PS()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 			GE_DECLARE_PROPERTY(eCVisualMeshBase_PS, GAME_GOTHIC3, bCMeshResourceString,									ResourceFileName);
 			GE_DECLARE_PROPERTY(eCVisualMeshBase_PS, GAME_GOTHIC3, bTPropertyContainer<enum eEStaticLighingType>,			StaticLightingType);
@@ -686,8 +686,8 @@ namespace GothicLib
 			eCVisualMeshStatic_PS()				{ }
 			virtual ~eCVisualMeshStatic_PS()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 
 			GE_DECLARE_PROPERTY(eCVisualMeshStatic_PS, GAME_GOTHIC3, bCMeshResourceString, ResourceFilePath);
 			

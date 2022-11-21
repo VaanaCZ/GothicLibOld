@@ -633,7 +633,7 @@ bool zCArchiver::WriteEnum(std::string name, std::string choices, int enumVal)
 	return false;
 }
 
-bool zCArchiver::WriteObject(std::string name, zCObject* object)
+bool zCArchiver::WriteObject(std::string name, GAME game, zCObject* object)
 {
 	// Stop early if its a nullptr
 	if (object == nullptr)
@@ -686,7 +686,7 @@ bool zCArchiver::WriteObject(std::string name, zCObject* object)
 
 	// Write chunk
 	if (!WriteChunkStart(name, className, versionSum, objectIndex) ||
-		!object->Archive(this) ||
+		!object->Archive(this, game) ||
 		!WriteChunkEnd())
 	{
 		error = true;
@@ -1169,7 +1169,7 @@ bool zCArchiver::ReadEnum(std::string name, int& enumVal)
 	return false;
 }
 
-zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
+zCObject* zCArchiver::ReadObject(std::string name, GAME game, zCObject* existingObject)
 {
 	if (error)
 		return nullptr;
@@ -1277,13 +1277,11 @@ zCObject* zCArchiver::ReadObject(std::string name, zCObject* existingObject)
 		{
 			// Create object based on read type
 			object = classDef->CreateInstance();
-
-			object->game = game;
 		}
 
 		objectList[objectIndex] = object;
 
-		if (!object->Unarchive(this))
+		if (!object->Unarchive(this, game))
 		{
 			error = true;
 			return nullptr;

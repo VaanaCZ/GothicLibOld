@@ -182,7 +182,7 @@ void eCArchiveFile::OnClose()
 	}
 }
 
-bool bCAccessorPropertyObject::Write(FileStream* file)
+bool bCAccessorPropertyObject::Write(FileStream* file, GAME game)
 {
 	// Write beginning
 	AccessorWritten written;
@@ -348,7 +348,7 @@ bool bCAccessorPropertyObject::Write(FileStream* file)
 	}
 
 	// Write class data
-	if (!nativeObject->OnWrite(file))
+	if (!nativeObject->OnWrite(file, game))
 	{
 		return false;
 	}
@@ -404,7 +404,7 @@ bool bCAccessorPropertyObject::Write(FileStream* file)
 	return true;
 }
 
-bool bCAccessorPropertyObject::Read(FileStream* file)
+bool bCAccessorPropertyObject::Read(FileStream* file, GAME game)
 {
 	// Read beginning
 	AccessorWritten written;
@@ -478,7 +478,6 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 	else
 	{
 		nativeObject = classDef->CreateInstance();
-		nativeObject->game = game;
 	}
 
 	// Read properties
@@ -593,7 +592,7 @@ bool bCAccessorPropertyObject::Read(FileStream* file)
 	}
 
 	// Read class data
-	if (!nativeObject->OnRead(file))
+	if (!nativeObject->OnRead(file, game))
 	{
 		return false;
 	}
@@ -707,7 +706,7 @@ PropertyDefinition::~PropertyDefinition()
 {
 }
 
-bool bCObjectBase::OnWrite(FileStream* file)
+bool bCObjectBase::OnWrite(FileStream* file, GAME game)
 {
 	uint16_t version = 1;
 
@@ -721,7 +720,7 @@ bool bCObjectBase::OnWrite(FileStream* file)
 	return true;
 }
 
-bool bCObjectBase::OnRead(FileStream* file)
+bool bCObjectBase::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(&version, sizeof(version));
@@ -729,7 +728,7 @@ bool bCObjectBase::OnRead(FileStream* file)
 	return true;
 }
 
-bool bCObjectRefBase::OnWrite(FileStream* file)
+bool bCObjectRefBase::OnWrite(FileStream* file, GAME game)
 {
 	uint16_t version = 1;
 	file->Write(&version, sizeof(version));
@@ -737,7 +736,7 @@ bool bCObjectRefBase::OnWrite(FileStream* file)
 	return true;
 }
 
-bool bCObjectRefBase::OnRead(FileStream* file)
+bool bCObjectRefBase::OnRead(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(&version, sizeof(version));
@@ -745,7 +744,7 @@ bool bCObjectRefBase::OnRead(FileStream* file)
 	return true;
 }
 
-bool eCProcessibleElement::Save(FileStream* file, FileStream* datFile)
+bool eCProcessibleElement::Save(FileStream* file, FileStream* datFile, GAME game)
 {
 	if (game >= GAME_RISEN1)
 	{
@@ -759,16 +758,15 @@ bool eCProcessibleElement::Save(FileStream* file, FileStream* datFile)
 
 	// Read contained object
 	bCAccessorPropertyObject accessor(this);
-	accessor.game = game;
 
-	if (!accessor.Write(file))
+	if (!accessor.Write(file, game))
 	{
 		return false;
 	}
 
 	if (game <= GAME_GOTHIC3 && datFile)
 	{
-		if (!DoSaveData(datFile))
+		if (!DoSaveData(datFile, game))
 		{
 			return false;
 		}
@@ -784,7 +782,7 @@ bool eCProcessibleElement::Save(FileStream* file, FileStream* datFile)
 	return true;
 }
 
-bool eCProcessibleElement::Load(FileStream* file, FileStream* datFile)
+bool eCProcessibleElement::Load(FileStream* file, FileStream* datFile, GAME game)
 {
 	if (game >= GAME_RISEN1)
 	{
@@ -804,16 +802,15 @@ bool eCProcessibleElement::Load(FileStream* file, FileStream* datFile)
 
 	// Read contained object
 	bCAccessorPropertyObject accessor(this);
-	accessor.game = game;
 
-	if (!accessor.Read(file))
+	if (!accessor.Read(file, game))
 	{
 		return false;
 	}
 
 	if (game <= GAME_GOTHIC3 && datFile)
 	{
-		if (!DoLoadData(datFile))
+		if (!DoLoadData(datFile, game))
 		{
 			return false;
 		}

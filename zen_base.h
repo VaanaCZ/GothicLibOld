@@ -184,8 +184,8 @@ namespace GothicLib
 			bool WriteRaw		(std::string, char*, size_t);
 			bool WriteRawFloat	(std::string, float*, size_t);
 
-			bool WriteObject(zCObject* o) { return WriteObject(std::string(), o); }
-			bool WriteObject(std::string, zCObject*);
+			bool WriteObject(GAME g, zCObject* o) { return WriteObject(std::string(), g, o); }
+			bool WriteObject(std::string, GAME, zCObject*);
 
 			bool WriteChunkStart(std::string name) { return WriteChunkStart(name, "", 0, 0); }
 			bool WriteChunkStart(std::string, std::string, uint16_t, uint32_t);
@@ -207,15 +207,15 @@ namespace GothicLib
 			bool ReadRaw		(std::string, char*, size_t);
 			bool ReadRawFloat	(std::string, float*, size_t);
 
-			zCObject* ReadObject(zCObject* o = nullptr) { return ReadObject(std::string(), o); }
-			zCObject* ReadObject(std::string, zCObject* = nullptr);
+			zCObject* ReadObject(GAME g, zCObject* o = nullptr) { return ReadObject(std::string(), g, o); }
+			zCObject* ReadObject(std::string, GAME, zCObject* = nullptr);
 
 			bool ReadChunkStart(std::string*, std::string*, uint16_t*, uint32_t*);
 			bool ReadChunkEnd();
 		
-			template <class C> C ReadObjectAs(std::string name, C object = nullptr)
+			template <class C> C ReadObjectAs(std::string name, GAME game, C object = nullptr)
 			{
-				zCObject* readObject = ReadObject(name, object);
+				zCObject* readObject = ReadObject(name, game, object);
 
 				if (readObject == nullptr)
 					return nullptr;
@@ -223,9 +223,9 @@ namespace GothicLib
 				return dynamic_cast<C>(readObject);
 			}
 
-			template <class C> C ReadObjectAs(C o = nullptr)
+			template <class C> C ReadObjectAs(GAME g, C o = nullptr)
 			{
-				return ReadObjectAs<C>(std::string(), o);
+				return ReadObjectAs<C>(std::string(), g, o);
 			}
 
 			inline FileStream*	GetFile() { return file; }
@@ -233,7 +233,6 @@ namespace GothicLib
 			inline bool	IsSavegame()	{ return savegame; }
 			inline bool	IsProperties()	{ return properties; }
 
-			GAME game = GAME_NONE;
 			bool error = false;
 
 		private:
@@ -409,13 +408,11 @@ namespace GothicLib
 			zCObject()			{ }
 			virtual ~zCObject()	{ }
 
-			virtual bool Archive(zCArchiver*)	{ return true; }
-			virtual bool Unarchive(zCArchiver*) { return true; }
+			virtual bool Archive(zCArchiver*, GAME)		{ return true; }
+			virtual bool Unarchive(zCArchiver*, GAME)	{ return true; }
 
-			virtual bool Save(FileStream*)		{ return true; }
-			virtual bool Load(FileStream*)		{ return true; }
-
-			GAME game = GAME_NONE;
+			virtual bool Save(FileStream*, GAME)		{ return true; }
+			virtual bool Load(FileStream*, GAME)		{ return true; }
 
 		protected:
 

@@ -27,7 +27,7 @@ bool bCArchive::Write(FileStream* _file)
 	return false;
 }
 
-bCObjectBase* bCArchive::ReadObject(bCObjectBase* o)
+bCObjectBase* bCArchive::ReadObject(GAME game, bCObjectBase* o)
 {
 	// Read header
 	uint32_t magic;
@@ -40,12 +40,12 @@ bCObjectBase* bCArchive::ReadObject(bCObjectBase* o)
 	}
 
 	bCRuntimeClass object(o);
-	object.Read(file);
+	object.Read(file, game);
 
 	return object.GetNativeObject();
 }
 
-bool bCRuntimeClass::Read(FileStream* file)
+bool bCRuntimeClass::Read(FileStream* file, GAME game)
 {
 	// Read beginning of class
 	ClassWritten written;
@@ -66,7 +66,6 @@ bool bCRuntimeClass::Read(FileStream* file)
 	else
 	{
 		nativeObject = classDef->CreateInstance();
-		nativeObject->game = game;
 	}
 
 	//todo: version checking
@@ -181,7 +180,7 @@ bool bCRuntimeClass::Read(FileStream* file)
 
 		// Call read function
 		if (dataWritten.size != 0 &&
-			!currClassDef->Read(nativeObject, file))
+			!currClassDef->Read(nativeObject, file, game))
 		{
 			return false;
 		}
@@ -195,7 +194,7 @@ bool bCRuntimeClass::Read(FileStream* file)
 	return true;
 }
 
-bool bCRuntimeClass::Write(FileStream* file)
+bool bCRuntimeClass::Write(FileStream* file, GAME game)
 {
 	return false;
 }
@@ -239,9 +238,9 @@ ClassDefinition* ClassDefinition::GetClassDef(std::string name)
 	return GetClassDef(djb2(canonicalName.c_str()));
 }
 
-bool ClassDefinition::Read(bCObjectBase* object, FileStream* file)
+bool ClassDefinition::Read(bCObjectBase* object, FileStream* file, GAME game)
 {
-	return readFunc(object, file);
+	return readFunc(object, file, game);
 }
 
 ClassDefinition* ClassDefinition::GetClassDef(uint32_t hash)
@@ -325,12 +324,12 @@ PropertyDefinition::~PropertyDefinition()
 {
 }
 
-bool bCObjectBase::OnWrite(FileStream* file)
+bool bCObjectBase::OnWrite(FileStream* file, GAME game)
 {
 	return true;
 }
 
-bool bCObjectBase::OnRead(FileStream* file)
+bool bCObjectBase::OnRead(FileStream* file, GAME game)
 {
 	return true;
 }

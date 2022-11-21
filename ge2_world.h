@@ -42,8 +42,8 @@ namespace GothicLib
 			gCProject()				{ }
 			virtual ~gCProject()	{ }
 
-			virtual bool OnWrite(FileStream*);
-			virtual bool OnRead(FileStream*);
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
 			
 			GE2_DECLARE_PROPERTY(gCProject, GAME_ALL, bTRefPtrArray<class gCWorld *>,	Worlds);
 			GE2_DECLARE_PROPERTY(gCProject, GAME_ALL, bCString,							ActiveWorld);

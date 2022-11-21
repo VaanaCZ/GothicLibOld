@@ -2,12 +2,12 @@
 
 using namespace GothicLib::Genome2;
 
-bool gCProject::OnWrite(FileStream* file)
+bool gCProject::OnWrite(FileStream* file, GAME game)
 {
 	return true;
 }
 
-bool gCProject::OnRead(FileStream* file)
+bool gCProject::OnRead(FileStream* file, GAME game)
 {
 	uint16_t worldCount = 0;
 	file->Read(FILE_ARGS(worldCount));
