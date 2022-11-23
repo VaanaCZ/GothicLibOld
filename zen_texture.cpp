@@ -139,7 +139,7 @@ bool zCTexture::SavePortableBinary(FileStream* file)
 	// Palette
 	if (format == TEXFORMAT_P8)
 	{
-		TEXPALETTEOLD* oldPalette = new TEXPALETTEOLD[256];
+		zCOLOR* oldPalette = new zCOLOR[256];
 
 		for (size_t i = 0; i < 256; i++)
 		{
@@ -149,7 +149,7 @@ bool zCTexture::SavePortableBinary(FileStream* file)
 			oldPalette[i].a = 0;
 		}
 
-		file->Write(oldPalette, sizeof(TEXPALETTEOLD) * 256);
+		file->Write(oldPalette, sizeof(zCOLOR) * 256);
 
 		delete[] oldPalette;
 	}
@@ -205,8 +205,8 @@ bool zCTexture::LoadPortableBinary(FileStream* file)
 	{
 		palette = new TEXPALETTE[256];
 
-		TEXPALETTEOLD* oldPalette = new TEXPALETTEOLD[256];
-		file->Read(oldPalette, sizeof(TEXPALETTEOLD) * 256);
+		zCOLOR* oldPalette = new zCOLOR[256];
+		file->Read(oldPalette, sizeof(zCOLOR) * 256);
 
 		for (size_t i = 0; i < 256; i++)
 		{

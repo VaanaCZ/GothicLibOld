@@ -648,6 +648,17 @@ bool zCArchiver::WriteObject(std::string name, GAME game, zCObject* object)
 		return true;
 	}
 
+	ClassDefinition* classDef = object->GetClassDef();
+
+	// Figure out if the class is supported
+	if (classDef->GetVersionSum(game) == VERSION_NONE)
+	{
+		LOG_ERROR("Class " + classDef->GetName() + " is not supported in the specified engine revision!");
+
+		error = true;
+		return false;
+	}
+
 	// Find out if the object is in the list
 	for (size_t i = 0; i < objectList.size(); i++)
 	{
@@ -668,8 +679,6 @@ bool zCArchiver::WriteObject(std::string name, GAME game, zCObject* object)
 	objectList.push_back(object);
 
 	// Figure out the full class name
-	ClassDefinition* classDef = object->GetClassDef();
-
 	std::string	className = classDef->GetName();
 	uint16_t	versionSum = classDef->GetVersionSum(game);
 

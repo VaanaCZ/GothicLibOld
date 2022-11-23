@@ -30,11 +30,6 @@ namespace GothicLib
 			unsigned char r, g, b;
 		};
 
-		struct TEXPALETTEOLD
-		{
-			unsigned char r, g, b, a;
-		};
-
 		// bytes per pixel
 		inline uint32_t texFormatBpps[] = 
 		{
