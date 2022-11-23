@@ -77,6 +77,7 @@ namespace GothicLib
 			bool SaveTexture(FileStream*);
 			bool LoadTexture(FileStream*);
 
+			bool SavePortableBinary(FileStream*);
 			bool LoadPortableBinary(FileStream*);
 
 			bool Convert_P8ToR5G6B5();

@@ -552,9 +552,19 @@ bool zCMesh::SaveMSH(FileStream* file, GAME game)
 		{
 			file->Write(FILE_ARGS(lightmaps[i].lmVectors));
 
-			if (!textures[i].SaveTexture(file))
+			if (game >= GAME_SEPTEMBERDEMO)
 			{
-				return false;
+				if (!textures[i].SaveTexture(file))
+				{
+					return false;
+				}
+			}
+			else
+			{
+				if (!textures[i].SavePortableBinary(file))
+				{
+					return false;
+				}
 			}
 		}
 
@@ -629,7 +639,7 @@ bool zCMesh::SaveMSH(FileStream* file, GAME game)
 		{
 			file->Write(FILE_ARGS(polys[i].flags));
 		}
-		else
+		else if (game >= GAME_SEPTEMBERDEMO)
 		{
 			PolygonFlagsOld oldFlags;
 			memset(&oldFlags, 0, sizeof(oldFlags));
@@ -828,7 +838,7 @@ bool zCMesh::LoadMSH(FileStream* file, GAME game)
 						{
 							return false;
 						}
-					}					
+					}
 				}
 			}
 
@@ -916,7 +926,7 @@ bool zCMesh::LoadMSH(FileStream* file, GAME game)
 					{
 						file->Read(FILE_ARGS(polys[i].flags));
 					}
-					else
+					else if (game >= GAME_SEPTEMBERDEMO)
 					{
 						PolygonFlagsOld oldFlags;
 						file->Read(FILE_ARGS(oldFlags));

@@ -643,9 +643,13 @@ bool zCBspTree::SaveBIN(FileStream* file, GAME game)
 	{
 		bspVersion = 2;
 	}
-	else
+	else if (game >= GAME_SEPTEMBERDEMO)
 	{
 		bspVersion = 1;
+	}
+	else
+	{
+		bspVersion = 0;
 	}
 
 	file->Write(FILE_ARGS(bspVersion));
@@ -745,12 +749,15 @@ bool zCBspTree::SaveBIN(FileStream* file, GAME game)
 		}
 	}
 
-	uint32_t portalCount = portalPolys.size();
-	file->Write(FILE_ARGS(portalCount));
-
-	if (portalPolys.size() > 0)
+	if (game >= GAME_SEPTEMBERDEMO)
 	{
-		file->Write(&portalPolys[0], sizeof(uint32_t) * portalPolys.size());
+		uint32_t portalCount = portalPolys.size();
+		file->Write(FILE_ARGS(portalCount));
+
+		if (portalPolys.size() > 0)
+		{
+			file->Write(&portalPolys[0], sizeof(uint32_t) * portalPolys.size());
+		}
 	}
 
 	file->EndBinChunk(sectorsStart);
@@ -871,11 +878,19 @@ bool zCBspTree::LoadBIN(FileStream* file, GAME game)
 					return false;
 				}
 			}
-			else
+			else if (game >= GAME_SEPTEMBERDEMO)
 			{
 				if (bspVersion != 1)
 				{
 					LOG_ERROR("Unknown BSP version \"" + std::to_string(bspVersion) + "\" found, expected version 1!");
+					return false;
+				}
+			}
+			else
+			{
+				if (bspVersion != 0)
+				{
+					LOG_ERROR("Unknown BSP version \"" + std::to_string(bspVersion) + "\" found, expected version 0!");
 					return false;
 				}
 			}
@@ -962,13 +977,16 @@ bool zCBspTree::LoadBIN(FileStream* file, GAME game)
 			}
 
 			// Portals
-			uint32_t portalCount = 0;
-			file->Read(FILE_ARGS(portalCount));
-
-			if (portalCount > 0)
+			if (game >= GAME_SEPTEMBERDEMO)
 			{
-				portalPolys.resize(portalCount);
-				file->Read(&portalPolys[0], sizeof(uint32_t) * portalCount);
+				uint32_t portalCount = 0;
+				file->Read(FILE_ARGS(portalCount));
+
+				if (portalCount > 0)
+				{
+					portalPolys.resize(portalCount);
+					file->Read(&portalPolys[0], sizeof(uint32_t) * portalCount);
+				}
 			}
 
 			break;

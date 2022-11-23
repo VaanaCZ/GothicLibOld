@@ -110,6 +110,53 @@ bool zCTexture::LoadTexture(FileStream* file)
 	return true;
 }
 
+bool zCTexture::SavePortableBinary(FileStream* file)
+{
+	uint16_t version = 0;
+	file->Write(FILE_ARGS(version));
+
+	// Read format
+	uint32_t fmt = 0;
+
+	switch (format)
+	{
+	case	TEXFORMAT_P8:		fmt = 0;	break;
+	default:
+		break;
+	}
+
+	file->Write(FILE_ARGS(fmt));
+
+	file->Write(FILE_ARGS(height));
+	file->Write(FILE_ARGS(width));
+
+	// Read the data (mipmap 0)
+	uint32_t readSize = width * height * texFormatBpps[format];
+	file->Write(FILE_ARGS(readSize));
+
+	file->Write(data[0], readSize);
+
+	// Palette
+	if (format == TEXFORMAT_P8)
+	{
+		TEXPALETTEOLD* oldPalette = new TEXPALETTEOLD[256];
+
+		for (size_t i = 0; i < 256; i++)
+		{
+			oldPalette[i].r = palette[i].r;
+			oldPalette[i].g = palette[i].g;
+			oldPalette[i].b = palette[i].b;
+			oldPalette[i].a = 0;
+		}
+
+		file->Write(oldPalette, sizeof(TEXPALETTEOLD) * 256);
+
+		delete[] oldPalette;
+	}
+
+	return true;
+}
+
 bool zCTexture::LoadPortableBinary(FileStream* file)
 {
 	uint16_t version;

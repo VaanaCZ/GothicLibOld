@@ -650,7 +650,7 @@ uint64_t FileStream::StartBinChunk(uint16_t type)
 {
 	uint64_t startPos = Tell();
 
-	uint32_t length = 0;
+	uint32_t length = 0xFFFFFFFF;
 	Write(FILE_ARGS(type));
 	Write(FILE_ARGS(length));
 
