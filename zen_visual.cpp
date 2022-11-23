@@ -815,10 +815,20 @@ bool zCMesh::LoadMSH(FileStream* file, GAME game)
 					lightmaps[i].lmVectors[2] = lmVectors[2];
 					lightmaps[i].texIndex = i;
 
-					if (!textures[i].LoadTexture(file))
+					if (game >= GAME_SEPTEMBERDEMO)
 					{
-						return false;
+						if (!textures[i].LoadTexture(file))
+						{
+							return false;
+						}
 					}
+					else
+					{
+						if (!textures[i].LoadPortableBinary(file))
+						{
+							return false;
+						}
+					}					
 				}
 			}
 

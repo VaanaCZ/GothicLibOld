@@ -25,6 +25,16 @@ namespace GothicLib
 			TEXFORMAT_DXT5
 		};
 
+		struct TEXPALETTE
+		{
+			unsigned char r, g, b;
+		};
+
+		struct TEXPALETTEOLD
+		{
+			unsigned char r, g, b, a;
+		};
+
 		// bytes per pixel
 		inline uint32_t texFormatBpps[] = 
 		{
@@ -66,6 +76,11 @@ namespace GothicLib
 
 			bool SaveTexture(FileStream*);
 			bool LoadTexture(FileStream*);
+
+			bool LoadPortableBinary(FileStream*);
+
+			bool Convert_P8ToR5G6B5();
+
 			void Destroy();
 
 			TEXFORMAT	format;
@@ -76,7 +91,8 @@ namespace GothicLib
 			uint32_t	refHeight;
 			zCOLOR		averageColor;
 
-			char** data = nullptr;
+			TEXPALETTE*	palette = nullptr;
+			char**		data = nullptr;
 
 		private:
 
