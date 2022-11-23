@@ -276,6 +276,20 @@ bool zCWorld::SaveWorldFile(FileStream* file, GAME game)
 	file->WriteLine("ZenWorldFile", "\n");
 	file->WriteLine("{", "\n");
 
+	if (bsp)
+	{
+		file->WriteLine("MeshAndBsp", "\n");
+		file->WriteLine("{", "\n");
+
+		if (!bsp->SaveBIN(file, game))
+		{
+			return false;
+		}
+
+		file->WriteLine("}", "\n");
+		file->WriteLine("", "\n");
+	}
+
 	if (vobTree)
 	{
 		file->WriteLine("VobHierarchy", "\n");
@@ -614,9 +628,13 @@ bool zCBspTree::SaveBIN(FileStream* file, GAME game)
 	{
 		version = 0x01090000;
 	}
-	else
+	else if (game >= GAME_DEMO5)
 	{
 		version = 0x00050000;
+	}
+	else
+	{
+		version = 0x00020000;
 	}
 
 	uint32_t length = 0;
@@ -766,7 +784,7 @@ bool zCBspTree::SaveBIN(FileStream* file, GAME game)
 	uint64_t endStart = file->StartBinChunk(BSPCHUNK_END);
 
 	uint8_t endMarker = 0x42;
-	file->Write(FILE_ARGS(endMarker)); // B
+	file->Write(FILE_ARGS(endMarker));
 
 	file->EndBinChunk(endStart);
 
@@ -818,11 +836,19 @@ bool zCBspTree::LoadBIN(FileStream* file, GAME game)
 			return false;
 		}
 	}
-	else
+	else if (game >= GAME_DEMO5)
 	{
 		if (version != 0x00050000)
 		{
 			LOG_ERROR("Unknown MeshAndBSP version \"" + std::to_string(version) + "\" found, expected version 0x00050000!");
+			return false;
+		}
+	}
+	else
+	{
+		if (version != 0x00020000)
+		{
+			LOG_ERROR("Unknown MeshAndBSP version \"" + std::to_string(version) + "\" found, expected version 0x00020000!");
 			return false;
 		}
 	}
@@ -995,7 +1021,7 @@ bool zCBspTree::LoadBIN(FileStream* file, GAME game)
 		case BSPCHUNK_END:
 		{
 			uint8_t endMarker;
-			file->Read(FILE_ARGS(endMarker)); // B
+			file->Read(FILE_ARGS(endMarker)); // 42
 
 			end = true;
 			break;

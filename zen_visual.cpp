@@ -121,7 +121,54 @@ bool zCMaterial::Unarchive(zCArchiver* archiver, GAME game)
 
 bool zCMaterial::Save(FileStream* file, GAME game)
 {
-	return false;
+	file->WriteLine("zCMaterial (" + name + ")", "\r");
+
+	file->WriteLine("{", "\r");
+
+	if (matGroup == zMAT_GROUP_UNDEF)
+		file->WriteLine("matGroup (UNDEF)", "\r");
+	else if (matGroup == zMAT_GROUP_METAL)
+		file->WriteLine("matGroup (METAL)", "\r");
+	else if (matGroup == zMAT_GROUP_STONE)
+		file->WriteLine("matGroup (STONE)", "\r");
+	else if (matGroup == zMAT_GROUP_WOOD)
+		file->WriteLine("matGroup (WOOD)", "\r");
+	else if (matGroup == zMAT_GROUP_EARTH)
+		file->WriteLine("matGroup (EARTH)", "\r");
+	else if (matGroup == zMAT_GROUP_WATER)
+		file->WriteLine("matGroup (WATER)", "\r");
+	
+	file->WriteLine("matLibFlag (" + std::to_string(libFlag) + ")", "\r");
+
+	file->WriteLine("matDefaultMapping (" + FloatToString(defaultMapping.x) + " " +
+											FloatToString(defaultMapping.y) + ")", "\r");
+
+	file->WriteLine("texture (" + texture + ")", "\r");
+	file->WriteLine("texScale (" + FloatToString(texScale.x) + " " +
+									FloatToString(texScale.y) + ")", "\r");
+
+	file->WriteLine("texAniFPS (" + FloatToString(texAniFPS) + ")", "\r");
+	file->WriteLine("texAniMapMode (" + std::to_string(texAniMapMode) + ")", "\r");
+
+	file->WriteLine("texAniMapDir (" + FloatToString(texAniMapDir.x) + " " +
+										FloatToString(texAniMapDir.y) + ")", "\r");
+
+	file->WriteLine("colorRGBA (" + FloatToString(color.r) + " " +
+									FloatToString(color.g) + " " +
+									FloatToString(color.b) + " " +
+									FloatToString(color.a) + ")", "\r");
+
+	// This is wrong but who gives a fuck
+	if (smoothAngle > 0)
+		file->WriteLine("smooth (1)", "\r");
+	else
+		file->WriteLine("smooth (0)", "\r");
+
+	file->WriteLine("smoothAngle (" + FloatToString(smoothAngle) + ")", "\r");
+
+	file->WriteLine("}", "\r\n");
+
+	return true;
 }
 
 bool zCMaterial::Load(FileStream* file, GAME game)
@@ -474,9 +521,13 @@ bool zCMesh::SaveMSH(FileStream* file, GAME game)
 	{
 		version = 0x0009;
 	}
-	else
+	else if (game >= GAME_DEMO5)
 	{
 		version = 0x0005;
+	}
+	else
+	{
+		version = 0x0002;
 	}
 
 	file->Write(FILE_ARGS(version));
@@ -497,23 +548,23 @@ bool zCMesh::SaveMSH(FileStream* file, GAME game)
 	uint64_t materialsStart = file->StartBinChunk(MESHCHUNK_MATERIALS);
 
 	zCArchiver archiver;
-
-	int zenVersion = 1;
-	if (game <= GAME_DEMO5)
-		zenVersion = 0;
-
-	if (!archiver.Write(file, ARCHIVER_MODE_BINARY, zenVersion, false, false, true))
-	{
-		return false;
-	}
+	uint32_t materialCount = materials.size();
 
 	if (game >= GAME_DEMO5)
 	{
-		archiver.WriteInt("", materials.size());
+		int zenVersion = 1;
+		if (game <= GAME_DEMO5)
+			zenVersion = 0;
+
+		if (!archiver.Write(file, ARCHIVER_MODE_BINARY, zenVersion, false, false, true))
+		{
+			return false;
+		}
+
+		archiver.WriteInt("", materialCount);
 	}
 	else
 	{
-		uint32_t materialCount = materials.size();
 		file->Write(FILE_ARGS(materialCount));
 	}
 
@@ -526,7 +577,7 @@ bool zCMesh::SaveMSH(FileStream* file, GAME game)
 		}
 		else
 		{
-			file->WriteLine(materials[i].name, "\r");
+			file->WriteLine(materials[i].name, "\n");
 			materials[i].Save(file, game);
 		}
 	}
@@ -536,65 +587,71 @@ bool zCMesh::SaveMSH(FileStream* file, GAME game)
 		archiver.WriteBool("", alphaTestingEnabled);
 	}
 
-	archiver.EndWrite();
+	if (game >= GAME_DEMO5)
+	{
+		archiver.EndWrite();
+	}
 
 	file->EndBinChunk(materialsStart);
 
 	// Lightmaps
-	if (oldLightmaps)
+	if (game >= GAME_DEMO5)
 	{
-		uint64_t lightmapsStart = file->StartBinChunk(MESHCHUNK_LIGHTMAPS_OLD);
-
-		uint32_t textureCount = lightmaps.size();
-		file->Write(FILE_ARGS(textureCount));
-
-		for (size_t i = 0; i < lightmaps.size(); i++)
+		if (oldLightmaps)
 		{
-			file->Write(FILE_ARGS(lightmaps[i].lmVectors));
+			uint64_t lightmapsStart = file->StartBinChunk(MESHCHUNK_LIGHTMAPS_OLD);
 
-			if (game >= GAME_SEPTEMBERDEMO)
+			uint32_t textureCount = lightmaps.size();
+			file->Write(FILE_ARGS(textureCount));
+
+			for (size_t i = 0; i < lightmaps.size(); i++)
+			{
+				file->Write(FILE_ARGS(lightmaps[i].lmVectors));
+
+				if (game >= GAME_SEPTEMBERDEMO)
+				{
+					if (!textures[i].SaveTexture(file))
+					{
+						return false;
+					}
+				}
+				else
+				{
+					if (!textures[i].SavePortableBinary(file))
+					{
+						return false;
+					}
+				}
+			}
+
+			file->EndBinChunk(lightmapsStart);
+		}
+		else
+		{
+			uint64_t lightmapsStart = file->StartBinChunk(MESHCHUNK_LIGHTMAPS_NEW);
+
+			uint32_t textureCount = textures.size();
+			file->Write(FILE_ARGS(textureCount));
+	
+			for (size_t i = 0; i < textures.size(); i++)
 			{
 				if (!textures[i].SaveTexture(file))
 				{
 					return false;
 				}
 			}
-			else
+
+			// Read lightmaps
+			uint32_t lightmapCount = lightmaps.size();
+			file->Write(FILE_ARGS(lightmapCount));
+
+			if (lightmaps.size() > 0)
 			{
-				if (!textures[i].SavePortableBinary(file))
-				{
-					return false;
-				}
+				file->Write(&lightmaps[0], sizeof(LightmapChunk) * lightmaps.size());
 			}
+
+			file->EndBinChunk(lightmapsStart);
 		}
-
-		file->EndBinChunk(lightmapsStart);
-	}
-	else
-	{
-		uint64_t lightmapsStart = file->StartBinChunk(MESHCHUNK_LIGHTMAPS_NEW);
-
-		uint32_t textureCount = textures.size();
-		file->Write(FILE_ARGS(textureCount));
-	
-		for (size_t i = 0; i < textures.size(); i++)
-		{
-			if (!textures[i].SaveTexture(file))
-			{
-				return false;
-			}
-		}
-
-		// Read lightmaps
-		uint32_t lightmapCount = lightmaps.size();
-		file->Write(FILE_ARGS(lightmapCount));
-
-		if (lightmaps.size() > 0)
-		{
-			file->Write(&lightmaps[0], sizeof(LightmapChunk) * lightmaps.size());
-		}
-
-		file->EndBinChunk(lightmapsStart);
 	}
 
 	// Verts
@@ -639,7 +696,7 @@ bool zCMesh::SaveMSH(FileStream* file, GAME game)
 		{
 			file->Write(FILE_ARGS(polys[i].flags));
 		}
-		else if (game >= GAME_SEPTEMBERDEMO)
+		else if (game >= GAME_DEMO5)
 		{
 			PolygonFlagsOld oldFlags;
 			memset(&oldFlags, 0, sizeof(oldFlags));
@@ -653,8 +710,15 @@ bool zCMesh::SaveMSH(FileStream* file, GAME game)
 
 			file->Write(FILE_ARGS(oldFlags));
 		}
+		else if (game >= GAME_DEMO3)
+		{
+			file->Write(FILE_ARGS(polys[i].flags)); // todo
+		}
 
-		file->Write(FILE_ARGS(polys[i].sectorIndex));
+		if (game >= GAME_DEMO5)
+		{
+			file->Write(FILE_ARGS(polys[i].sectorIndex));
+		}
 
 		uint8_t count = polys[i].verts.size();
 		file->Write(FILE_ARGS(count));
@@ -682,6 +746,13 @@ bool zCMesh::SaveMSH(FileStream* file, GAME game)
 
 	// End
 	uint64_t endStart = file->StartBinChunk(MESHCHUNK_MESHEND);
+
+	if (game == GAME_DEMO3)
+	{
+		uint8_t endMarker = 0x42;
+		file->Write(FILE_ARGS(endMarker));
+	}
+
 	file->EndBinChunk(endStart);
 
 	return true;
@@ -735,11 +806,19 @@ bool zCMesh::LoadMSH(FileStream* file, GAME game)
 					return false;
 				}
 			}
-			else
+			else if (game >= GAME_DEMO5)
 			{
 				if (version != 0x0005)
 				{
 					LOG_ERROR("Unknown zCMesh version \"" + std::to_string(version) + "\" found, expected version 0x0005!");
+					return false;
+				}
+			}
+			else
+			{
+				if (version != 0x0002)
+				{
+					LOG_ERROR("Unknown zCMesh version \"" + std::to_string(version) + "\" found, expected version 0x0002!");
 					return false;
 				}
 			}
@@ -926,7 +1005,7 @@ bool zCMesh::LoadMSH(FileStream* file, GAME game)
 					{
 						file->Read(FILE_ARGS(polys[i].flags));
 					}
-					else if (game >= GAME_SEPTEMBERDEMO)
+					else if (game >= GAME_DEMO5)
 					{
 						PolygonFlagsOld oldFlags;
 						file->Read(FILE_ARGS(oldFlags));
@@ -938,8 +1017,19 @@ bool zCMesh::LoadMSH(FileStream* file, GAME game)
 						polys[i].flags.portalIndoorOutdoor	= oldFlags.portalIndoorOutdoor;
 						polys[i].flags.ghostOccluder		= oldFlags.ghostOccluder;
 					}
+					else if (game == GAME_DEMO3)
+					{
+						file->Read(FILE_ARGS(polys[i].flags)); // todo
+					}
 
-					file->Read(FILE_ARGS(polys[i].sectorIndex));
+					if (game >= GAME_SEPTEMBERDEMO)
+					{
+						file->Read(FILE_ARGS(polys[i].sectorIndex));
+					}
+					else
+					{
+						polys[i].sectorIndex = 0xFFFF; // todo
+					}
 
 					uint8_t count;
 					file->Read(FILE_ARGS(count));
@@ -978,6 +1068,12 @@ bool zCMesh::LoadMSH(FileStream* file, GAME game)
 
 		case MESHCHUNK_MESHEND:
 		{
+			if (game == GAME_DEMO3)
+			{
+				uint8_t endMarker;
+				file->Read(FILE_ARGS(endMarker)); // 42
+			}
+
 			end = true;
 			break;
 		}

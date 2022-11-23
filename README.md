@@ -41,7 +41,7 @@ This section includes the current progress on loading and saving the engine's fi
 |       | ASCII | ASCII_PROPS | BINARY | BIN_SAFE |
 |-------|-------|-------------|--------|----------|
 | Read  | ✔     | ✔           | ✔      | ✖         |
-| Write | ✖     | ✖           | ✖      | ✖         |
+| Write | ✔     | ✖           | ✔      | ✖         |
 
 **World archivation**
 
@@ -162,19 +162,19 @@ This section includes the current progress on loading and saving the engine's fi
 	<tr>
 		<td>0.64b</td>
 		<td>✔</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>-</td>
 		<td>✔</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>-</td>
 	</tr>
 	<tr>
 		<td>0.56c</td>
 		<td>✔</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>-</td>
 		<td>✔</td>
-		<td>✖</td>
+		<td>✔</td>
 		<td>-</td>
 	</tr>
 </table>
