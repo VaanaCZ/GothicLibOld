@@ -1960,19 +1960,7 @@ ClassDefinition* ClassDefinition::GetClassDef(std::string name)
 
 		if (!classDef->baseDef)
 		{
-			ClassDefinition* currClassDef = classDef;
-
-			while (true)
-			{
-				if (currClassDef->GetBase().empty() ||
-					currClassDef->GetBaseDef())
-				{
-					break;
-				}
-
-				currClassDef->baseDef = (*classList)[currClassDef->base];
-				currClassDef = currClassDef->baseDef;
-			}
+			classDef->PropagateHierarchy();
 		}
 
 		return classDef;
@@ -2007,6 +1995,26 @@ bool ClassDefinition::IsVersionSumSupported(GAME game, uint16_t versionSum)
 	}
 
 	return false;
+}
+
+void ClassDefinition::PropagateHierarchy()
+{
+	if (!baseDef)
+	{
+		ClassDefinition* currClassDef = this;
+
+		while (true)
+		{
+			if (currClassDef->GetBase().empty() ||
+				currClassDef->GetBaseDef())
+			{
+				break;
+			}
+
+			currClassDef->baseDef = (*classList)[currClassDef->base];
+			currClassDef = currClassDef->baseDef;
+		}
+	}
 }
 
 //

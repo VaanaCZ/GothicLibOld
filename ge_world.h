@@ -35,8 +35,6 @@ namespace GothicLib
 			GE_DECLARE_PROPERTY(gCProject, GAME_ALL,		bTRefPtrArray<class gCWorld *>,		Worlds);
 			GE_DECLARE_PROPERTY(gCProject, GAME_ALL,		bCString,							ActiveWorld);
 
-			std::vector<std::string> worlds; // temp
-
 		private:
 
 			bool WriteData(FileStream*, GAME);
@@ -68,6 +66,8 @@ namespace GothicLib
 
 			virtual bool DoLoadData(FileStream*, GAME);
 			virtual bool DoSaveData(FileStream*, GAME);
+
+			std::string name;
 
 			std::string sectorFile;
 

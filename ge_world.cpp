@@ -50,7 +50,7 @@ bool gCProject::DoSaveData(FileStream* file, GAME game)
 bool gCProject::WriteData(FileStream* file, GAME game)
 {
 	uint16_t version	= 1;
-	uint32_t count		= worlds.size();
+	uint32_t count		= Worlds.size();
 
 	if (game >= GAME_RISEN1)
 	{
@@ -62,7 +62,7 @@ bool gCProject::WriteData(FileStream* file, GAME game)
 	
 	for (size_t i = 0; i < count; i++)
 	{
-		file->WriteString(worlds[i]);
+		file->WriteString(Worlds[i]->name);
 	}
 
 	return true;
@@ -78,11 +78,12 @@ bool gCProject::ReadData(FileStream* file, GAME game)
 
 	if (count > 0)
 	{
-		worlds.resize(count);
+		Worlds.resize(count);
 
 		for (size_t i = 0; i < count; i++)
 		{
-			file->ReadString(worlds[i]);
+			Worlds[i] = new gCWorld();
+			file->ReadString(Worlds[i]->name);
 		}
 	}
 

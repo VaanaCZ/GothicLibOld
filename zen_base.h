@@ -340,6 +340,8 @@ namespace GothicLib
 
 			static ClassDefinition* GetClassDef(std::string);
 
+			void PropagateHierarchy();
+
 		private:
 
 			std::string			name;
@@ -360,8 +362,10 @@ namespace GothicLib
 			new ClassDefinition(#C, #B, &C::CreateInstance, revisions,			\
 								sizeof(revisions) / sizeof(revisions[0]));		\
 																				\
-		inline static ClassDefinition* GetStaticClassDef() { return classDef; }	\
-		virtual ClassDefinition* GetClassDef() { return classDef; }				\
+		inline static ClassDefinition* GetStaticClassDef()						\
+			{ classDef->PropagateHierarchy(); return classDef; }				\
+		virtual ClassDefinition* GetClassDef()									\
+			{ classDef->PropagateHierarchy(); return classDef; }				\
 																				\
 		DECLARE_MEMORY_POOL(C)
 
@@ -370,8 +374,10 @@ namespace GothicLib
 			new ClassDefinition(#C, #B, nullptr, revisions,						\
 								sizeof(revisions) / sizeof(revisions[0]));		\
 																				\
-		inline static ClassDefinition* GetStaticClassDef() { return classDef; }	\
-		virtual ClassDefinition* GetClassDef() { return classDef; }
+		inline static ClassDefinition* GetStaticClassDef()						\
+			{ classDef->PropagateHierarchy(); return classDef; }				\
+		virtual ClassDefinition* GetClassDef()									\
+			{ classDef->PropagateHierarchy(); return classDef; }
 
 		/*
 			Base object

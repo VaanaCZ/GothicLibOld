@@ -557,13 +557,13 @@ bool bCAccessorPropertyObject::Read(FileStream* file, GAME game)
 					return false;
 				}
 
-				if (property->GetSize() != propertyWritten.size)
-				{
-					LOG_ERROR("Could not read property \"" + propertyName + "\" of class \"" + className +
-						"\". Expected size \"" + std::to_string(property->GetSize()) +
-						"\", found \"" + std::to_string(propertyWritten.size) + "\" instead!");
-					return false;
-				}
+				//if (property->GetSize() != propertyWritten.size)
+				//{
+				//	LOG_ERROR("Could not read property \"" + propertyName + "\" of class \"" + className +
+				//		"\". Expected size \"" + std::to_string(property->GetSize()) +
+				//		"\", found \"" + std::to_string(propertyWritten.size) + "\" instead!");
+				//	return false;
+				//}
 
 				// Read data
 
