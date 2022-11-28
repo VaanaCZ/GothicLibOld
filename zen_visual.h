@@ -175,6 +175,7 @@ namespace GothicLib
 				{ GAME_GOTHICSEQUEL,		0		},
 				{ GAME_GOTHIC2,				53505	},
 				{ GAME_GOTHIC2ADDON,		53505	},
+				{ GAME_GOTHIC2ADDON,		64513	},
 			};
 
 			ZEN_DECLARE_CLASS(zCDecal, zCVisual);
@@ -267,9 +268,7 @@ namespace GothicLib
 			unsigned char lodFlag : 1;
 			unsigned char portalIndoorOutdoor : 1;
 			unsigned char ghostOccluder : 1;
-			unsigned char normalMainAxis : 2;
-			//unsigned char unknownFlag : 1; // Gothic: Sequel
-			//unsigned char padding : 5;
+			unsigned char normalMainAxis : 2; // Behaves inconsistently in Gothic: Sequel
 			unsigned char padding : 6;
 		};
 #pragma pack( pop )
@@ -299,6 +298,7 @@ namespace GothicLib
 				{ GAME_GOTHICSEQUEL,		0		},
 				{ GAME_GOTHIC2,				53505	},
 				{ GAME_GOTHIC2ADDON,		53505	},
+				{ GAME_GOTHIC2ADDON,		64513	},
 			};
 
 			ZEN_DECLARE_CLASS(zCMesh, zCVisual);
@@ -364,6 +364,7 @@ namespace GothicLib
 				{ GAME_GOTHICSEQUEL,		0		},
 				{ GAME_GOTHIC2,				53505	},
 				{ GAME_GOTHIC2ADDON,		53505	},
+				{ GAME_GOTHIC2ADDON,		64513	},
 			};
 
 			ZEN_DECLARE_CLASS(zCProgMeshProto, zCVisual);

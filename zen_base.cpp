@@ -520,9 +520,9 @@ bool zCArchiver::WriteColor(std::string name, zCOLOR colorVal)
 	if (mode == ARCHIVER_MODE_ASCII)
 	{
 		int vals[4];
-		vals[0] = colorVal.b;
+		vals[0] = colorVal.r;
 		vals[1] = colorVal.g;
-		vals[2] = colorVal.r;
+		vals[2] = colorVal.b;
 		vals[3] = colorVal.a;
 
 		char buffer[16];
@@ -688,6 +688,8 @@ bool zCArchiver::WriteObject(std::string name, GAME game, zCObject* object)
 
 		if (!classDef)
 			break;
+
+		// todo: if supported in current version?
 
 		if (!classDef->IsAbstract())
 			className += ":" + classDef->GetName();
@@ -1035,9 +1037,9 @@ bool zCArchiver::ReadColor(std::string name, zCOLOR& colorVal)
 			sscanf_s(value.c_str(), "%d %d %d %d",
 				&vals[0], &vals[1], &vals[2], &vals[3]) == 4)
 		{
-			colorVal.b = vals[0];
+			colorVal.r = vals[0];
 			colorVal.g = vals[1];
-			colorVal.r = vals[2];
+			colorVal.b = vals[2];
 			colorVal.a = vals[3];
 
 			return true;
