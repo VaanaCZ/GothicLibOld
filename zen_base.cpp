@@ -1881,9 +1881,19 @@ bool zCArchiver::ReadBinSafeProperty(BINSAFE_TYPE type, void* data, size_t size)
 			return file->Read(data, sizeof(float));
 		}
 
+		case BINSAFE_TYPE_BYTE:
+		{
+			return file->Read(data, sizeof(char));
+		}
+
+		case BINSAFE_TYPE_WORD:
+		{
+			return file->Read(data, sizeof(short));
+		}
+
 		case BINSAFE_TYPE_BOOL:
 		{
-			return file->Read(data, sizeof(bool));
+			return file->Read(data, sizeof(zBOOL));
 		}
 
 		case BINSAFE_TYPE_VEC3:
@@ -1926,7 +1936,9 @@ bool zCArchiver::ReadBinSafeProperty(BINSAFE_TYPE type, void* data, size_t size)
 		}
 
 		default:
-			break;
+		{
+			return false;
+		}
 		}
 	}
 

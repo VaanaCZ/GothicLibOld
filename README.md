@@ -40,7 +40,7 @@ This section includes the current progress on loading and saving the engine's fi
 
 |       | ASCII | ASCII_PROPS | BINARY | BIN_SAFE |
 |-------|-------|-------------|--------|----------|
-| Read  | ✔     | ✔           | ✔      | ✖         |
+| Read  | ✔     | ✔           | ✔      | ✔         |
 | Write | ✔     | ✖           | ✔      | ✖         |
 
 **World archivation**
