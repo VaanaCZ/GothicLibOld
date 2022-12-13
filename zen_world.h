@@ -443,7 +443,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				0				},
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		47105			},
 				{ GAME_CHRISTMASEDITION,	17408			},
 				{ GAME_GOTHIC1,				12289			},
 				{ GAME_GOTHICSEQUEL,		12289			},
@@ -610,7 +610,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				0				},
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		47105			},
 				{ GAME_CHRISTMASEDITION,	17408			},
 				{ GAME_GOTHIC1,				12289			},
 				{ GAME_GOTHICSEQUEL,		12289			},
@@ -651,7 +651,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				0				},
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		47105			},
 				{ GAME_CHRISTMASEDITION,	17408			},
 				{ GAME_GOTHIC1,				12289			},
 				{ GAME_GOTHICSEQUEL,		12289			},
@@ -1153,7 +1153,6 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
 				{ GAME_CHRISTMASEDITION,	35585			},
 				{ GAME_GOTHIC1,				35585			},
 				{ GAME_GOTHICSEQUEL,		35585			},
@@ -1336,10 +1335,9 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_DEMO3,				0				},
 				{ GAME_DEMO5,				36865			},
 				{ GAME_DEMO5,				0				}, // TESTLEVEL.ZEN
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		52224			},
 				{ GAME_CHRISTMASEDITION,	52224			},
 				{ GAME_GOTHIC1,				52224			},
 				{ GAME_GOTHICSEQUEL,		52224			},
@@ -1429,7 +1427,7 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		47105			},
 				{ GAME_CHRISTMASEDITION,	17408			},
 				{ GAME_GOTHIC1,				12289			},
 				{ GAME_GOTHICSEQUEL,		12289			},
@@ -1461,7 +1459,7 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		47105			},
 				{ GAME_CHRISTMASEDITION,	0				},
 				{ GAME_GOTHIC1,				0				},
 				{ GAME_GOTHICSEQUEL,		0				},
@@ -1552,7 +1550,7 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		47105			},
 				{ GAME_CHRISTMASEDITION,	0				},
 				{ GAME_GOTHIC1,				0				},
 				{ GAME_GOTHICSEQUEL,		0				},
@@ -1885,7 +1883,7 @@ namespace GothicLib
 			inline static CLASS_REVISION revisions[] =
 			{
 				{ GAME_DEMO5,				0				},
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		24960			},
 				{ GAME_CHRISTMASEDITION,	40321			},
 				{ GAME_GOTHIC1,				59776			},
 				{ GAME_GOTHICSEQUEL,		59776			},
@@ -1917,7 +1915,7 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		29888			},
 				{ GAME_CHRISTMASEDITION,	35009			},
 				{ GAME_GOTHIC1,				64704			},
 				{ GAME_GOTHICSEQUEL,		64704			},
@@ -1941,7 +1939,7 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		47105			},
 				{ GAME_CHRISTMASEDITION,	17408			},
 				{ GAME_GOTHIC1,				12289			},
 				{ GAME_GOTHICSEQUEL,		12289			},
@@ -2241,7 +2239,7 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		47105			},
 				{ GAME_CHRISTMASEDITION,	17408			},
 				{ GAME_GOTHIC1,				12289			},
 				{ GAME_GOTHICSEQUEL,		12289			},
@@ -2358,7 +2356,7 @@ namespace GothicLib
 
 			inline static CLASS_REVISION revisions[] =
 			{
-				{ GAME_SEPTEMBERDEMO,		VERSION_NONE	},
+				{ GAME_SEPTEMBERDEMO,		47105			},
 				{ GAME_CHRISTMASEDITION,	17408			},
 				{ GAME_GOTHIC1,				12289			},
 				{ GAME_GOTHICSEQUEL,		12289			},
