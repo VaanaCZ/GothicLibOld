@@ -1,4 +1,5 @@
 #include "ge_base.h"
+#include "ge_world.h"
 
 using namespace GothicLib::Genome;
 
@@ -288,7 +289,8 @@ bool bCAccessorPropertyObject::Write(FileStream* file, GAME game)
 
 			// Special cases
 			if (type == "bCString" ||
-				type == "bCMeshResourceString")
+				type == "bCMeshResourceString" ||
+				type == "bCImageResourceString")
 			{
 				std::string* str = (std::string*)((size_t)nativeObject + property->GetOffset());
 
@@ -297,6 +299,16 @@ bool bCAccessorPropertyObject::Write(FileStream* file, GAME game)
 					LOG_ERROR("Failed to write string \"" + property->GetName() + "\"");
 					return false;
 				}
+			}
+			else if (type.find("eCEntityProxy") == 0)
+			{
+				eCEntityProxy* script = (eCEntityProxy*)((size_t)nativeObject + property->GetOffset());
+				script->Write(file, game);
+			}
+			else if (type.find("eCScriptProxyScript") == 0)
+			{
+				eCScriptProxyScript* script = (eCScriptProxyScript*)((size_t)nativeObject + property->GetOffset());
+				script->Write(file, game);
 			}
 			else if (type.find("bTRefPtrArray") == 0 ||
 				type.find("bTPOSmartPtr") == 0)
@@ -536,7 +548,8 @@ bool bCAccessorPropertyObject::Read(FileStream* file, GAME game)
 
 			// Special cases
 			if (propertyType == "bCString" ||
-				propertyType == "bCMeshResourceString")
+				propertyType == "bCMeshResourceString" ||
+				propertyType == "bCImageResourceString")
 			{
 				std::string* str = (std::string*)((size_t)nativeObject + property->GetOffset());
 
@@ -546,6 +559,16 @@ bool bCAccessorPropertyObject::Read(FileStream* file, GAME game)
 					return false;
 				}
 			}
+			else if (propertyType == "eCEntityProxy")
+			{
+				eCEntityProxy* script = (eCEntityProxy*)((size_t)nativeObject + property->GetOffset());
+				script->Read(file, game);
+			}
+			else if (propertyType == "eCScriptProxyScript")
+			{
+				eCScriptProxyScript* script = (eCScriptProxyScript*)((size_t)nativeObject + property->GetOffset());
+				script->Read(file, game);
+			}			
 			else
 			{
 				// Check size
@@ -824,4 +847,14 @@ bool eCProcessibleElement::Load(FileStream* file, FileStream* datFile, GAME game
 	}
 
 	return true;
+}
+
+bool eCResource2::Save(FileStream* file, GAME game)
+{
+	return false;
+}
+
+bool eCResource2::Load(FileStream* file, GAME game)
+{
+	return false;
 }

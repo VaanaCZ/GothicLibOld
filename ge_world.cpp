@@ -568,12 +568,12 @@ bool eCEntityDynamicContext::OnRead(FileStream* file, GAME game)
 				eCDynamicEntity
 */
 
-bool eCEntityProxy::Write(FileStream* file)
+bool eCEntityProxy::Write(FileStream* file, GAME game)
 {
 	return false;
 }
 
-bool eCEntityProxy::Read(FileStream* file)
+bool eCEntityProxy::Read(FileStream* file, GAME game)
 {
 	uint16_t version;
 	file->Read(FILE_ARGS(version));
@@ -884,7 +884,7 @@ bool eCDynamicEntity::OnRead(FileStream* file, GAME game)
 
 	if (version >= 213)
 	{
-		creator.Read(file);
+		creator.Read(file, game);
 	}
 	else
 	{
@@ -911,6 +911,35 @@ bool eCDynamicEntity::OnRead(FileStream* file, GAME game)
 			eCVisualMeshStatic_PS [GOTHIC3]
 */
 
+
+void eCScriptProxyScript::Read(FileStream* file, GAME game)
+{
+	uint16_t version;
+	file->Read(&version, sizeof(version));
+
+	bool hasScript = false;
+	file->Read(&hasScript, sizeof(hasScript));
+
+	if (hasScript)
+	{
+		file->ReadString(script);
+	}
+}
+
+void eCScriptProxyScript::Write(FileStream* file, GAME game)
+{
+	uint16_t version = 1;
+	file->Write(&version, sizeof(version));
+
+	bool hasScript = !script.empty();
+	file->Write(&hasScript, sizeof(hasScript));
+
+	if (hasScript)
+	{
+		file->WriteString(script);
+	}
+}
+
 bool eCEntityPropertySet::OnWrite(FileStream* file, GAME game)
 {
 	uint16_t version = 2;
@@ -934,6 +963,22 @@ bool eCEntityPropertySet::OnRead(FileStream* file, GAME game)
 	{
 		renderingEnabled = true;
 	}
+
+	return true;
+}
+
+bool gCClock_PS::OnWrite(FileStream* file, GAME game)
+{
+	uint16_t version = 74;
+	file->Write(FILE_ARGS(version));
+
+	return true;
+}
+
+bool gCClock_PS::OnRead(FileStream* file, GAME game)
+{
+	uint16_t version;
+	file->Read(FILE_ARGS(version));
 
 	return true;
 }
@@ -974,6 +1019,22 @@ bool eCDynamicLight_PS::OnRead(FileStream* file, GAME game)
 	return true;
 }
 
+bool gCDamage_PS::OnWrite(FileStream* file, GAME game)
+{
+	uint16_t version = 78;
+	file->Write(FILE_ARGS(version));
+
+	return true;
+}
+
+bool gCDamage_PS::OnRead(FileStream* file, GAME game)
+{
+	uint16_t version;
+	file->Read(FILE_ARGS(version));
+
+	return true;
+}
+
 bool eCDirectionalLight_PS::OnWrite(FileStream* file, GAME game)
 {
 	uint16_t version = 1;
@@ -1006,6 +1067,59 @@ bool eCHemisphere_PS::OnRead(FileStream* file, GAME game)
 	return true;
 }
 
+bool gCScriptRoutine_PS::OnWrite(FileStream* file, GAME game)
+{
+	uint16_t version = 1;
+	file->Write(FILE_ARGS(version));
+
+	return true;
+}
+
+bool gCScriptRoutine_PS::OnRead(FileStream* file, GAME game)
+{
+	uint16_t version;
+	file->Read(FILE_ARGS(version));
+
+	return true;
+}
+
+bool eCSkydome_PS::OnWrite(FileStream* file, GAME game)
+{
+	uint16_t version = 1;
+	file->Write(FILE_ARGS(version));
+
+	return true;
+}
+
+bool eCSkydome_PS::OnRead(FileStream* file, GAME game)
+{
+	uint16_t version;
+	file->Read(FILE_ARGS(version));
+
+	return true;
+}
+
+bool eCSpeedTreeWind_PS::OnWrite(FileStream* file, GAME game)
+{
+	uint16_t version = 1;
+	file->Write(FILE_ARGS(version));
+
+	if (!eCEntityPropertySet::OnWrite(file, game))
+		return false;
+
+	return true;
+}
+
+bool eCSpeedTreeWind_PS::OnRead(FileStream* file, GAME game)
+{
+	uint16_t version;
+	file->Read(FILE_ARGS(version));
+
+	if (!eCEntityPropertySet::OnRead(file, game))
+		return false;
+
+	return true;
+}
 bool eCVisualMeshBase_PS::OnWrite(FileStream* file, GAME game)
 {
 	uint16_t version = 1;

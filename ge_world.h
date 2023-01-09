@@ -301,13 +301,14 @@ namespace GothicLib
 
 		/*
 			eCEntityProxy
+			eCScriptProxyScript
 			eCNode
 				eCEntity
 					eCGeometryEntity
 						eCSpatialEntity
 						eCDynamicEntity
 		*/
-
+		
 		class eCEntityProxy
 		{
 		public:
@@ -315,8 +316,8 @@ namespace GothicLib
 			eCEntityProxy()		{ }
 			~eCEntityProxy()	{ }
 
-			virtual bool Write(FileStream*);
-			virtual bool Read(FileStream*);
+			virtual bool Write(FileStream*, GAME);
+			virtual bool Read(FileStream*, GAME);
 
 			bCGuid id;
 
@@ -479,15 +480,35 @@ namespace GothicLib
 		};
 
 		/*
+			eCScriptProxyScript
 			eCEntityPropertySet
+				gCClock_PS
 				eCCollisionShapeBase_PS
 					eCCollisionShape_PS
+				gCDamage_PS
 				eCDynamicLight_PS
 					eCDirectionalLight_PS
 					eCHemisphere_PS
+				gCScriptRoutine_PS
+				eCSkydome_PS
+				eCSpeedTreeWind_PS
 				eCVisualMeshBase_PS [GOTHIC3]
 					eCVisualMeshStatic_PS [GOTHIC3]
 		*/
+
+		class eCScriptProxyScript
+		{
+		public:
+
+			eCScriptProxyScript()			{}
+			virtual ~eCScriptProxyScript()	{}
+
+			void Read(FileStream*, GAME);
+			void Write(FileStream*, GAME);
+
+			std::string script;
+
+		};
 
 		class eCEntityPropertySet : public bCObjectRefBase
 		{
@@ -509,6 +530,37 @@ namespace GothicLib
 
 			bool renderingEnabled;
 
+		private:
+
+		};
+		
+		class gCClock_PS : public eCEntityPropertySet
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				//{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	74	},
+			};
+
+			GE_DECLARE_CLASS(gCClock_PS, eCEntityPropertySet);
+
+			gCClock_PS()			{ }
+			virtual ~gCClock_PS()	{ }
+
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
+
+			GE_DECLARE_PROPERTY(gCClock_PS, GAME_RISEN1, long,	SecondsPlayed);
+			GE_DECLARE_PROPERTY(gCClock_PS, GAME_RISEN1, long,	DaysPlayed);
+			GE_DECLARE_PROPERTY(gCClock_PS, GAME_RISEN1, long,	Year);
+			GE_DECLARE_PROPERTY(gCClock_PS, GAME_RISEN1, long,	Day);
+			GE_DECLARE_PROPERTY(gCClock_PS, GAME_RISEN1, long,	Hour);
+			GE_DECLARE_PROPERTY(gCClock_PS, GAME_RISEN1, long,	Minute);
+			GE_DECLARE_PROPERTY(gCClock_PS, GAME_RISEN1, long,	Second);
+			GE_DECLARE_PROPERTY(gCClock_PS, GAME_RISEN1, float,	Factor);
+						
 		private:
 
 		};
@@ -558,6 +610,35 @@ namespace GothicLib
 			GE_DECLARE_PROPERTY(eCCollisionShape_PS, GAME_GOTHIC3, bool,										DisableCollision);
 			GE_DECLARE_PROPERTY(eCCollisionShape_PS, GAME_GOTHIC3, bool,										DisableResponse);
 			GE_DECLARE_PROPERTY(eCCollisionShape_PS, GAME_GOTHIC3, bool,										IgnoredByTraceRay);
+			
+		private:
+
+		};
+
+		class gCDamage_PS : public eCEntityPropertySet
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				//{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	78	},
+			};
+
+			GE_DECLARE_CLASS(gCDamage_PS, eCEntityPropertySet);
+
+			gCDamage_PS()			{ }
+			virtual ~gCDamage_PS()	{ }
+
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
+
+			GE_DECLARE_PROPERTY(gCDamage_PS, GAME_RISEN1, bTPropertyContainer<enum gEDamageType>,	DamageType);
+			GE_DECLARE_PROPERTY(gCDamage_PS, GAME_RISEN1, eCEntityProxy,							Agressor);
+			GE_DECLARE_PROPERTY(gCDamage_PS, GAME_RISEN1, long,										DamageBonus);
+			GE_DECLARE_PROPERTY(gCDamage_PS, GAME_RISEN1, long,										DamageAmount);
+			GE_DECLARE_PROPERTY(gCDamage_PS, GAME_RISEN1, float,									DamageMultiplier);
+			GE_DECLARE_PROPERTY(gCDamage_PS, GAME_RISEN1, eCScriptProxyScript,						DamageScript);
 			
 		private:
 
@@ -639,6 +720,129 @@ namespace GothicLib
 			GE_DECLARE_PROPERTY(eCHemisphere_PS, GAME_RISEN1, float,			Intensity);
 			GE_DECLARE_PROPERTY(eCHemisphere_PS, GAME_RISEN1, bCFloatColor,		SunLight);
 			GE_DECLARE_PROPERTY(eCHemisphere_PS, GAME_RISEN1, bCEulerAngles,	SunLightAxisDirectionOffset);
+			
+		private:
+
+		};
+		
+		class gCScriptRoutine_PS : public eCEntityPropertySet
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				//{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	1	},
+			};
+
+			GE_DECLARE_CLASS(gCScriptRoutine_PS, eCEntityPropertySet);
+
+			gCScriptRoutine_PS()			{ }
+			virtual ~gCScriptRoutine_PS()	{ }
+
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
+
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, eCScriptProxyScript,						Routine);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, bCString,									CurrentTask);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, float,										TaskTime);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, long,										TaskPosition);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, float,										StateTime);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, long,										StatePosition);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, long,										CommandTime);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, bool,										LockAIInterrupt);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, bool,										LockAIResult);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, long,										AIDelay);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, bCString,									LastTask);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, bCString,									CurrentState);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, long,										CurrentBreakBlock);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, bTPropertyContainer<enum gEAniState>,		AniState);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, bTPropertyContainer<enum gEAniState>,		FallbackAniState);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, bCString,									ActionString);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, eCEntityProxy,								ActionTarget);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, bTPropertyContainer<enum gEAmbientAction>, AmbientAction);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, bTPropertyContainer<enum gEAIMode>,		AIMode);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, bTPropertyContainer<enum gEAIMode>,		LastAIMode);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, bTPropertyContainer<enum gEHitDirection>,	HitDirection);
+			GE_DECLARE_PROPERTY(gCScriptRoutine_PS, GAME_RISEN1, bool,										RoutineChanged);
+
+		private:
+
+		};
+
+		class eCSkydome_PS : public eCEntityPropertySet
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				//{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	1	},
+			};
+
+			GE_DECLARE_CLASS(eCSkydome_PS, eCEntityPropertySet);
+
+			eCSkydome_PS()			{ }
+			virtual ~eCSkydome_PS()	{ }
+
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
+
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, bCImageResourceString,	StarTexture);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, int,						StarCount);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, bCFloatColor,			SunColor);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, bCImageResourceString,	SunTexture);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, float,					SunSize);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, bCFloatColor,			MoonColor);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, bCImageResourceString,	MoonTexture);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, float,					MoonSize);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, bCImageResourceString,	CloudTexture1);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, bCImageResourceString,	CloudTexture2);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, float,					CloudThickness);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, bCFloatColor,			CloudColor);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, bCVector2,				CloudDirection);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, float,					CloudSize1);
+			GE_DECLARE_PROPERTY(eCSkydome_PS, GAME_RISEN1, float,					CloudSize2);
+			
+		private:
+
+		};
+		
+		class eCSpeedTreeWind_PS : public eCEntityPropertySet
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				//{ GAME_GOTHIC3,	1	},
+				{ GAME_RISEN1,	1	},
+			};
+
+			GE_DECLARE_CLASS(eCSpeedTreeWind_PS, eCEntityPropertySet);
+
+			eCSpeedTreeWind_PS()			{ }
+			virtual ~eCSpeedTreeWind_PS()	{ }
+
+			virtual bool OnWrite(FileStream*, GAME);
+			virtual bool OnRead(FileStream*, GAME);
+
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, float,		WindResponse);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, float,		WindResponseLimit);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, float,		WindStrength);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, float,		MaxBendAngle);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, float,		BranchExponent);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, float,		LeafExponent);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, bCVector2,	GustStrength);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, float,		GustFrequency);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, bCVector2,	GustDuration);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, bCVector2,	BHWindAngle);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, bCVector2,	BHWindSpeed);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, bCVector2,	BVWindAngle);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, bCVector2,	BVWindSpeed);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, bCVector2,	LRockWindAngle);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, bCVector2,	LRockWindSpeed);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, bCVector2,	LRustleWindAngle);
+			GE_DECLARE_PROPERTY(eCSpeedTreeWind_PS, GAME_RISEN1, bCVector2,	LRustleWindSpeed);
 			
 		private:
 

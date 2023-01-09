@@ -14,6 +14,7 @@ namespace GothicLib
 
 		typedef std::string bCString;
 		typedef std::string bCMeshResourceString;
+		typedef std::string bCImageResourceString;
 		template <typename T> using bTRefPtrArray = std::vector<T>;
 		template <typename T> using bTPOSmartPtr = std::shared_ptr<T>;
 		template <typename T> using bTPropertyContainer = int;
@@ -59,7 +60,7 @@ namespace GothicLib
 
 		struct bCFloatColor
 		{
-			float r, g, b, a; // bgra?
+			float a, b, g, r;
 		};
 
 		struct bCBox
@@ -85,7 +86,7 @@ namespace GothicLib
 		{
 			uint64_t timestamp;
 		};
-		
+
 		/*
 			File		
 		*/
@@ -392,5 +393,32 @@ namespace GothicLib
 
 		};
 
+		/*
+			Resource
+		*/
+
+		class eCResource2 : public bCObjectBase
+		{
+		public:
+
+			inline static CLASS_REVISION revisions[] =
+			{
+				{ GAME_RISEN1,	1	},
+			};
+
+			GE_DECLARE_CLASS(eCResource2, bCObjectBase);
+
+			eCResource2()			{}
+			virtual ~eCResource2()	{}
+
+			virtual bool LoadData(FileStream*, GAME) { return true; }
+			virtual bool SaveData(FileStream*, GAME) { return true; }
+
+			bool Save(FileStream*, GAME);
+			bool Load(FileStream*, GAME);
+
+		private:
+
+		};
 	};
 };
