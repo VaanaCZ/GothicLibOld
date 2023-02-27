@@ -1,3 +1,9 @@
+//
+// zen_world.cpp
+//
+// Copyright (c) 2021-2023 Václav Maroušek
+//
+
 #include "zen_world.h"
 
 using namespace GothicLib::ZenGin;

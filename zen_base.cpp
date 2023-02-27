@@ -1,3 +1,9 @@
+//
+// zen_base.cpp
+//
+// Copyright (c) 2021-2023 Václav Maroušek
+//
+
 #include "zen_base.h"
 #include "zen_vdfs.h"
 #include "zen_world.h"

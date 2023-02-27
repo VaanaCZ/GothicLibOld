@@ -1,3 +1,9 @@
+//
+// gothiclib_base.h
+//
+// Copyright (c) 2021-2023 Václav Maroušek
+//
+
 #pragma once
 
 #include <fstream>

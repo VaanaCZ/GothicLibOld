@@ -1,3 +1,9 @@
+//
+// ge_base.cpp
+//
+// Copyright (c) 2021-2023 Václav Maroušek
+//
+
 #include "ge_base.h"
 #include "ge_world.h"
 

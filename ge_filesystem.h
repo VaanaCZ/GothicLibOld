@@ -1,7 +1,7 @@
 ﻿//
 // ge_filesystem.h
 //
-// Copyright (c) 2021-2022 Václav Maroušek
+// Copyright (c) 2021-2023 Václav Maroušek
 //
 
 #if 0

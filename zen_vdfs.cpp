@@ -1,4 +1,9 @@
-﻿
+﻿//
+// zen_vdfs.cpp
+//
+// Copyright (c) 2021-2023 Václav Maroušek
+//
+
 #include "gothiclib.h"
 #include "zen_vdfs.h"
 

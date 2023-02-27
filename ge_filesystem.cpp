@@ -1,4 +1,9 @@
-﻿
+﻿//
+// ge_filesystem.cpp
+//
+// Copyright (c) 2021-2023 Václav Maroušek
+//
+
 #include "ge_filesystem.h"
 /*
 

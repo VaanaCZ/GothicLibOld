@@ -1,3 +1,9 @@
+//
+// zen_script.h
+//
+// Copyright (c) 2021-2023 Václav Maroušek
+//
+
 #pragma once
 
 #include "zen_base.h"

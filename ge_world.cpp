@@ -1,3 +1,9 @@
+//
+// ge_world.cpp
+//
+// Copyright (c) 2021-2023 Václav Maroušek
+//
+
 #include "ge_world.h"
 #include <cassert>
 

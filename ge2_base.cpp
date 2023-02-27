@@ -1,3 +1,9 @@
+//
+// ge2_base.cpp
+//
+// Copyright (c) 2021-2023 Václav Maroušek
+//
+
 #include "ge2_base.h"
 
 using namespace GothicLib::Genome2;

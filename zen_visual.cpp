@@ -1,3 +1,9 @@
+//
+// zen_visual.cpp
+//
+// Copyright (c) 2021-2023 Václav Maroušek
+//
+
 #include "zen_visual.h"
 
 using namespace GothicLib::ZenGin;

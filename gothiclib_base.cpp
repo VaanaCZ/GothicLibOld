@@ -1,4 +1,10 @@
-﻿#include "gothiclib_base.h"
+﻿//
+// gothiclib_base.cpp
+//
+// Copyright (c) 2021-2023 Václav Maroušek
+//
+
+#include "gothiclib_base.h"
 
 using namespace GothicLib;
 

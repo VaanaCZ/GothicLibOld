@@ -1,7 +1,7 @@
 ﻿//
-// zen_vdfs.hpp
+// zen_vdfs.h
 //
-// Copyright (c) 2021-2022 Václav Maroušek
+// Copyright (c) 2021-2023 Václav Maroušek
 //
 
 #pragma once
