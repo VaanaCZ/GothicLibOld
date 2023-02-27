@@ -184,11 +184,11 @@ This section includes the current progress on loading and saving the engine's fi
 	</tr>
 	<tr>
 		<td>1.00b</td>
+		<td>✔</td>
+		<td>✔</td>
 		<td>✖</td>
-		<td>✖</td>
-		<td>✖</td>
-		<td>✖</td>
-		<td>✖</td>
+		<td>✔</td>
+		<td>✔</td>
 		<td>✖</td>
 	</tr>
 	<tr>
