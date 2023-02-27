@@ -1,8 +1,31 @@
+**PROJECT DEPRECATED**
+
+Originally, it had been my intention to create a library which could load, save and modify data of various types found in Piranha Bytes games (both ZenGin and Genome). Eventually however, the project's complexity spiraled out of control and became more of an engine system re-implementation than an actual data format library.
+Therefore, the code is provided only for educational purposes and is not meant to be used in any real capacity.
+For example, the library contains a fully functional VDFS implementation, texture loader, as well loading and saving code for world files of all engine versions (listed below) including compiled worlds.
+I might return to this project one day and rewrite it as a much smaller header-only library.
+
+**PROCEED WITH CAUTION**
+
+.
+.
+.
+.
+.
+
 # GothicLib
 
 **Library for all things Piranha Bytes...**
 
 A set of libraries intended for reading and writing data in the native formats of Piranha Bytes games.
+
+So far there is no build process. 
+In order to use the library, include all the source files in your project and then #include the main source file
+
+```cpp
+#include "src/gothiclib.h"
+```
+
 
 **!!!THIS README IS INCOMPLETE!!!**
 
@@ -187,12 +210,14 @@ This section includes several examples of how to properly utilise GothicLib.
 **World loading**
 
 ```cpp
+#define GOTHICLIB_ZENGIN
+#include "src/gothiclib.h"
+
 using namespace GothicLib::ZenGin;
 
 oCWorld world;
-world.game = GAME_GOTHIC1; // Specify the game version to use
 
-if (!world.LoadWorld(file))
+if (!world.LoadWorld(file, GAME_GOTHIC1))
 {
 	// Error
 	// Use Log::SetCallback
@@ -233,12 +258,14 @@ This section includes several examples of how to properly utilise GothicLib.
 **World loading**
 
 ```cpp
+#define GOTHICLIB_GENOME
+#include "src/gothiclib.h"
+
 using namespace GothicLib::Genome;
 
 gCWorld world;
-world.game = GAME_GOTHIC3; // Specify the game version to use
 
-if (!world.Load(file))
+if (!world.Load(file, GAME_GOTHIC3))
 {
 	// Error
 	// Use Log::SetCallback

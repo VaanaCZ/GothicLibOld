@@ -43,6 +43,7 @@
 #include "zen_base.h"
 #include "zen_vdfs.h"
 #include "zen_world.h"
+#include "zen_script.h"
 
 #endif // GOTHICLIB_ZENGIN
 
