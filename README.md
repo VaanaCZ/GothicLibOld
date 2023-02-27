@@ -2,7 +2,7 @@
 
 Originally, it had been my intention to create a simple library which could load, save and modify data of various types found in Piranha Bytes games (both ZenGin and Genome). Eventually however, the project's complexity spiraled out of control and became more of an engine system re-implementation than an actual data format library.
 
-Therefore, the code is provided only for educational purposes and is not meant to be used in any real capacity.
+Therefore, the code is provided **only for educational purposes** and is not meant to be used in any real capacity.
 
 For example, the library contains a fully functional VDFS implementation, texture loader, as well loading and saving code for world files of all engine versions (listed below) including compiled worlds.
 
